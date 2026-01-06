@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulator SGC 2026 by Zam Zam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            touch-action: manipulation;
+        }
+        /* Duolingo Style Buttons */
+        .duo-btn {
+            position: relative;
+            border-bottom: 5px solid rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+        .duo-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            border-bottom-width: 0;
+        }
+        .btn-green { background: #58cc02; border-color: #46a302; color: white; }
+        .btn-blue { background: #1cb0f6; border-color: #1899d6; color: white; }
+        .btn-red { background: #ff4b4b; border-color: #d43f3f; color: white; }
+        .btn-gray { background: #f7f7f7; border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5; color: #afafaf; }
+        
+        /* Option Selection */
+        .option-item {
+            border: 2px solid #e5e5e5;
+            border-bottom: 5px solid #e5e5e5;
+            transition: all 0.2s;
+        }
+        .option-item.selected {
+            border-color: #84d8ff;
+            background-color: #ddf4ff;
+            color: #1899d6;
+        }
+        .option-item.correct {
+            border-color: #58cc02;
+            background-color: #d7ffb8;
+            color: #58cc02;
+        }
+        .option-item.wrong {
+            border-color: #ff4b4b;
+            background-color: #ffdfe0;
+            color: #ff4b4b;
+        }
+
+        /* Animations */
+        @keyframes pulse-red {
+            0% { transform: scale(1); color: #ff4b4b; }
+            50% { transform: scale(1.2); color: #b80000; }
+            100% { transform: scale(1); color: #ff4b4b; }
+        }
+        .timer-critical {
+            animation: pulse-red 0.5s infinite;
+        }
+
+        .sticky-footer {
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-8">
+        <div class="w-24 h-24 mb-6 bg-yellow-400 rounded-3xl flex items-center justify-center shadow-lg transform rotate-3">
+            <span class="text-5xl">🦉</span>
+        </div>
+        <h1 class="text-3xl font-black text-gray-800 mb-2">SMAGA GENIUS</h1>
+        <p class="text-gray-400 font-bold mb-8 text-center uppercase tracking-widest text-sm">Simulator SGC 2026</p>
+        
+        <div class="w-full max-w-xs space-y-4">
+            <input type="password" id="pass-code" placeholder="Kode Akses (zamzam/fahreza/angel)" 
+                class="w-full p-4 border-2 border-gray-200 rounded-2xl text-center font-bold outline-none focus:border-blue-400 transition-all">
+            <button onclick="attemptLogin()" class="w-full py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase">Mulai Tempur!</button>
+        </div>
+    </div>
+
+    <!-- MAIN QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden flex flex-col h-screen">
+        <!-- Progress Header -->
+        <header class="p-4 flex items-center gap-4">
+            <button onclick="location.reload()" class="text-gray-300 text-2xl font-bold">✕</button>
+            <div class="flex-grow h-4 bg-gray-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex items-center gap-1">
+                <span class="text-orange-500 font-black">🔥</span>
+                <span id="streak-count" class="font-black text-orange-500">0</span>
+            </div>
+        </header>
+
+        <!-- Question Body -->
+        <main class="flex-grow overflow-y-auto px-6 py-4 flex flex-col">
+            <div class="mb-4 flex justify-between items-end">
+                <span id="q-category" class="text-blue-400 font-black uppercase text-xs tracking-widest">Kategori</span>
+                <div id="timer-text" class="text-2xl font-black text-gray-300">60</div>
+            </div>
+            
+            <h2 id="q-text" class="text-xl font-bold text-gray-800 mb-8 leading-tight">Pertanyaan akan muncul di sini...</h2>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Options injected here -->
+            </div>
+        </main>
+
+        <!-- Sticky Footer Feedback -->
+        <footer id="footer-action" class="sticky-footer p-6 bg-white border-t-2 border-gray-100">
+            <div id="feedback-area" class="hidden mb-6 flex items-center gap-4">
+                <div id="feedback-icon" class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"></div>
+                <div>
+                    <h3 id="feedback-title" class="font-black text-lg">Jawaban Benar!</h3>
+                    <p id="feedback-sub" class="text-sm font-bold text-gray-500"></p>
+                </div>
+            </div>
+            <button id="main-action-btn" disabled onclick="handleAction()" 
+                class="w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase transition-all">
+                Pilih Jawaban
+            </button>
+        </footer>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-white z-40 flex flex-col items-center justify-center p-6">
+        <h2 class="text-2xl font-black text-gray-800 mb-8 uppercase tracking-widest">Papan Peringkat</h2>
+        
+        <!-- Podium -->
+        <div class="flex items-end justify-center gap-2 mb-12 w-full h-48">
+            <!-- 2nd Place -->
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-12 bg-gray-100 rounded-full mb-2 flex items-center justify-center border-2 border-gray-200">🥈</div>
+                <div class="w-20 bg-gray-200 rounded-t-xl flex items-center justify-center font-black text-gray-500" style="height: 60px;">2</div>
+            </div>
+            <!-- 1st Place -->
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 bg-yellow-100 rounded-full mb-2 flex items-center justify-center border-2 border-yellow-400 shadow-xl medal-glow">🥇</div>
+                <div class="w-24 bg-yellow-400 rounded-t-xl flex items-center justify-center font-black text-white" style="height: 100px;">1</div>
+            </div>
+            <!-- 3rd Place -->
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-orange-50 rounded-full mb-2 flex items-center justify-center border-2 border-orange-200">🥉</div>
+                <div class="w-20 bg-orange-300 rounded-t-xl flex items-center justify-center font-black text-white" style="height: 40px;">3</div>
+            </div>
+        </div>
+
+        <div class="space-y-2 mb-12 text-center">
+            <p class="text-gray-400 font-bold uppercase text-sm">Skor Akhir Kamu</p>
+            <h1 id="final-score" class="text-7xl font-black text-blue-500">0</h1>
+            <p id="final-msg" class="text-lg font-bold text-gray-700">Kamu Hebat!</p>
+        </div>
+
+        <button onclick="location.reload()" class="w-full max-w-xs py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase">Ulangi Simulasi</button>
+    </div>
+
+    <script>
+        // DATA SOAL (Bisa kamu tambah/ganti di sini)
+        const dbSoal = [
+            { cat: "IPA", q: "Bagian sel yang berfungsi sebagai penghasil energi adalah...", o: ["Ribosom", "Vakuola", "Mitokondria", "Nukleus"], a: 2 },
+            { cat: "WAWASAN", q: "Lembaga negara yang berwenang mengubah UUD adalah...", o: ["Presiden", "DPR", "MPR", "MK"], a: 2 },
+            { cat: "IPS", q: "Organisasi ASEAN didirikan di kota...", o: ["Jakarta", "Bangkok", "Manila", "Kuala Lumpur"], a: 1 },
+            { cat: "SDGs", q: "SDGs Nomor 1 memiliki fokus utama pada...", o: ["Pendidikan", "Kelaparan", "Kemiskinan", "Kesehatan"], a: 2 },
+            { cat: "EKRAF", q: "Subsektor ekraf yang berkaitan dengan desain bangunan adalah...", o: ["Arsitektur", "Kriya", "Fashion", "Desain Produk"], a: 0 },
+            { cat: "BUDAYA", q: "Alat musik Sasando berasal dari daerah...", o: ["Papua", "NTT", "Maluku", "NTB"], a: 1 },
+            { cat: "IPS", q: "Garis Wallace memisahkan tipe fauna Asia dengan fauna...", o: ["Australis", "Peralihan", "Eropa", "Afrika"], a: 1 },
+            { cat: "IPA", q: "Perubahan gas langsung menjadi padat disebut...", o: ["Menguap", "Mencair", "Mengkristal", "Menyublim"], a: 2 },
+            { cat: "WAWASAN", q: "Sila ke-4 Pancasila dilambangkan dengan...", o: ["Banteng", "Pohon Beringin", "Rantai", "Padi Kapas"], a: 0 },
+            { cat: "IPA", q: "Planet terdekat dari Matahari adalah...", o: ["Venus", "Mars", "Merkurius", "Bumi"], a: 2 },
+            { cat: "EKRAF", q: "Platform TikTok termasuk dalam subsektor...", o: ["Musik", "Aplikasi & Game", "TV & Radio", "Film & Animasi"], a: 1 },
+            { cat: "SDGs", q: "Target waktu pencapaian SDGs secara global adalah tahun...", o: ["2025", "2030", "2045", "2050"], a: 1 },
+            { cat: "IPA", q: "Zat hijau daun pada tumbuhan disebut...", o: ["Stomata", "Klorofil", "Floem", "Xilem"], a: 1 },
+            { cat: "IPS", q: "Samudra terluas di dunia adalah...", o: ["Hindia", "Atlantik", "Pasifik", "Arktik"], a: 2 },
+            { cat: "BUDAYA", q: "Candi Borobudur terletak di provinsi...", o: ["Jawa Barat", "Jawa Tengah", "Jawa Timur", "DI Yogyakarta"], a: 1 },
+            { cat: "WAWASAN", q: "Bhinneka Tunggal Ika diambil dari Kitab...", o: ["Negarakertagama", "Sutasoma", "Ramayana", "Mahabharata"], a: 1 },
+            { cat: "IPA", q: "Bunyi tidak dapat merambat melalui...", o: ["Air", "Besi", "Udara", "Ruang Hampa"], a: 3 },
+            { cat: "IPS", q: "Mata uang negara Thailand adalah...", o: ["Baht", "Peso", "Ringgit", "Dong"], a: 0 },
+            { cat: "SDGs", q: "SDGs Nomor 14 berkaitan dengan ekosistem...", o: ["Darat", "Lautan", "Udara", "Hutan"], a: 1 },
+            { cat: "IPS", q: "Benua dengan populasi terbanyak adalah...", o: ["Eropa", "Amerika", "Afrika", "Asia"], a: 3 }
+        ];
+
+        let curIdx = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timerId = null;
+        let isCorrect = false;
+        let state = "CHOOSING"; // CHOOSING, FEEDBACK
+
+        function attemptLogin() {
+            const pass = document.getElementById('pass-code').value.toLowerCase();
+            if (["zamzam", "fahreza", "angel"].includes(pass)) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                initQuiz();
+            } else {
+                alert("Kode akses salah!");
+            }
+        }
+
+        function initQuiz() {
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            state = "CHOOSING";
+            timeLeft = 60;
+            isCorrect = false;
+            const q = dbSoal[curIdx];
+
+            // Reset UI
+            document.getElementById('progress-bar').style.width = `${(curIdx / dbSoal.length) * 100}%`;
+            document.getElementById('q-category').innerText = q.cat;
+            document.getElementById('q-text').innerText = q.q;
+            document.getElementById('feedback-area').classList.add('hidden');
+            
+            const btn = document.getElementById('main-action-btn');
+            btn.disabled = true;
+            btn.className = "w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase";
+            btn.innerText = "Pilih Jawaban";
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            q.o.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = "option-item p-4 rounded-2xl font-bold text-lg cursor-pointer";
+                div.innerText = opt;
+                div.onclick = () => selectOption(idx, div);
+                container.appendChild(div);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            const display = document.getElementById('timer-text');
+            display.classList.remove('timer-critical');
+            display.innerText = timeLeft;
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                display.innerText = timeLeft;
+                
+                if (timeLeft <= 10) display.classList.add('timer-critical');
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    revealAnswer(false); // Time out = wrong
+                }
+            }, 1000);
+        }
+
+        function selectOption(idx, el) {
+            if (state !== "CHOOSING") return;
+            
+            // Clear others
+            document.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            const btn = document.getElementById('main-action-btn');
+            btn.disabled = false;
+            btn.className = "w-full py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase";
+            btn.innerText = "Periksa";
+            
+            window.tempSelection = idx;
+        }
+
+        function handleAction() {
+            if (state === "CHOOSING") {
+                revealAnswer();
+            } else {
+                // Next Question
+                curIdx++;
+                if (curIdx < dbSoal.length) {
+                    renderQuestion();
+                } else {
+                    showFinalResult();
+                }
+            }
+        }
+
+        function revealAnswer(timedOut = false) {
+            clearInterval(timerId);
+            state = "FEEDBACK";
+            const q = dbSoal[curIdx];
+            const items = document.querySelectorAll('.option-item');
+            const selected = window.tempSelection;
+            const btn = document.getElementById('main-action-btn');
+            const feedback = document.getElementById('feedback-area');
+            
+            isCorrect = (selected === q.a) && !timedOut;
+
+            // Highlight Correct/Wrong
+            items[q.a].classList.add('correct');
+            if (!isCorrect && selected !== undefined) {
+                items[selected].classList.add('wrong');
+            }
+
+            // Feedback Style
+            feedback.classList.remove('hidden');
+            if (isCorrect) {
+                score += 2;
+                document.getElementById('streak-count').innerText = score/2;
+                feedback.querySelector('#feedback-icon').className = "w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-green-100 text-green-500";
+                feedback.querySelector('#feedback-icon').innerText = "✔";
+                document.getElementById('feedback-title').innerText = "Luar Biasa!";
+                document.getElementById('feedback-title').className = "font-black text-lg text-green-500";
+                document.getElementById('feedback-sub').innerText = "Kamu dapat +2 poin";
+                btn.className = "w-full py-4 duo-btn btn-green rounded-2xl font-black text-lg uppercase";
+                btn.innerText = "Lanjut";
+
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+
+                // AUTO NEXT IF CORRECT
+                setTimeout(() => {
+                    if (state === "FEEDBACK") handleAction();
+                }, 1200);
+
+            } else {
+                feedback.querySelector('#feedback-icon').className = "w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-red-100 text-red-500";
+                feedback.querySelector('#feedback-icon').innerText = "✖";
+                document.getElementById('feedback-title').innerText = timedOut ? "Waktu Habis!" : "Kurang Tepat";
+                document.getElementById('feedback-title').className = "font-black text-lg text-red-500";
+                document.getElementById('feedback-sub').innerText = `Kunci: ${q.o[q.a]}`;
+                btn.className = "w-full py-4 duo-btn btn-red rounded-2xl font-black text-lg uppercase";
+                btn.innerText = "Mengerti";
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            
+            let msg = "Ayo belajar lagi!";
+            if (score >= 36) msg = "Level: Sang Juara! 🥇";
+            else if (score >= 20) msg = "Level: Calon Finalis 🥈";
+            else msg = "Level: Pejuang SGC 🥉";
+            
+            document.getElementById('final-msg').innerText = msg;
+
+            confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>
+
