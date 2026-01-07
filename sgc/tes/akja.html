@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SGC 2026 - Ultimate Simulator</title>
+    
+    <!-- Meta Tags & SEO -->
+    <meta name="description" content="Simulasi SGC 2026 paling canggih untuk pejuang SMAN 3 Blitar.">
+    <meta property="og:title" content="SGC 2026 Ultimate Simulator">
+    <meta property="og:description" content="Asah mental juaramu menuju SGC 2026!">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/802/802353.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/802/802353.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .duo-btn {
+            position: relative;
+            border-bottom: 5px solid rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+        .duo-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            border-bottom-width: 0;
+        }
+        .btn-green { background: #58cc02; border-color: #46a302; color: white; }
+        .btn-blue { background: #1cb0f6; border-color: #1899d6; color: white; }
+        .btn-red { background: #ff4b4b; border-color: #d43f3f; color: white; }
+        .btn-gray { background: #f7f7f7; border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5; color: #afafaf; }
+        .btn-purple { background: #a855f7; border-color: #7e22ce; color: white; }
+        
+        .option-item {
+            border: 2px solid #e5e5e5;
+            border-bottom: 5px solid #e5e5e5;
+            transition: all 0.2s;
+        }
+        .option-item.selected {
+            border-color: #84d8ff;
+            background-color: #ddf4ff;
+            color: #1899d6;
+        }
+        .option-item.correct {
+            border-color: #58cc02;
+            background-color: #d7ffb8;
+            color: #58cc02;
+        }
+        .option-item.wrong {
+            border-color: #ff4b4b;
+            background-color: #ffdfe0;
+            color: #ff4b4b;
+        }
+
+        @keyframes pulse-timer {
+            0%, 100% { transform: scale(1); color: #ff4b4b; }
+            50% { transform: scale(1.2); color: #b80000; }
+        }
+        .timer-critical {
+            animation: pulse-timer 0.5s infinite;
+        }
+        .sticky-footer {
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-8">
+        <div class="w-24 h-24 mb-6 bg-green-500 rounded-3xl flex items-center justify-center shadow-lg transform -rotate-6">
+            <img src="https://cdn-icons-png.flaticon.com/512/802/802353.png" class="w-16 h-16" alt="Owl">
+        </div>
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6">SGC 2026</h1>
+        
+        <!-- Instruction Block -->
+        <div class="w-full max-w-xs bg-blue-50 border-2 border-blue-100 rounded-2xl p-4 mb-8 text-center">
+            <h4 class="text-blue-600 font-black text-xs mb-1 uppercase italic">💡 Petunjuk Dewa Quiz</h4>
+            <p class="text-blue-500 text-[10px] leading-relaxed">
+                Jawab cepat dalam <b>60 detik</b> per soal. Jika benar, lanjut otomatis. <br>
+                <b>Jangan menyerah!</b> Nama besarmu dipertaruhkan di sini.
+            </p>
+        </div>
+
+        <div class="w-full max-w-xs space-y-4">
+            <input type="text" id="user-name" placeholder="MASUKKAN NAMA" 
+                class="w-full p-4 border-2 border-gray-200 rounded-2xl text-center font-bold outline-none focus:border-green-400 transition-all uppercase placeholder:text-gray-300">
+            <button onclick="attemptLogin()" class="w-full py-4 duo-btn btn-green rounded-2xl font-black text-lg uppercase tracking-wider">Mulai Tempur</button>
+        </div>
+        
+        <footer class="mt-auto py-6 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+            QUIZ SYSTEM • Version 1.0.0
+        </footer>
+    </div>
+
+    <!-- MAIN QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden flex flex-col h-screen">
+        <!-- Progress Header -->
+        <header class="p-4 flex items-center gap-3 border-b border-gray-100 relative">
+            <button onclick="location.reload()" class="text-gray-300 text-xl font-bold">✕</button>
+            <div class="flex-grow">
+                <div class="flex justify-between items-center mb-1">
+                    <span id="display-name" class="text-[9px] font-black text-green-600 uppercase">PESERTA</span>
+                    <span id="streak-text" class="text-[9px] font-black text-orange-500 uppercase">SKOR: 0</span>
+                </div>
+                <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="text-xl">🦉</div>
+        </header>
+
+        <!-- Question Body -->
+        <main class="flex-grow overflow-y-auto px-6 py-6 flex flex-col">
+            <div class="mb-2 flex justify-between items-center">
+                <span id="q-category" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-black uppercase text-[10px] tracking-tighter">KATEGORI</span>
+                <div id="timer-display" class="text-2xl font-black text-gray-200">60</div>
+            </div>
+            
+            <h2 id="q-text" class="text-xl font-bold text-gray-800 mb-8 leading-tight">Memuat tantangan...</h2>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Options will be generated here -->
+            </div>
+        </main>
+
+        <!-- Sticky Footer -->
+        <footer id="footer-action" class="sticky-footer p-6 bg-white border-t-2 border-gray-100 flex flex-col items-center">
+            <div id="feedback-area" class="hidden mb-4 flex items-center gap-4 w-full">
+                <div id="feedback-icon" class="w-10 h-10 rounded-full flex items-center justify-center text-xl"></div>
+                <div>
+                    <h3 id="feedback-title" class="font-black text-sm">Feedback</h3>
+                    <p id="feedback-sub" class="text-[11px] font-bold text-gray-400"></p>
+                </div>
+            </div>
+            <button id="main-action-btn" disabled onclick="handleAction()" 
+                class="w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase transition-all mb-4">
+                Pilih Jawaban
+            </button>
+            <p class="text-[8px] font-black text-gray-300 uppercase tracking-widest">Fokus dan terus Semangat🔥</p>
+        </footer>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-white z-40 flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+        <h2 class="text-xl font-black text-gray-400 mb-6 uppercase tracking-widest">PAPAN PERINGKAT</h2>
+        
+        <div class="flex items-end justify-center gap-2 mb-10 h-40">
+            <div class="flex flex-col items-center">
+                <div class="text-[10px] font-black text-gray-400 mb-1">POSISI 2</div>
+                <div class="w-16 bg-gray-200 rounded-t-xl" style="height: 60px;"></div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div id="rank-name" class="text-[10px] font-black text-yellow-600 mb-1">JUARA</div>
+                <div class="w-20 bg-yellow-400 rounded-t-xl shadow-lg border-x-4 border-yellow-500" style="height: 100px;"></div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="text-[10px] font-black text-orange-400 mb-1">POSISI 3</div>
+                <div class="w-16 bg-orange-200 rounded-t-xl" style="height: 40px;"></div>
+            </div>
+        </div>
+
+        <div class="mb-10 relative">
+            <h1 id="final-score" class="text-7xl font-black text-blue-600 mb-2">0</h1>
+            <p id="final-rank" class="text-lg font-black text-gray-700 uppercase italic">LEVEL: PEMULA</p>
+            
+            <!-- Result Quote -->
+            <div class="mt-4 p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 max-w-xs mx-auto">
+                <p id="result-quote" class="text-[10px] text-gray-500 font-bold leading-relaxed italic">
+                    "Kemenangan bukan akhir, tapi awal dari tantangan yang lebih besar."
+                </p>
+            </div>
+        </div>
+
+        <div id="redemption-box" class="hidden w-full max-w-xs mb-6 p-4 bg-purple-50 rounded-2xl border-2 border-purple-200 scale-95 transform">
+            <p class="text-purple-600 font-black text-[10px] mb-3 uppercase tracking-tighter">KESEMPATAN TERAKHIR ✨</p>
+            <button onclick="startRedemption()" class="w-full py-3 duo-btn btn-purple rounded-xl font-bold text-sm uppercase">Tebus Satu Dosa</button>
+        </div>
+
+        <button onclick="location.reload()" class="w-full max-w-xs py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase tracking-wider">Main Lagi</button>
+    </div>
+
+    <script>
+        const dbSoal = [
+    // --- IPA ---
+    { cat: "IPA", q: "Jika fotosintesis berhenti karena tidak ada cahaya, maka dampak pertama pada tumbuhan adalah...", o: ["Tidak ada respirasi", "Tidak ada produksi glukosa", "Daun layu karena kekurangan air", "Akar berhenti tumbuh"], a: 1 },
+    { cat: "IPA", q: "Mengapa bunyi tidak dapat merambat di ruang hampa?", o: ["Tidak ada medium", "Frekuensi terlalu rendah", "Energi bunyi hilang", "Udara terlalu tipis"], a: 0 },
+    { cat: "IPA", q: "Jika sebuah benda massanya 2 kg dipercepat 3 m/s², gaya yang bekerja adalah...", o: ["2 N", "3 N", "5 N", "6 N"], a: 3 },
+    { cat: "IPA", q: "Larutan dengan pH = 4 bersifat lebih asam dibanding pH = 6 karena...", o: ["Konsentrasi ion H+ lebih besar", "Mengandung lebih banyak OH-", "Mengandung lebih sedikit air", "Mengandung lebih banyak garam"], a: 0 },
+    { cat: "IPA", q: "Mengapa balon udara panas bisa naik ke angkasa?", o: ["Massa jenis udara panas lebih kecil", "Gas mulia lebih berat", "Tekanan luar lebih besar", "Balon berisi oksigen murni"], a: 0 },
+    { cat: "IPA", q: "Jika sebuah kawat penghantar dipanaskan, maka resistansinya akan...", o: ["Tetap", "Berkurang", "Bertambah", "Tidak terpengaruh"], a: 2 },
+    { cat: "IPA", q: "Proses perubahan zat cair menjadi gas yang terjadi di permukaan di bawah titik didih disebut...", o: ["Kondensasi", "Evaporasi", "Sublimasi", "Distilasi"], a: 1 },
+    { cat: "IPA", q: "Mengapa daun umumnya berwarna hijau?", o: ["Mengandung stomata", "Mengandung klorofil", "Mengandung floem", "Mengandung xilem"], a: 1 },
+    { cat: "IPA", q: "Jika sebuah benda jatuh bebas tanpa hambatan udara, maka kecepatannya akan...", o: ["Tetap", "Bertambah secara konstan", "Berkurang tiap detik", "Tidak berubah"], a: 1 },
+    { cat: "IPA", q: "Gas rumah kaca yang paling berkontribusi signifikan pada pemanasan global adalah...", o: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Hidrogen"], a: 2 },
+
+    // --- IPS ---
+    { cat: "IPS", q: "Mengapa Indonesia secara geografis disebut sebagai negara kepulauan?", o: ["Memiliki banyak gunung", "Memiliki wilayah laut dan ribuan pulau", "Memiliki banyak sungai", "Memiliki banyak hutan"], a: 1 },
+    { cat: "IPS", q: "Perjanjian Renville ditandatangani di atas kapal perang milik negara...", o: ["Belanda", "Amerika Serikat", "Inggris", "Australia"], a: 1 },
+    { cat: "IPS", q: "Mengapa inflasi cenderung merugikan masyarakat berpenghasilan tetap?", o: ["Harga barang turun", "Penurunan daya beli nilai uang", "Pendapatan bertambah", "Produksi meningkat"], a: 1 },
+    { cat: "IPS", q: "Benua dengan jumlah negara terbanyak di dunia adalah...", o: ["Asia", "Afrika", "Eropa", "Amerika"], a: 1 },
+    { cat: "IPS", q: "Tokoh yang dikenal sebagai Bapak Koperasi Indonesia adalah...", o: ["Ir. Soekarno", "Moh. Hatta", "Sutan Syahrir", "Ki Hajar Dewantara"], a: 1 },
+    { cat: "IPS", q: "Alasan utama Proklamasi Kemerdekaan segera dilakukan setelah Jepang menyerah adalah...", o: ["Memanfaatkan vacuum of power", "Menghindari Inggris masuk", "Menghindari perang dunia", "Menghindari konflik internal"], a: 0 },
+    { cat: "IPS", q: "Gunung tertinggi di wilayah Indonesia (Puncak Jaya) adalah...", o: ["Semeru", "Kerinci", "Cartenz Pyramid", "Rinjani"], a: 2 },
+    { cat: "IPS", q: "Mengapa garis Wallace penting dalam ilmu biogeografi?", o: ["Memisahkan flora Asia dan Afrika", "Memisahkan tipe fauna Asia dan Australis", "Memisahkan iklim tropis dan subtropis", "Memisahkan benua Asia dan Australia"], a: 1 },
+    { cat: "IPS", q: "Organisasi regional ASEAN didirikan pada tahun...", o: ["1965", "1967", "1970", "1975"], a: 1 },
+    { cat: "IPS", q: "Mengapa sistem ekonomi liberal sering memicu kesenjangan ekonomi?", o: ["Persaingan bebas tanpa intervensi", "Produksi menurun", "Distribusi merata", "Harga stabil"], a: 0 },
+
+    // --- WAWASAN ---
+    { cat: "WAWASAN", q: "Pasal 30 UUD 1945 secara khusus mengatur tentang...", o: ["Pendidikan", "Pertahanan dan Keamanan Negara", "Kesehatan", "Kebebasan Pers"], a: 1 },
+    { cat: "WAWASAN", q: "Mengapa semboyan Bhinneka Tunggal Ika sangat krusial bagi Indonesia?", o: ["Menunjukkan kesamaan budaya", "Sebagai alat pemersatu keberagaman", "Menunjukkan kekuatan ekonomi", "Menunjukkan kekuatan politik"], a: 1 },
+    { cat: "WAWASAN", q: "Lambang dari sila ke-3 Pancasila adalah...", o: ["Pohon Beringin", "Rantai", "Bintang", "Kepala Banteng"], a: 0 },
+    { cat: "WAWASAN", q: "Siapakah tokoh yang merancang lambang negara Burung Garuda?", o: ["Moh. Hatta", "Sultan Hamid II", "Mr. Soepomo", "Raden Saleh"], a: 1 },
+    { cat: "WAWASAN", q: "Lembaga negara yang memiliki wewenang mengubah UUD adalah...", o: ["MPR", "DPR", "Presiden", "MK"], a: 0 },
+    { cat: "WAWASAN", q: "Pasal 27 ayat (2) UUD 1945 mengatur tentang...", o: ["Hak atas pekerjaan dan penghidupan layak", "Hak atas pendidikan", "Hak atas kesehatan", "Hak atas kebebasan beragama"], a: 0 },
+    { cat: "WAWASAN", q: "Sila pertama Pancasila dilambangkan dengan Bintang yang bermakna...", o: ["Cahaya kerohanian dari Tuhan", "Persatuan bangsa", "Keadilan sosial", "Kekuatan rakyat"], a: 0 },
+    { cat: "WAWASAN", q: "Kepanjangan dari singkatan NKRI adalah...", o: ["Negara Kesatuan Republik Indonesia", "Negara Kerajaan Republik Indonesia", "Negara Kedaulatan Republik Indonesia", "Negara Kebangsaan Republik Indonesia"], a: 0 },
+    { cat: "WAWASAN", q: "Salah satu wewenang Mahkamah Konstitusi (MK) adalah...", o: ["Mengadili kasus pidana", "Memutuskan sengketa hasil pemilu", "Mengadili pelanggaran HAM berat", "Mengadili kasus perdata"], a: 1 },
+    { cat: "WAWASAN", q: "Mengapa Pancasila disebut sebagai Staatsfundamentalnorm?", o: ["Sebagai landasan ekonomi", "Sebagai sumber dari segala sumber hukum", "Sebagai identitas budaya saja", "Sebagai simbol politik"], a: 1 },
+
+    // --- BUDAYA ---
+    { cat: "BUDAYA", q: "Mengapa Angklung diakui sebagai Warisan Dunia oleh UNESCO?", o: ["Karena keunikannya", "Karya agung lisan dan non-bendawi manusia", "Instrumen logam tertua", "Hanya bisa dimainkan solo"], a: 1 },
+    { cat: "BUDAYA", q: "Rumah adat Honai yang berbentuk bulat merupakan rumah asli dari daerah...", o: ["Papua", "Sulawesi", "Maluku", "Kalimantan"], a: 0 },
+    { cat: "BUDAYA", q: "Tari Topeng Cirebon merupakan tarian tradisional dari provinsi...", o: ["Jawa Barat", "Jawa Tengah", "Banten", "DKI Jakarta"], a: 0 },
+
+    // --- EKRAF ---
+    { cat: "EKRAF", q: "Apa peran utama subsektor arsitektur dalam ekonomi kreatif?", o: ["Menciptakan desain lingkungan binaan", "Menghasilkan karya lukis", "Mengembangkan musik tradisional", "Membuat kerajinan tangan"], a: 0 },
+    { cat: "EKRAF", q: "Layanan transportasi online dan e-commerce masuk dalam subsektor...", o: ["Aplikasi", "Kuliner", "Desain Produk", "Kriya"], a: 0 },
+    { cat: "EKRAF", q: "Industri yang memproduksi konten visual bergerak masuk dalam subsektor...", o: ["Musik", "Seni Pertunjukan", "Media", "Film, Animasi, dan Video"], a: 3 },
+    { cat: "EKRAF", q: "Mengapa subsektor kuliner menjadi penyumbang PDB terbesar di Ekraf?", o: ["Mudah diekspor", "Daya serap tenaga kerja dan konsumsi tinggi", "Tidak butuh modal", "Tidak butuh inovasi"], a: 1 },
+    { cat: "EKRAF", q: "Layanan berbasis konten video pendek seperti TikTok berkaitan dengan subsektor...", o: ["Musik", "Aplikasi dan Game", "TV dan Radio", "Film dan Animasi"], a: 1 },
+    { cat: "EKRAF", q: "Subsektor kriya mengutamakan nilai ekonomi yang berasal dari...", o: ["Kerajinan tangan berbahan baku lokal", "Desain bangunan tinggi", "Pembuatan skenario film", "Komposisi musik"], a: 0 },
+    { cat: "EKRAF", q: "Bagaimana subsektor fashion berkontribusi pada ekonomi?", o: ["Menciptakan tren busana dan gaya hidup", "Menghasilkan bahan pangan", "Mengembangkan alat mesin", "Mengurangi polusi suara"], a: 0 },
+
+    // --- SDGs ---
+    { cat: "SDGs", q: "Apa fokus utama dari tujuan pertama (Goal 1) dalam SDGs?", o: ["Menghapus kemiskinan", "Meningkatkan pendidikan", "Mengurangi polusi", "Meningkatkan perdagangan"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-2 dalam agenda SDGs adalah...", o: ["Tanpa Kelaparan", "Pendidikan Berkualitas", "Kesetaraan Gender", "Energi Bersih"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-4 SDGs menargetkan masyarakat dunia mendapatkan...", o: ["Pendidikan Berkualitas", "Air Bersih", "Energi Bersih", "Kesetaraan Gender"], a: 0 },
+    { cat: "SDGs", q: "Fokus dari tujuan ke-5 dalam SDGs adalah...", o: ["Mencapai kesetaraan gender", "Mengurangi kemiskinan", "Mengurangi polusi", "Meningkatkan perdagangan"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-6 dalam SDGs mengatur tentang ketersediaan...", o: ["Air Bersih dan Sanitasi", "Energi Bersih", "Pekerjaan Layak", "Aksi Iklim"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-8 SDGs berfokus pada pembangunan...", o: ["Pekerjaan Layak dan Pertumbuhan Ekonomi", "Kesetaraan Gender", "Energi Bersih", "Aksi Iklim"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-13 dalam SDGs adalah langkah darurat untuk...", o: ["Penanganan Perubahan Iklim", "Kehidupan Laut", "Kehidupan Darat", "Kemitraan Global"], a: 0 },
+    { cat: "SDGs", q: "Konservasi dan pemanfaatan berkelanjutan ruang laut merupakan tujuan ke...", o: ["14", "15", "16", "17"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-15 SDGs berkaitan dengan perlindungan...", o: ["Ekosistem Daratan", "Ekosistem Lautan", "Aksi Iklim", "Kemitraan Global"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-17 SDGs adalah cara implementasi melalui...", o: ["Kemitraan untuk Mencapai Tujuan", "Kesetaraan Gender", "Energi Bersih", "Air Bersih"], a: 0 }
+];
+          
+
+        let curIdx = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timerId = null;
+        let state = "CHOOSING"; 
+        let userName = "PESERTA";
+        let wrongQuestions = [];
+        let isRedemptionMode = false;
+        let lastSelected = null;
+
+        const quotes = [
+            "Juara sejati tidak pernah berhenti mencoba.",
+            "Usaha tidak akan mengkhianati hasil. Teruslah Jaya!",
+            "Fokus pada proses, hasil akan mengikuti dengan bangga.",
+            "Kamu lebih kuat dari tantangan yang kamu bayangkan hari ini."
+        ];
+
+        function attemptLogin() {
+            const val = document.getElementById('user-name').value;
+            if (val.trim().length > 1) {
+                userName = val.toUpperCase();
+                document.getElementById('display-name').innerText = userName;
+                document.getElementById('rank-name').innerText = userName;
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                loadQuestion();
+            }
+        }
+
+        function loadQuestion() {
+            state = "CHOOSING";
+            timeLeft = 60;
+            const q = isRedemptionMode ? wrongQuestions[0] : dbSoal[curIdx];
+            
+            document.getElementById('progress-bar').style.width = `${((curIdx) / dbSoal.length) * 100}%`;
+            document.getElementById('q-category').innerText = q.cat;
+            document.getElementById('q-text').innerText = q.q;
+            document.getElementById('feedback-area').classList.add('hidden');
+            
+            const btn = document.getElementById('main-action-btn');
+            btn.disabled = true;
+            btn.className = "w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase";
+            btn.innerText = "Pilih Jawaban";
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = "";
+
+            q.o.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = "option-item p-4 rounded-2xl font-bold text-sm cursor-pointer bg-white";
+                div.innerText = opt;
+                div.onclick = () => selectOption(idx, div);
+                container.appendChild(div);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            const display = document.getElementById('timer-display');
+            display.classList.remove('timer-critical');
+            display.innerText = timeLeft;
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                display.innerText = timeLeft;
+                if (timeLeft <= 10) display.classList.add('timer-critical');
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    handleReveal(true); 
+                }
+            }, 1000);
+        }
+
+        function selectOption(idx, el) {
+            if (state !== "CHOOSING") return;
+            document.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            const btn = document.getElementById('main-action-btn');
+            btn.disabled = false;
+            btn.className = "w-full py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase";
+            btn.innerText = "Periksa";
+            lastSelected = idx;
+        }
+
+        function handleAction() {
+            if (state === "CHOOSING") {
+                handleReveal();
+            } else {
+                if (isRedemptionMode) {
+                    isRedemptionMode = false;
+                    wrongQuestions.shift();
+                    showFinalResult();
+                    return;
+                }
+                curIdx++;
+                if (curIdx < dbSoal.length) loadQuestion();
+                else showFinalResult();
+            }
+        }
+
+        function handleReveal(isTimeout = false) {
+            clearInterval(timerId);
+            state = "FEEDBACK";
+            const q = isRedemptionMode ? wrongQuestions[0] : dbSoal[curIdx];
+            const selected = isTimeout ? null : lastSelected;
+            const items = document.querySelectorAll('.option-item');
+            const btn = document.getElementById('main-action-btn');
+            const feedback = document.getElementById('feedback-area');
+            
+            const isCorrect = selected === q.a;
+
+            if (isCorrect) {
+                score += (isRedemptionMode ? 5 : 10);
+                document.getElementById('streak-text').innerText = `SKOR: ${score}`;
+                if (selected !== null) items[selected].classList.add('correct');
+                
+                feedback.classList.remove('hidden');
+                feedback.querySelector('#feedback-icon').className = "w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center";
+                feedback.querySelector('#feedback-icon').innerText = "✔";
+                document.getElementById('feedback-title').innerText = "TEPAT SEKALI! 🦉";
+                document.getElementById('feedback-title').className = "font-black text-sm text-green-600";
+                document.getElementById('feedback-sub').innerText = isRedemptionMode ? "Dosa kamu sudah bersih!" : "Poin bertambah untuk " + userName;
+                
+                btn.className = "w-full py-4 duo-btn btn-green rounded-2xl font-black text-lg uppercase";
+                btn.innerText = "Lanjut";
+                
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.9 } });
+                setTimeout(() => { if(state === "FEEDBACK") handleAction(); }, 1500);
+            } else {
+                if(!isRedemptionMode) wrongQuestions.push(q);
+                if(selected !== null) items[selected].classList.add('wrong');
+                items[q.a].classList.add('correct');
+                
+                feedback.classList.remove('hidden');
+                feedback.querySelector('#feedback-icon').className = "w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center";
+                feedback.querySelector('#feedback-icon').innerText = "✖";
+                document.getElementById('feedback-title').innerText = isTimeout ? "WAKTU HABIS!" : "KURANG TEPAT";
+                document.getElementById('feedback-title').className = "font-black text-sm text-red-600";
+                document.getElementById('feedback-sub').innerText = `Jawaban: ${q.o[q.a]}`;
+                
+                btn.className = "w-full py-4 duo-btn btn-red rounded-2xl font-black text-lg uppercase";
+                btn.innerText = "Pelajari & Lanjut";
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('result-quote').innerText = '"' + quotes[Math.floor(Math.random()*quotes.length)] + '"';
+            
+            let rank = "PEJUANG";
+            const maxScore = dbSoal.length * 10;
+            if (score >= maxScore * 0.8) rank = "SMAGA GENIUS 🥇";
+            else if (score >= maxScore * 0.5) rank = "STRATEGIS MUDA 🥈";
+            
+            document.getElementById('final-rank').innerText = "LEVEL: " + rank;
+
+            if(wrongQuestions.length > 0 && !isRedemptionMode) {
+                document.getElementById('redemption-box').classList.remove('hidden');
+            } else {
+                document.getElementById('redemption-box').classList.add('hidden');
+            }
+            
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+        }
+
+        function startRedemption() {
+            isRedemptionMode = true;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+    </script>
+</body>
+</html>
