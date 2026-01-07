@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SGC 2026 - Ultimate Simulator</title>
+    
+    <!-- Meta Tags & SEO -->
+    <meta name="description" content="Simulasi SGC 2026 paling canggih untuk pejuang SMAN 3 Blitar.">
+    <meta property="og:title" content="SGC 2026 Ultimate Simulator">
+    <meta property="og:description" content="Asah mental juaramu menuju SGC 2026!">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/802/802353.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/802/802353.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .duo-btn {
+            position: relative;
+            border-bottom: 5px solid rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+        .duo-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            border-bottom-width: 0;
+        }
+        .btn-green { background: #58cc02; border-color: #46a302; color: white; }
+        .btn-blue { background: #1cb0f6; border-color: #1899d6; color: white; }
+        .btn-red { background: #ff4b4b; border-color: #d43f3f; color: white; }
+        .btn-gray { background: #f7f7f7; border: 2px solid #e5e5e5; border-bottom: 5px solid #e5e5e5; color: #afafaf; }
+        .btn-purple { background: #a855f7; border-color: #7e22ce; color: white; }
+        
+        .option-item {
+            border: 2px solid #e5e5e5;
+            border-bottom: 5px solid #e5e5e5;
+            transition: all 0.2s;
+        }
+        .option-item.selected {
+            border-color: #84d8ff;
+            background-color: #ddf4ff;
+            color: #1899d6;
+        }
+        .option-item.correct {
+            border-color: #58cc02;
+            background-color: #d7ffb8;
+            color: #58cc02;
+        }
+        .option-item.wrong {
+            border-color: #ff4b4b;
+            background-color: #ffdfe0;
+            color: #ff4b4b;
+        }
+
+        @keyframes pulse-timer {
+            0%, 100% { transform: scale(1); color: #ff4b4b; }
+            50% { transform: scale(1.2); color: #b80000; }
+        }
+        .timer-critical {
+            animation: pulse-timer 0.5s infinite;
+        }
+        .sticky-footer {
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center p-8">
+        <div class="w-24 h-24 mb-6 bg-green-500 rounded-3xl flex items-center justify-center shadow-lg transform -rotate-6">
+            <img src="https://cdn-icons-png.flaticon.com/512/802/802353.png" class="w-16 h-16" alt="Owl">
+        </div>
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6">SGC 2026</h1>
+        
+        <!-- Instruction Block -->
+        <div class="w-full max-w-xs bg-blue-50 border-2 border-blue-100 rounded-2xl p-4 mb-8 text-center">
+            <h4 class="text-blue-600 font-black text-xs mb-1 uppercase italic">💡 Petunjuk Dewa Quiz</h4>
+            <p class="text-blue-500 text-[10px] leading-relaxed">
+                Jawab cepat dalam <b>60 detik</b> per soal. Jika benar, lanjut otomatis. <br>
+                <b>Jangan menyerah!</b> Nama besarmu dipertaruhkan di sini.
+            </p>
+        </div>
+
+        <div class="w-full max-w-xs space-y-4">
+            <input type="text" id="user-name" placeholder="MASUKKAN NAMA" 
+                class="w-full p-4 border-2 border-gray-200 rounded-2xl text-center font-bold outline-none focus:border-green-400 transition-all uppercase placeholder:text-gray-300">
+            <button onclick="attemptLogin()" class="w-full py-4 duo-btn btn-green rounded-2xl font-black text-lg uppercase tracking-wider">Mulai Tempur</button>
+        </div>
+        
+        <footer class="mt-auto py-6 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+            QUIZ SYSTEM • Version 1.0.0
+        </footer>
+    </div>
+
+    <!-- MAIN QUIZ SCREEN -->
+    <div id="quiz-screen" class="hidden flex flex-col h-screen">
+        <!-- Progress Header -->
+        <header class="p-4 flex items-center gap-3 border-b border-gray-100 relative">
+            <button onclick="location.reload()" class="text-gray-300 text-xl font-bold">✕</button>
+            <div class="flex-grow">
+                <div class="flex justify-between items-center mb-1">
+                    <span id="display-name" class="text-[9px] font-black text-green-600 uppercase">PESERTA</span>
+                    <span id="streak-text" class="text-[9px] font-black text-orange-500 uppercase">SKOR: 0</span>
+                </div>
+                <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="text-xl">🦉</div>
+        </header>
+
+        <!-- Question Body -->
+        <main class="flex-grow overflow-y-auto px-6 py-6 flex flex-col">
+            <div class="mb-2 flex justify-between items-center">
+                <span id="q-category" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-black uppercase text-[10px] tracking-tighter">KATEGORI</span>
+                <div id="timer-display" class="text-2xl font-black text-gray-200">60</div>
+            </div>
+            
+            <h2 id="q-text" class="text-xl font-bold text-gray-800 mb-8 leading-tight">Memuat tantangan...</h2>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Options will be generated here -->
+            </div>
+        </main>
+
+        <!-- Sticky Footer -->
+        <footer id="footer-action" class="sticky-footer p-6 bg-white border-t-2 border-gray-100 flex flex-col items-center">
+            <div id="feedback-area" class="hidden mb-4 flex items-center gap-4 w-full">
+                <div id="feedback-icon" class="w-10 h-10 rounded-full flex items-center justify-center text-xl"></div>
+                <div>
+                    <h3 id="feedback-title" class="font-black text-sm">Feedback</h3>
+                    <p id="feedback-sub" class="text-[11px] font-bold text-gray-400"></p>
+                </div>
+            </div>
+            <button id="main-action-btn" disabled onclick="handleAction()" 
+                class="w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase transition-all mb-4">
+                Pilih Jawaban
+            </button>
+            <p class="text-[8px] font-black text-gray-300 uppercase tracking-widest">Fokus dan terus Semangat🔥</p>
+        </footer>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-white z-40 flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+        <h2 class="text-xl font-black text-gray-400 mb-6 uppercase tracking-widest">PAPAN PERINGKAT</h2>
+        
+        <div class="flex items-end justify-center gap-2 mb-10 h-40">
+            <div class="flex flex-col items-center">
+                <div class="text-[10px] font-black text-gray-400 mb-1">POSISI 2</div>
+                <div class="w-16 bg-gray-200 rounded-t-xl" style="height: 60px;"></div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div id="rank-name" class="text-[10px] font-black text-yellow-600 mb-1">JUARA</div>
+                <div class="w-20 bg-yellow-400 rounded-t-xl shadow-lg border-x-4 border-yellow-500" style="height: 100px;"></div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="text-[10px] font-black text-orange-400 mb-1">POSISI 3</div>
+                <div class="w-16 bg-orange-200 rounded-t-xl" style="height: 40px;"></div>
+            </div>
+        </div>
+
+        <div class="mb-10 relative">
+            <h1 id="final-score" class="text-7xl font-black text-blue-600 mb-2">0</h1>
+            <p id="final-rank" class="text-lg font-black text-gray-700 uppercase italic">LEVEL: PEMULA</p>
+            
+            <!-- Result Quote -->
+            <div class="mt-4 p-4 bg-gray-50 rounded-2xl border-2 border-gray-100 max-w-xs mx-auto">
+                <p id="result-quote" class="text-[10px] text-gray-500 font-bold leading-relaxed italic">
+                    "Kemenangan bukan akhir, tapi awal dari tantangan yang lebih besar."
+                </p>
+            </div>
+        </div>
+
+        <div id="redemption-box" class="hidden w-full max-w-xs mb-6 p-4 bg-purple-50 rounded-2xl border-2 border-purple-200 scale-95 transform">
+            <p class="text-purple-600 font-black text-[10px] mb-3 uppercase tracking-tighter">KESEMPATAN TERAKHIR ✨</p>
+            <button onclick="startRedemption()" class="w-full py-3 duo-btn btn-purple rounded-xl font-bold text-sm uppercase">Tebus Satu Dosa</button>
+        </div>
+
+        <button onclick="location.reload()" class="w-full max-w-xs py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase tracking-wider">Main Lagi</button>
+    </div>
+
+    <script>
+        const dbSoal = [
+    // --- IPA (BIOLOGI, FISIKA, KIMIA) ---
+    { cat: "IPA", q: "Mengapa pada mekanisme transpor aktif diperlukan energi berupa ATP, sedangkan pada difusi terfasilitasi tidak?", o: ["Transpor aktif melawan gradien konsentrasi menggunakan protein pembawa", "Difusi terfasilitasi hanya terjadi pada molekul gas non-polar", "Transpor aktif searah dengan gradien elektrokimia sel", "ATP hanya dibutuhkan untuk membuka saluran ion natrium"], a: 0 },
+    { cat: "IPA", q: "Dalam hukum Bernoulli, jika kecepatan aliran fluida pada suatu titik meningkat, maka...", o: ["Tekanan fluida di titik tersebut akan meningkat secara linier", "Energi potensial fluida akan berubah menjadi energi panas", "Tekanan fluida di titik tersebut akan menurun", "Densitas fluida akan meningkat drastis"], a: 2 },
+    { cat: "IPA", q: "Hibridisasi orbital pada molekul Metana (CH4) yang menghasilkan bentuk geometri tetrahedral adalah...", o: ["sp", "sp2", "sp3", "sp3d"], a: 2 },
+    { cat: "IPA", q: "Pada siklus Krebs, molekul asetil-KoA akan bergabung dengan asam oksaloasetat untuk membentuk...", o: ["Asam Suksinat", "Asam Sitrat", "Asam Alfa-ketoglutarat", "Asam Malat"], a: 1 },
+    { cat: "IPA", q: "Sebuah benda diletakkan 10 cm di depan cermin cekung dengan jari-jari kelengkungan 30 cm. Sifat bayangan yang terbentuk adalah...", o: ["Nyata, terbalik, diperkecil", "Maya, tegak, diperbesar", "Nyata, terbalik, diperbesar", "Maya, tegak, diperkecil"], a: 1 },
+    { cat: "IPA", q: "Efek Tyndall pada sistem koloid terjadi karena...", o: ["Partikel koloid menyerap cahaya matahari", "Gerak zig-zag partikel koloid akibat tumbukan molekul", "Hamburan cahaya oleh partikel koloid yang ukurannya sesuai", "Penggumpalan partikel koloid akibat penambahan elektrolit"], a: 2 },
+    { cat: "IPA", q: "Manakah dari berikut ini yang merupakan karakteristik utama pembelahan Meiosis II?", o: ["Terjadi reduksi jumlah kromosom dari diploid menjadi haploid", "Pemisahan kromatid saudara ke kutub yang berlawanan", "Terjadi pertukaran genetik melalui pindah silang (crossing over)", "Replikasi DNA terjadi sesaat sebelum profase II dimulai"], a: 1 },
+    { cat: "IPA", q: "Dalam termodinamika, proses di mana tidak ada kalor yang masuk atau keluar dari sistem disebut...", o: ["Isotermik", "Isokhorik", "Isobarik", "Adiabatik"], a: 3 },
+    { cat: "IPA", q: "Unsur dengan konfigurasi elektron [Ar] 4s2 3d10 4p3 terletak pada golongan dan periode...", o: ["Golongan VA, Periode 4", "Golongan IIIA, Periode 4", "Golongan VB, Periode 3", "Golongan VA, Periode 3"], a: 0 },
+    { cat: "IPA", q: "Fungsi utama enzim Topoisomerase dalam proses replikasi DNA adalah...", o: ["Menyambung fragmen Okazaki", "Membuka lilitan ganda DNA (helix)", "Menghilangkan tegangan akibat supercoiling DNA", "Menambahkan nukleotida baru pada rantai sense"], a: 2 },
+
+    // --- IPS (SEJARAH, GEOGRAFI, EKONOMI, SOSIOLOGI) ---
+    { cat: "IPS", q: "Kebijakan 'Contingenten' pada masa pemerintahan VOC di Nusantara mewajibkan rakyat untuk...", o: ["Menanam tanaman ekspor di bawah pengawasan Belanda", "Membayar pajak dalam bentuk hasil bumi kepada pemerintah", "Menjual hasil bumi hanya kepada pihak swasta Inggris", "Bekerja tanpa upah untuk pembangunan jalan raya"], a: 1 },
+    { cat: "IPS", q: "Dalam analisis struktur keruangan kota, Teori Sektoral yang dikemukakan oleh Homer Hoyt menekankan bahwa...", o: ["Kota tumbuh dari pusat secara melingkar konsentris", "Perkembangan kota mengikuti jalur transportasi seperti rel kereta", "Pusat kegiatan kota tersebar di beberapa titik nukleus", "Daerah kumuh selalu berada di zona transisi terdalam"], a: 1 },
+    { cat: "IPS", q: "Kondisi 'Stagflasi' dalam makroekonomi ditandai dengan fenomena...", o: ["Pertumbuhan ekonomi tinggi disertai inflasi rendah", "Penurunan harga barang secara umum dan pengangguran rendah", "Pertumbuhan ekonomi stagnan disertai inflasi dan pengangguran tinggi", "Kenaikan nilai mata uang domestik terhadap mata uang asing"], a: 2 },
+    { cat: "IPS", q: "Menurut Emile Durkheim, masyarakat modern diikat oleh 'Solidaritas Organik' yang didasarkan pada...", o: ["Kesamaan keyakinan dan kesadaran kolektif yang kuat", "Ketergantungan fungsional akibat pembagian kerja yang kompleks", "Sanksi hukum represif yang bertujuan membalas dendam", "Hubungan darah dan ikatan emosional tradisional"], a: 1 },
+    { cat: "IPS", q: "Penyebab utama terjadinya Revolusi Industri di Inggris pada abad ke-18 adalah...", o: ["Penemuan mesin cetak oleh Johannes Gutenberg", "Ketersediaan modal besar dari kolonisasi dan revolusi agraria", "Kemenangan Inggris dalam Perang Salib", "Penerapan sistem ekonomi merkantilisme secara kaku"], a: 1 },
+    { cat: "IPS", q: "Fenomena 'El Nino' di Samudra Pasifik berdampak pada cuaca di Indonesia berupa...", o: ["Peningkatan curah hujan yang ekstrem dan banjir", "Penurunan suhu udara secara drastis di dataran rendah", "Musim kemarau yang berkepanjangan dan risiko kebakaran hutan", "Munculnya badai tropis di wilayah selatan ekuator"], a: 2 },
+    { cat: "IPS", q: "Pasar di mana hanya terdapat satu pembeli besar untuk banyak penjual disebut...", o: ["Monopoli", "Oligopoli", "Monopsoni", "Oligopsoni"], a: 2 },
+    { cat: "IPS", q: "Dampak sosiologis dari integrasi sosial yang tidak sempurna (disintegrasi) adalah...", o: ["Meningkatnya kerja sama antar kelompok etnis", "Munculnya anomi atau keadaan tanpa norma dalam masyarakat", "Penguatan identitas nasional yang bersifat inklusif", "Terciptanya konsensus nilai-nilai baru secara cepat"], a: 1 },
+    { cat: "IPS", q: "Konferensi Meja Bundar (KMB) 1949 menghasilkan keputusan bahwa masalah Irian Barat akan diselesaikan...", o: ["Dalam waktu satu tahun setelah penyerahan kedaulatan", "Melalui referendum rakyat Papua di bawah pengawasan PBB", "Dengan pembentukan negara bagian baru di bawah Belanda", "Secara militer melalui operasi Trikora langsung"], a: 0 },
+    { cat: "IPS", q: "Garis imajiner yang memisahkan zona fauna peralihan (Sulawesi) dengan zona fauna Australis adalah...", o: ["Garis Wallace", "Garis Weber", "Garis Khatulistiwa", "Garis Bujur 105 BT"], a: 1 },
+
+    // --- WAWASAN KEBANGSAAN ---
+    { cat: "WAWASAN", q: "Dalam hierarki peraturan perundang-undangan di Indonesia menurut UU No. 12 Tahun 2011, posisi Peraturan Pemerintah berada di bawah...", o: ["Peraturan Daerah Provinsi", "Undang-Undang / Perpu", "Peraturan Presiden", "Keputusan Jaksa Agung"], a: 1 },
+    { cat: "WAWASAN", q: "Sifat kedaulatan yang berarti kedaulatan tidak berasal dari kekuasaan lain yang lebih tinggi disebut...", o: ["Asli", "Permanen", "Tunggal", "Tidak Terbatas"], a: 0 },
+    { cat: "WAWASAN", q: "Sidang pertama BPUPKI pada 29 Mei - 1 Juni 1945 secara khusus membahas tentang...", o: ["Rancangan Batang Tubuh UUD", "Bentuk Negara dan Batas Wilayah", "Rumusan Dasar Negara Indonesia", "Sistem Pemerintahan dan Presidensial"], a: 2 },
+    { cat: "WAWASAN", q: "Amandemen UUD 1945 yang mengubah sistem pemilihan Presiden dari oleh MPR menjadi pemilihan langsung oleh rakyat terjadi pada amandemen ke...", o: ["Satu", "Dua", "Tiga", "Empat"], a: 2 },
+    { cat: "WAWASAN", q: "Pokok pikiran pertama Pembukaan UUD 1945 (Persatuan) merupakan penjabaran dari sila ke...", o: ["Satu", "Dua", "Tiga", "Empat"], a: 2 },
+    { cat: "WAWASAN", q: "Berdasarkan Pasal 24C UUD 1945, manakah yang BUKAN merupakan wewenang Mahkamah Konstitusi?", o: ["Menguji Undang-Undang terhadap UUD", "Memutus sengketa kewenangan lembaga negara", "Memutus pembubaran partai politik", "Mengadili pelanggaran kode etik hakim agung"], a: 3 },
+    { cat: "WAWASAN", q: "Nilai instrumental dari Pancasila biasanya dapat ditemukan dalam bentuk...", o: ["Keyakinan spiritual bangsa yang mendalam", "Pasal-pasal UUD dan peraturan perundang-undangan", "Sikap gotong royong di pedesaan", "Cita-cita luhur pendiri bangsa"], a: 1 },
+    { cat: "WAWASAN", q: "Prinsip 'Nasionalisme Indonesia' dalam Pancasila menekankan pada...", o: ["Keunggulan bangsa Indonesia di atas bangsa lain", "Persatuan yang menghargai keberagaman budaya (inklusif)", "Pemisahan diri dari pengaruh politik luar negeri", "Dominasi budaya mayoritas dalam sistem kenegaraan"], a: 1 },
+    { cat: "WAWASAN", q: "Lembaga negara yang berwenang memberikan grasi dan rehabilitasi dengan memperhatikan pertimbangan Mahkamah Agung adalah...", o: ["DPR", "MK", "Presiden", "KY"], a: 2 },
+    { cat: "WAWASAN", q: "Semboyan Bhinneka Tunggal Ika pertama kali ditemukan dalam Kitab Sutasoma karya Mpu Tantular yang ditulis pada masa...", o: ["Kerajaan Sriwijaya", "Kerajaan Majapahit", "Kerajaan Mataram Kuno", "Kerajaan Singasari"], a: 1 },
+
+    // --- BUDAYA DAN EKONOMI KREATIF ---
+    { cat: "BUDAYA", q: "Unsur kebudayaan universal yang berkaitan dengan sistem pengetahuan masyarakat tradisional sering disebut sebagai...", o: ["Sistem Teknologi", "Local Wisdom (Kearifan Lokal)", "Religi", "Etnosentrisme"], a: 1 },
+    { cat: "BUDAYA", q: "Manakah yang termasuk dalam Objek Pemajuan Kebudayaan menurut UU No. 5 Tahun 2017?", o: ["Cagar Budaya dan Museum", "Tradisi Lisan, Adat Istiadat, dan Ritus", "Situs Arkeologi bawah laut", "Bangunan bersejarah peninggalan kolonial"], a: 1 },
+    { cat: "BUDAYA", q: "Proses 'Akulturasi' budaya terjadi apabila...", o: ["Dua budaya melebur menjadi satu budaya baru yang sama sekali berbeda", "Masuknya budaya asing yang diterima tanpa menghilangkan kepribadian budaya asli", "Budaya minoritas dipaksa mengikuti budaya mayoritas", "Penolakan total terhadap unsur budaya dari luar"], a: 1 },
+    { cat: "BUDAYA", q: "Teknik pewarnaan kain tradisional 'Ikat Celup' di Indonesia dikenal juga dengan istilah...", o: ["Ecoprint", "Jumputan", "Canting", "Tenun Songket"], a: 1 },
+    { cat: "BUDAYA", q: "Sistem kekerabatan 'Matrilineal' yang menarik garis keturunan dari pihak ibu di Indonesia terdapat pada masyarakat...", o: ["Batak", "Minangkabau", "Jawa", "Bugis"], a: 1 },
+    { cat: "EKRAF", q: "Subsektor Ekonomi Kreatif yang berfokus pada pengembangan perangkat lunak, termasuk game dan solusi teknologi informasi, adalah...", o: ["Desain Produk", "Aplikasi dan Pengembang Permainan", "Penerbitan", "Periklanan"], a: 1 },
+    { cat: "EKRAF", q: "Apa yang dimaksud dengan 'HAKI' (Hak Kekayaan Intelektual) dalam ekosistem ekonomi kreatif?", o: ["Hak pemerintah untuk mengambil alih karya kreatif", "Perlindungan hukum atas hasil olah pikir manusia yang menghasilkan produk", "Izin usaha bagi pelaku UMKM di bidang kuliner", "Pajak khusus yang dikenakan pada seniman internasional"], a: 1 },
+    { cat: "EKRAF", q: "Konsep 'Triple Helix' dalam pengembangan ekonomi kreatif melibatkan sinergi antara...", o: ["Produsen, Konsumen, dan Distributor", "Akademisi, Pelaku Bisnis, dan Pemerintah", "Seni, Budaya, dan Teknologi", "Pasar Lokal, Nasional, dan Global"], a: 1 },
+    { cat: "EKRAF", q: "Subsektor 'Kriya' sangat strategis bagi ekonomi Indonesia karena...", o: ["Menggunakan teknologi AI tingkat tinggi", "Memanfaatkan material lokal dan keterampilan tangan yang unik", "Hanya memerlukan modal yang sangat kecil", "Berfokus pada produksi massal mesin pabrik"], a: 1 },
+    { cat: "EKRAF", q: "Pemanfaatan media digital untuk mempromosikan destinasi wisata berbasis budaya disebut...", o: ["Eco-tourism", "Smart Tourism / Digital Branding", "Cultural Appropriation", "Mass Tourism"], a: 1 },
+
+    // --- SDGs (GOALS & ISSUES) ---
+    { cat: "SDGs", q: "Prinsip utama dalam pelaksanaan SDGs agar tidak ada satu orang pun yang tertinggal disebut...", o: ["Sustainable Growth", "Leave No One Behind (LNOB)", "Inclusive Trade", "Global Green Initiative"], a: 1 },
+    { cat: "SDGs", q: "Goal ke-12 dalam SDGs berfokus pada 'Konsumsi dan Produksi yang Bertanggung Jawab'. Salah satu target utamanya adalah...", o: ["Meningkatkan penggunaan batubara", "Mengurangi limbah makanan di tingkat ritel dan konsumen", "Menambah produksi plastik sekali pakai", "Meningkatkan ekspor bahan mentah"], a: 1 },
+    { cat: "SDGs", q: "Isu 'Stunting' pada anak-anak di bawah lima tahun merupakan hambatan utama dalam mencapai Goal SDGs nomor...", o: ["Goal 2 (Tanpa Kelaparan)", "Goal 5 (Kesetaraan Gender)", "Goal 11 (Kota Berkelanjutan)", "Goal 16 (Perdamaian)"], a: 0 },
+    { cat: "SDGs", q: "Goal 13 (Penanganan Perubahan Iklim) sangat berkaitan dengan kesepakatan internasional yang disebut...", o: ["Protokol Kyoto dan Paris Agreement", "Washington Convention", "ASEAN Charter", "Geneva Convention"], a: 0 },
+    { cat: "SDGs", q: "Target 'Akses Universal terhadap Air Bersih dan Sanitasi' merupakan inti dari Goal...", o: ["Goal 3", "Goal 6", "Goal 9", "Goal 12"], a: 1 },
+    { cat: "SDGs", q: "Ekonomi Biru (Blue Economy) merupakan konsep yang mendukung pencapaian Goal...", o: ["Goal 13 (Iklim)", "Goal 14 (Ekosistem Laut)", "Goal 15 (Ekosistem Darat)", "Goal 17 (Kemitraan)"], a: 1 },
+    { cat: "SDGs", q: "Mengapa Goal 17 (Kemitraan untuk Mencapai Tujuan) dianggap sebagai kunci keberhasilan SDGs?", o: ["Karena mengatur pajak internasional secara ketat", "Karena mengintegrasikan sumber daya dan kerja sama antar negara/sektor", "Karena memberikan bantuan dana gratis kepada semua negara", "Karena mewajibkan semua negara menggunakan satu mata uang"], a: 1 },
+    { cat: "SDGs", q: "Konsep 'Pembangunan Berkelanjutan' pertama kali didefinisikan secara luas dalam Brundtland Report sebagai...", o: ["Pembangunan yang hanya mementingkan aspek ekonomi", "Pembangunan yang memenuhi kebutuhan sekarang tanpa mengorbankan generasi masa depan", "Pembangunan yang melarang penggunaan teknologi industri", "Pembangunan yang dilakukan secara cepat di daerah perkotaan"], a: 1 },
+    { cat: "SDGs", q: "Upaya pengurangan emisi gas rumah kaca melalui pelestarian hutan di Indonesia dikenal dengan mekanisme...", o: ["G20", "REDD+ (Reducing Emissions from Deforestation and Degradation)", "MEP (Marine Energy Program)", "WTO Green Box"], a: 1 },
+    { cat: "SDGs", q: "Goal 9 dalam SDGs mencakup pembangunan infrastruktur yang tangguh, industrialisasi inklusif, dan...", o: ["Kesetaraan Upah", "Mendorong Inovasi", "Perlindungan Satwa Liar", "Pendidikan Gratis"], a: 1 }
+];
+    
+          
+
+        let curIdx = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timerId = null;
+        let state = "CHOOSING"; 
+        let userName = "PESERTA";
+        let wrongQuestions = [];
+        let isRedemptionMode = false;
+        let lastSelected = null;
+
+        const quotes = [
+            "Juara sejati tidak pernah berhenti mencoba.",
+            "Usaha tidak akan mengkhianati hasil. Teruslah Jaya!",
+            "Fokus pada proses, hasil akan mengikuti dengan bangga.",
+            "Kamu lebih kuat dari tantangan yang kamu bayangkan hari ini."
+        ];
+
+        function attemptLogin() {
+            const val = document.getElementById('user-name').value;
+            if (val.trim().length > 1) {
+                userName = val.toUpperCase();
+                document.getElementById('display-name').innerText = userName;
+                document.getElementById('rank-name').innerText = userName;
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('quiz-screen').classList.remove('hidden');
+                loadQuestion();
+            }
+        }
+
+        function loadQuestion() {
+            state = "CHOOSING";
+            timeLeft = 60;
+            const q = isRedemptionMode ? wrongQuestions[0] : dbSoal[curIdx];
+            
+            document.getElementById('progress-bar').style.width = `${((curIdx) / dbSoal.length) * 100}%`;
+            document.getElementById('q-category').innerText = q.cat;
+            document.getElementById('q-text').innerText = q.q;
+            document.getElementById('feedback-area').classList.add('hidden');
+            
+            const btn = document.getElementById('main-action-btn');
+            btn.disabled = true;
+            btn.className = "w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase";
+            btn.innerText = "Pilih Jawaban";
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = "";
+
+            q.o.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = "option-item p-4 rounded-2xl font-bold text-sm cursor-pointer bg-white";
+                div.innerText = opt;
+                div.onclick = () => selectOption(idx, div);
+                container.appendChild(div);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            const display = document.getElementById('timer-display');
+            display.classList.remove('timer-critical');
+            display.innerText = timeLeft;
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                display.innerText = timeLeft;
+                if (timeLeft <= 10) display.classList.add('timer-critical');
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    handleReveal(true); 
+                }
+            }, 1000);
+        }
+
+        function selectOption(idx, el) {
+            if (state !== "CHOOSING") return;
+            document.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            const btn = document.getElementById('main-action-btn');
+            btn.disabled = false;
+            btn.className = "w-full py-4 duo-btn btn-blue rounded-2xl font-black text-lg uppercase";
+            btn.innerText = "Periksa";
+            lastSelected = idx;
+        }
+
+        function handleAction() {
+            if (state === "CHOOSING") {
+                handleReveal();
+            } else {
+                if (isRedemptionMode) {
+                    isRedemptionMode = false;
+                    wrongQuestions.shift();
+                    showFinalResult();
+                    return;
+                }
+                curIdx++;
+                if (curIdx < dbSoal.length) loadQuestion();
+                else showFinalResult();
+            }
+        }
+
+        function handleReveal(isTimeout = false) {
+            clearInterval(timerId);
+            state = "FEEDBACK";
+            const q = isRedemptionMode ? wrongQuestions[0] : dbSoal[curIdx];
+            const selected = isTimeout ? null : lastSelected;
+            const items = document.querySelectorAll('.option-item');
+            const btn = document.getElementById('main-action-btn');
+            const feedback = document.getElementById('feedback-area');
+            
+            const isCorrect = selected === q.a;
+
+            if (isCorrect) {
+                score += (isRedemptionMode ? 5 : 10);
+                document.getElementById('streak-text').innerText = `SKOR: ${score}`;
+                if (selected !== null) items[selected].classList.add('correct');
+                
+                feedback.classList.remove('hidden');
+                feedback.querySelector('#feedback-icon').className = "w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center";
+                feedback.querySelector('#feedback-icon').innerText = "✔";
+                document.getElementById('feedback-title').innerText = "TEPAT SEKALI! 🦉";
+                document.getElementById('feedback-title').className = "font-black text-sm text-green-600";
+                document.getElementById('feedback-sub').innerText = isRedemptionMode ? "Dosa kamu sudah bersih!" : "Poin bertambah untuk " + userName;
+                
+                btn.className = "w-full py-4 duo-btn btn-green rounded-2xl font-black text-lg uppercase";
+                btn.innerText = "Lanjut";
+                
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.9 } });
+                setTimeout(() => { if(state === "FEEDBACK") handleAction(); }, 1500);
+            } else {
+                if(!isRedemptionMode) wrongQuestions.push(q);
+                if(selected !== null) items[selected].classList.add('wrong');
+                items[q.a].classList.add('correct');
+                
+                feedback.classList.remove('hidden');
+                feedback.querySelector('#feedback-icon').className = "w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center";
+                feedback.querySelector('#feedback-icon').innerText = "✖";
+                document.getElementById('feedback-title').innerText = isTimeout ? "WAKTU HABIS!" : "KURANG TEPAT";
+                document.getElementById('feedback-title').className = "font-black text-sm text-red-600";
+                document.getElementById('feedback-sub').innerText = `Jawaban: ${q.o[q.a]}`;
+                
+                btn.className = "w-full py-4 duo-btn btn-red rounded-2xl font-black text-lg uppercase";
+                btn.innerText = "Pelajari & Lanjut";
+            }
+        }
+
+        function showFinalResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('result-quote').innerText = '"' + quotes[Math.floor(Math.random()*quotes.length)] + '"';
+            
+            let rank = "PEJUANG";
+            const maxScore = dbSoal.length * 10;
+            if (score >= maxScore * 0.8) rank = "SMAGA GENIUS 🥇";
+            else if (score >= maxScore * 0.5) rank = "STRATEGIS MUDA 🥈";
+            
+            document.getElementById('final-rank').innerText = "LEVEL: " + rank;
+
+            if(wrongQuestions.length > 0 && !isRedemptionMode) {
+                document.getElementById('redemption-box').classList.remove('hidden');
+            } else {
+                document.getElementById('redemption-box').classList.add('hidden');
+            }
+            
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+        }
+
+        function startRedemption() {
+            isRedemptionMode = true;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+    </script>
+</body>
+</html>
