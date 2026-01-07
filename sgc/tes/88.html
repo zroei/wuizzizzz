@@ -209,108 +209,136 @@
 
     <script>
         const dbSoal = [
+    // --- IPA ---
     { cat: "IPA", q: "Jika fotosintesis berhenti karena tidak ada cahaya, maka dampak pertama pada tumbuhan adalah...", o: ["Tidak ada respirasi", "Tidak ada produksi glukosa", "Daun layu karena kekurangan air", "Akar berhenti tumbuh"], a: 1 },
     { cat: "IPA", q: "Mengapa bunyi tidak dapat merambat di ruang hampa?", o: ["Tidak ada medium", "Frekuensi terlalu rendah", "Energi bunyi hilang", "Udara terlalu tipis"], a: 0 },
     { cat: "IPA", q: "Jika sebuah benda massanya 2 kg dipercepat 3 m/s², gaya yang bekerja adalah...", o: ["2 N", "3 N", "5 N", "6 N"], a: 3 },
-    { cat: "IPA", q: "Larutan dengan pH = 4 lebih asam dibanding pH = 6 karena...", o: ["Konsentrasi ion H+ lebih besar", "Mengandung lebih banyak OH-", "Mengandung lebih sedikit air", "Mengandung lebih banyak garam"], a: 0 },
-    { cat: "IPA", q: "Mengapa balon udara bisa naik?", o: ["Udara panas lebih ringan", "Gas mulia lebih berat", "Tekanan luar lebih besar", "Balon berisi oksigen"], a: 0 },
-    { cat: "IPA", q: "Jika sebuah kawat dipanaskan, maka resistansinya...", o: ["Tetap", "Berkurang", "Bertambah", "Tidak terpengaruh"], a: 2 },
-    { cat: "IPA", q: "Proses perubahan zat cair menjadi gas di bawah titik didih disebut...", o: ["Kondensasi", "Evaporasi", "Sublimasi", "Distilasi"], a: 1 },
-    { cat: "IPA", q: "Mengapa daun berwarna hijau?", o: ["Mengandung stomata", "Mengandung klorofil", "Mengandung floem", "Mengandung xilem"], a: 1 },
-    { cat: "IPA", q: "Jika sebuah benda jatuh bebas tanpa hambatan, maka kecepatannya...", o: ["Tetap", "Bertambah konstan tiap detik", "Berkurang tiap detik", "Tidak berubah"], a: 1 },
-    { cat: "IPA", q: "Gas rumah kaca yang paling berperan dalam pemanasan global adalah...", o: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Hidrogen"], a: 2 },
-    { cat: "IPS", q: "Mengapa Indonesia disebut negara kepulauan?", o: ["Memiliki banyak gunung", "Memiliki banyak pulau", "Memiliki banyak sungai", "Memiliki banyak hutan"], a: 1 },
+    { cat: "IPA", q: "Larutan dengan pH = 4 bersifat lebih asam dibanding pH = 6 karena...", o: ["Konsentrasi ion H+ lebih besar", "Mengandung lebih banyak OH-", "Mengandung lebih sedikit air", "Mengandung lebih banyak garam"], a: 0 },
+    { cat: "IPA", q: "Mengapa balon udara panas bisa naik ke angkasa?", o: ["Massa jenis udara panas lebih kecil", "Gas mulia lebih berat", "Tekanan luar lebih besar", "Balon berisi oksigen murni"], a: 0 },
+    { cat: "IPA", q: "Jika sebuah kawat penghantar dipanaskan, maka resistansinya akan...", o: ["Tetap", "Berkurang", "Bertambah", "Tidak terpengaruh"], a: 2 },
+    { cat: "IPA", q: "Proses perubahan zat cair menjadi gas yang terjadi di permukaan di bawah titik didih disebut...", o: ["Kondensasi", "Evaporasi", "Sublimasi", "Distilasi"], a: 1 },
+    { cat: "IPA", q: "Mengapa daun umumnya berwarna hijau?", o: ["Mengandung stomata", "Mengandung klorofil", "Mengandung floem", "Mengandung xilem"], a: 1 },
+    { cat: "IPA", q: "Jika sebuah benda jatuh bebas tanpa hambatan udara, maka kecepatannya akan...", o: ["Tetap", "Bertambah secara konstan", "Berkurang tiap detik", "Tidak berubah"], a: 1 },
+    { cat: "IPA", q: "Gas rumah kaca yang paling berkontribusi signifikan pada pemanasan global adalah...", o: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Hidrogen"], a: 2 },
+
+    // --- IPS ---
+    { cat: "IPS", q: "Mengapa Indonesia secara geografis disebut sebagai negara kepulauan?", o: ["Memiliki banyak gunung", "Memiliki wilayah laut dan ribuan pulau", "Memiliki banyak sungai", "Memiliki banyak hutan"], a: 1 },
     { cat: "IPS", q: "Perjanjian Renville ditandatangani di atas kapal perang milik negara...", o: ["Belanda", "Amerika Serikat", "Inggris", "Australia"], a: 1 },
-    { cat: "IPS", q: "Mengapa inflasi merugikan masyarakat berpenghasilan tetap?", o: ["Harga barang turun", "Nilai uang menurun", "Pendapatan bertambah", "Produksi meningkat"], a: 1 },
-    { cat: "IPS", q: "Benua dengan jumlah negara terbanyak adalah...", o: ["Asia", "Afrika", "Eropa", "Amerika"], a: 1 },
+    { cat: "IPS", q: "Mengapa inflasi cenderung merugikan masyarakat berpenghasilan tetap?", o: ["Harga barang turun", "Penurunan daya beli nilai uang", "Pendapatan bertambah", "Produksi meningkat"], a: 1 },
+    { cat: "IPS", q: "Benua dengan jumlah negara terbanyak di dunia adalah...", o: ["Asia", "Afrika", "Eropa", "Amerika"], a: 1 },
     { cat: "IPS", q: "Tokoh yang dikenal sebagai Bapak Koperasi Indonesia adalah...", o: ["Ir. Soekarno", "Moh. Hatta", "Sutan Syahrir", "Ki Hajar Dewantara"], a: 1 },
-    { cat: "IPS", q: "Mengapa Proklamasi Kemerdekaan dilakukan segera setelah Jepang menyerah?", o: ["Menghindari Belanda kembali", "Menghindari Inggris masuk", "Menghindari perang dunia", "Menghindari konflik internal"], a: 0 },
-    { cat: "IPS", q: "Gunung tertinggi di Indonesia adalah...", o: ["Semeru", "Kerinci", "Cartenz Pyramid", "Rinjani"], a: 2 },
-    { cat: "IPS", q: "Mengapa garis Wallace penting dalam biogeografi?", o: ["Memisahkan flora Asia dan Afrika", "Memisahkan fauna Asia dan Australis", "Memisahkan iklim tropis dan subtropis", "Memisahkan benua Asia dan Australia"], a: 1 },
-    { cat: "IPS", q: "Organisasi ASEAN didirikan pada tahun...", o: ["1965", "1967", "1970", "1975"], a: 1 },
-    { cat: "IPS", q: "Mengapa ekonomi liberal sering menimbulkan kesenjangan?", o: ["Kebebasan individu berlebihan", "Produksi menurun", "Distribusi merata", "Harga stabil"], a: 0 },
-    { cat: "WAWASAN", q: "Pasal 30 UUD 1945 mengatur tentang...", o: ["Pendidikan", "Pertahanan dan Keamanan", "Kesehatan", "Kebebasan Pers"], a: 1 },
-    { cat: "WAWASAN", q: "Mengapa semboyan Bhinneka Tunggal Ika penting?", o: ["Menunjukkan kesamaan budaya", "Menunjukkan persatuan dalam keberagaman", "Menunjukkan kekuatan ekonomi", "Menunjukkan kekuatan politik"], a: 1 },
-    { cat: "WAWASAN", q: "Lambang sila ke-3 Pancasila adalah...", o: ["Pohon Beringin", "Rantai", "Bintang", "Kepala Banteng"], a: 0 },
-    { cat: "WAWASAN", q: "Siapakah pencipta lambang negara Burung Garuda?", o: ["Moh. Hatta", "Sultan Hamid II", "Mr. Soepomo", "Raden Saleh"], a: 1 },
-    { cat: "WAWASAN", q: "Mengapa MPR berwenang mengubah UUD?", o: ["Sebagai lembaga tertinggi negara", "Sebagai lembaga legislatif", "Sebagai lembaga eksekutif", "Sebagai lembaga yudikatif"], a: 0 },
-    { cat: "WAWASAN", q: "Pasal 27 ayat (1) UUD 1945 mengatur tentang...", o: ["Hak atas pekerjaan", "Hak atas pendidikan", "Hak atas kesehatan", "Hak atas kebebasan beragama"], a: 0 },
-    { cat: "WAWASAN", q: "Mengapa sila pertama Pancasila dilambangkan dengan bintang?", o: ["Melambangkan cahaya Tuhan", "Melambangkan persatuan", "Melambangkan keadilan", "Melambangkan kekuatan"], a: 0 },
-    { cat: "WAWASAN", q: "Apa arti NKRI?", o: ["Negara Kesatuan Republik Indonesia", "Negara Kerajaan Republik Indonesia", "Negara Kedaulatan Republik Indonesia", "Negara Kebangsaan Republik Indonesia"], a: 0 },
-    { cat: "WAWASAN", q: "Mengapa Mahkamah Konstitusi penting?", o: ["Mengadili kasus pidana", "Mengadili sengketa pemilu", "Mengadili pelanggaran HAM", "Mengadili kasus perdata"], a: 1 },
-    { cat: "WAWASAN", q: "Mengapa Pancasila disebut dasar negara?", o: ["Sebagai sumber hukum", "Sebagai sumber ekonomi", "Sebagai sumber budaya", "Sebagai sumber politik"], a: 1 } 
-    { cat: "BUDAYA", q: "Mengapa Angklung diakui UNESCO?", o: ["Instrumen unik", "Instrumen dari bambu dimainkan bersama", "Instrumen logam tradisional", "Instrumen dari kayu dimainkan solo"], a: 1 },
-    { cat: "BUDAYA", q: "Rumah adat Honai berasal dari daerah...", o: ["Papua", "Sulawesi", "Maluku", "Kalimantan"], a: 0 },
-    { cat: "BUDAYA", q: "Tari Topeng Cirebon berasal dari provinsi...", o: ["Jawa Barat", "Jawa Tengah", "Banten", "DKI Jakarta"], a: 0 },
-    { cat: "EKRAF", q: "Mengapa subsektor arsitektur penting dalam ekonomi kreatif?", o: ["Menciptakan desain bangunan inovatif", "Menghasilkan karya seni lukis", "Mengembangkan musik tradisional", "Membuat kerajinan tangan"], a: 0 },
-    { cat: "EKRAF", q: "Startup transportasi online termasuk subsektor...", o: ["Aplikasi", "Kuliner", "Desain Produk", "Kriya"], a: 0 },
-    { cat: "EKRAF", q: "Industri film termasuk subsektor ekonomi kreatif bidang...", o: ["Musik", "Seni Pertunjukan", "Media", "Film, Animasi, Video"], a: 3 },
-    { cat: "EKRAF", q: "Mengapa subsektor kuliner dianggap strategis?", o: ["Mudah diekspor", "Menyerap banyak tenaga kerja", "Tidak butuh modal", "Tidak butuh inovasi"], a: 1 },
-    { cat: "EKRAF", q: "Platform TikTok termasuk subsektor...", o: ["Musik", "Aplikasi & Game", "TV & Radio", "Film & Animasi"], a: 1 },
-    { cat: "EKRAF", q: "Subsektor kriya dalam ekonomi kreatif berkaitan dengan...", o: ["Kerajinan tangan", "Desain bangunan", "Pembuatan film", "Musik tradisional"], a: 0 },
-    { cat: "EKRAF", q: "Mengapa subsektor fashion berpengaruh besar?", o: ["Menciptakan tren global", "Menghasilkan pangan", "Mengembangkan teknologi", "Mengurangi polusi"], a: 0 }
-    { cat: "SDGs", q: "Mengapa tujuan pertama SDGs penting bagi pembangunan global?", o: ["Mengurangi kemiskinan", "Meningkatkan pendidikan", "Mengurangi polusi", "Meningkatkan perdagangan"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-2 SDGs adalah...", o: ["Tanpa Kelaparan", "Pendidikan Berkualitas", "Kesetaraan Gender", "Energi Bersih"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-4 SDGs menekankan pada...", o: ["Pendidikan Berkualitas", "Air Bersih", "Energi Bersih", "Kesetaraan Gender"], a: 0 },
-    { cat: "SDGs", q: "Mengapa tujuan ke-5 SDGs penting?", o: ["Meningkatkan kesetaraan gender", "Mengurangi kemiskinan", "Mengurangi polusi", "Meningkatkan perdagangan"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-6 SDGs adalah...", o: ["Air Bersih dan Sanitasi", "Energi Bersih", "Pekerjaan Layak", "Aksi Iklim"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-8 SDGs berfokus pada...", o: ["Pekerjaan Layak dan Pertumbuhan Ekonomi", "Kesetaraan Gender", "Energi Bersih", "Aksi Iklim"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-13 SDGs adalah...", o: ["Aksi Iklim", "Kehidupan Laut", "Kehidupan Darat", "Kemitraan Global"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-14 SDGs berkaitan dengan...", o: ["Kehidupan Laut", "Kehidupan Darat", "Energi Bersih", "Kemitraan Global"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-15 SDGs adalah...", o: ["Kehidupan Darat", "Kehidupan Laut", "Aksi Iklim", "Kemitraan Global"], a: 0 },
-    { cat: "SDGs", q: "Tujuan ke-17 SDGs menekankan pada...", o: ["Kemitraan Global", "Kesetaraan Gender", "Energi Bersih", "Air Bersih"], a: 0 }
-];
+    { cat: "IPS", q: "Alasan utama Proklamasi Kemerdekaan segera dilakukan setelah Jepang menyerah adalah...", o: ["Memanfaatkan vacuum of power", "Menghindari Inggris masuk", "Menghindari perang dunia", "Menghindari konflik internal"], a: 0 },
+    { cat: "IPS", q: "Gunung tertinggi di wilayah Indonesia (Puncak Jaya) adalah...", o: ["Semeru", "Kerinci", "Cartenz Pyramid", "Rinjani"], a: 2 },
+    { cat: "IPS", q: "Mengapa garis Wallace penting dalam ilmu biogeografi?", o: ["Memisahkan flora Asia dan Afrika", "Memisahkan tipe fauna Asia dan Australis", "Memisahkan iklim tropis dan subtropis", "Memisahkan benua Asia dan Australia"], a: 1 },
+    { cat: "IPS", q: "Organisasi regional ASEAN didirikan pada tahun...", o: ["1965", "1967", "1970", "1975"], a: 1 },
+    { cat: "IPS", q: "Mengapa sistem ekonomi liberal sering memicu kesenjangan ekonomi?", o: ["Persaingan bebas tanpa intervensi", "Produksi menurun", "Distribusi merata", "Harga stabil"], a: 0 },
 
-        let curIdx = 0;
+    // --- WAWASAN ---
+    { cat: "WAWASAN", q: "Pasal 30 UUD 1945 secara khusus mengatur tentang...", o: ["Pendidikan", "Pertahanan dan Keamanan Negara", "Kesehatan", "Kebebasan Pers"], a: 1 },
+    { cat: "WAWASAN", q: "Mengapa semboyan Bhinneka Tunggal Ika sangat krusial bagi Indonesia?", o: ["Menunjukkan kesamaan budaya", "Sebagai alat pemersatu keberagaman", "Menunjukkan kekuatan ekonomi", "Menunjukkan kekuatan politik"], a: 1 },
+    { cat: "WAWASAN", q: "Lambang dari sila ke-3 Pancasila adalah...", o: ["Pohon Beringin", "Rantai", "Bintang", "Kepala Banteng"], a: 0 },
+    { cat: "WAWASAN", q: "Siapakah tokoh yang merancang lambang negara Burung Garuda?", o: ["Moh. Hatta", "Sultan Hamid II", "Mr. Soepomo", "Raden Saleh"], a: 1 },
+    { cat: "WAWASAN", q: "Lembaga negara yang memiliki wewenang mengubah UUD adalah...", o: ["MPR", "DPR", "Presiden", "MK"], a: 0 },
+    { cat: "WAWASAN", q: "Pasal 27 ayat (2) UUD 1945 mengatur tentang...", o: ["Hak atas pekerjaan dan penghidupan layak", "Hak atas pendidikan", "Hak atas kesehatan", "Hak atas kebebasan beragama"], a: 0 },
+    { cat: "WAWASAN", q: "Sila pertama Pancasila dilambangkan dengan Bintang yang bermakna...", o: ["Cahaya kerohanian dari Tuhan", "Persatuan bangsa", "Keadilan sosial", "Kekuatan rakyat"], a: 0 },
+    { cat: "WAWASAN", q: "Kepanjangan dari singkatan NKRI adalah...", o: ["Negara Kesatuan Republik Indonesia", "Negara Kerajaan Republik Indonesia", "Negara Kedaulatan Republik Indonesia", "Negara Kebangsaan Republik Indonesia"], a: 0 },
+    { cat: "WAWASAN", q: "Salah satu wewenang Mahkamah Konstitusi (MK) adalah...", o: ["Mengadili kasus pidana", "Memutuskan sengketa hasil pemilu", "Mengadili pelanggaran HAM berat", "Mengadili kasus perdata"], a: 1 },
+    { cat: "WAWASAN", q: "Mengapa Pancasila disebut sebagai Staatsfundamentalnorm?", o: ["Sebagai landasan ekonomi", "Sebagai sumber dari segala sumber hukum", "Sebagai identitas budaya saja", "Sebagai simbol politik"], a: 1 },
+
+    // --- BUDAYA ---
+    { cat: "BUDAYA", q: "Mengapa Angklung diakui sebagai Warisan Dunia oleh UNESCO?", o: ["Karena keunikannya", "Karya agung lisan dan non-bendawi manusia", "Instrumen logam tertua", "Hanya bisa dimainkan solo"], a: 1 },
+    { cat: "BUDAYA", q: "Rumah adat Honai yang berbentuk bulat merupakan rumah asli dari daerah...", o: ["Papua", "Sulawesi", "Maluku", "Kalimantan"], a: 0 },
+    { cat: "BUDAYA", q: "Tari Topeng Cirebon merupakan tarian tradisional dari provinsi...", o: ["Jawa Barat", "Jawa Tengah", "Banten", "DKI Jakarta"], a: 0 },
+
+    // --- EKRAF ---
+    { cat: "EKRAF", q: "Apa peran utama subsektor arsitektur dalam ekonomi kreatif?", o: ["Menciptakan desain lingkungan binaan", "Menghasilkan karya lukis", "Mengembangkan musik tradisional", "Membuat kerajinan tangan"], a: 0 },
+    { cat: "EKRAF", q: "Layanan transportasi online dan e-commerce masuk dalam subsektor...", o: ["Aplikasi", "Kuliner", "Desain Produk", "Kriya"], a: 0 },
+    { cat: "EKRAF", q: "Industri yang memproduksi konten visual bergerak masuk dalam subsektor...", o: ["Musik", "Seni Pertunjukan", "Media", "Film, Animasi, dan Video"], a: 3 },
+    { cat: "EKRAF", q: "Mengapa subsektor kuliner menjadi penyumbang PDB terbesar di Ekraf?", o: ["Mudah diekspor", "Daya serap tenaga kerja dan konsumsi tinggi", "Tidak butuh modal", "Tidak butuh inovasi"], a: 1 },
+    { cat: "EKRAF", q: "Layanan berbasis konten video pendek seperti TikTok berkaitan dengan subsektor...", o: ["Musik", "Aplikasi dan Game", "TV dan Radio", "Film dan Animasi"], a: 1 },
+    { cat: "EKRAF", q: "Subsektor kriya mengutamakan nilai ekonomi yang berasal dari...", o: ["Kerajinan tangan berbahan baku lokal", "Desain bangunan tinggi", "Pembuatan skenario film", "Komposisi musik"], a: 0 },
+    { cat: "EKRAF", q: "Bagaimana subsektor fashion berkontribusi pada ekonomi?", o: ["Menciptakan tren busana dan gaya hidup", "Menghasilkan bahan pangan", "Mengembangkan alat mesin", "Mengurangi polusi suara"], a: 0 },
+
+    // --- SDGs ---
+    { cat: "SDGs", q: "Apa fokus utama dari tujuan pertama (Goal 1) dalam SDGs?", o: ["Menghapus kemiskinan", "Meningkatkan pendidikan", "Mengurangi polusi", "Meningkatkan perdagangan"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-2 dalam agenda SDGs adalah...", o: ["Tanpa Kelaparan", "Pendidikan Berkualitas", "Kesetaraan Gender", "Energi Bersih"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-4 SDGs menargetkan masyarakat dunia mendapatkan...", o: ["Pendidikan Berkualitas", "Air Bersih", "Energi Bersih", "Kesetaraan Gender"], a: 0 },
+    { cat: "SDGs", q: "Fokus dari tujuan ke-5 dalam SDGs adalah...", o: ["Mencapai kesetaraan gender", "Mengurangi kemiskinan", "Mengurangi polusi", "Meningkatkan perdagangan"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-6 dalam SDGs mengatur tentang ketersediaan...", o: ["Air Bersih dan Sanitasi", "Energi Bersih", "Pekerjaan Layak", "Aksi Iklim"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-8 SDGs berfokus pada pembangunan...", o: ["Pekerjaan Layak dan Pertumbuhan Ekonomi", "Kesetaraan Gender", "Energi Bersih", "Aksi Iklim"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-13 dalam SDGs adalah langkah darurat untuk...", o: ["Penanganan Perubahan Iklim", "Kehidupan Laut", "Kehidupan Darat", "Kemitraan Global"], a: 0 },
+    { cat: "SDGs", q: "Konservasi dan pemanfaatan berkelanjutan ruang laut merupakan tujuan ke...", o: ["14", "15", "16", "17"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-15 SDGs berkaitan dengan perlindungan...", o: ["Ekosistem Daratan", "Ekosistem Lautan", "Aksi Iklim", "Kemitraan Global"], a: 0 },
+    { cat: "SDGs", q: "Tujuan ke-17 SDGs adalah cara implementasi melalui...", o: ["Kemitraan untuk Mencapai Tujuan", "Kesetaraan Gender", "Energi Bersih", "Air Bersih"], a: 0 }
+];   
         let score = 0;
-        let timeLeft = 60;
-        let timerId = null;
+        let timeLeft = 60;,
+            imerId = null;
         let state = "CHOOSING"; 
-        let userName = "PESERTA";
+        ,
+             "PESERTA";
         let wrongQuestions = [];
-        let isRedemptionMode = false;
+       
+        d;
 
-        const quotes = [
-            "Juara sejati tidak pernah berhenti mencoba.",
-            "Usaha tidak akan mengkhianati hasil, SMAGA Jaya!",
-            "Fokus pada proses, hasil akan mengikuti dengan bangga.",
-            "Kamu lebih kuat dari yang kamu bayangkan hari ini."
+         = false 
+
+        cons  
+                      = uara sej.ti tidak pernah berhenti me.coba.;
+             " saha.tidak .kan me > hi n
+                Jaya!",
+ =    .     "Fokus p;
+                akan men.ikuti dengan bangga.",
+       .    "Kamu = bih kuat;
+                yangkan .ari ini."
         ];
 
-        function attemptLogin() {
-            const val = document.getElementById('user-name').value;
-            if (val.trim().length > 1) {
-                userName = val.toUpperCase();
-                document.getElementById('display-name').innerText = userName;
-                document.getElementById('rank-name').innerText = userName;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('quiz-screen').classList.remove('hidden');
-                loadQuestion();
-            } else {
-                alert("Namamu mana? ZAM ZAM butuh namamu untuk di papan peringkat!");
-            }
+     .  functio = ttemptLo;
+                  const .al = document.getElementById('.ser-name'..value;
+     ;
+                m().leng.h > 1) {
+                user.ame = val.toUpperCase();
+ ;
+                ument.getEleme;
+            y name )
+                Name;
+                document.getElementById('rank-name').innerText;
+             
+         
+
+        nt.getEl mentById('logi -
+            sList = d('hidden';
+                 doc = nt;
+            d('qu z = reen').classList ? move('hidden');
+  :             lo;
+
+                    .  } else {
+                ale.t("Na.amu m = ? ZAM ZAM  / uh nam.mu untu * i papa;
+            ;
+      .     }
         }
 
-        function loadQuestion() {
-            state = "CHOOSING";
-            timeLeft = 60;
-            const q = isRedemptionMode ? wrongQuestions[0] : dbSoal[curIdx];
-
-            document.getElementById('progress-bar').style.width = `${(curIdx / dbSoal.length) * 100}%`;
-            document.getElementById('q-category').innerText = q.cat;
-            document.getElementById('q-text').innerText = q.q;
-            document.getElementById('feedback-area').classList.add('hidden');
+        fu.ction loa = e.tio;
+                stat. = "CHOOSING";
+         .  timeLef =  .0;
+            const q . isRedemptionMode ? wrongQuesti.ns[0] : d.Soal[curIdx];;
             
-            const btn = document.getElementById('main-action-btn');
-            btn.disabled = true;
-            btn.className = "w-full py-4 duo-btn btn-gray rounded-2xl font-black text-lg uppercase";
-            btn.innerText = isRedemptionMode ? "TEBUS DOSA" : "Pilih Jawaban";
+            lemen ByI = progress.bar').style.width = `${(curIdx / ;
+             * .00}%`;
+  =     ;
+            etE.ementById = -category').innerText = q.cat;
+            document.getElementById('q-t;
+            t =.q.q;
+     =      document.ge ? ementById('f : back-area').cla;
 
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
+            den') 
+         =  
+      .     const btn = document.getElemen;
+            tion-btn'.;
+        =   ;
             
-            let displayOptions = q.o;
-            if(isRedemptionMode) displayOptions = q.o.slice(0,3);
+                  btn.classNam =  .w;
+            -btn btn-gray rounde -2xl font-blac = e.t.lg uppe,ca;
 
             displayOptions.forEach((opt, idx) => {
                 const div = document.createElement('div');
