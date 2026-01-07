@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WUIZZIZZ - SQC bid Ekraf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F8FAFC;
+            overscroll-behavior: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
+            z-index: 40;
+        }
+        .question-slider {
+            display: flex;
+            overflow-x: hidden;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+        }
+        .question-slide {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            padding: 1.5rem;
+        }
+        .option-card {
+            border: 2px solid #F1F5F9;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-card.active {
+            border-color: #6366F1;
+            background-color: #EEF2FF;
+            transform: scale(1.02);
+        }
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #E2E8F0;
+            transition: all 0.3s;
+        }
+        .nav-dot.active {
+            background: #6366F1;
+            width: 24px;
+            border-radius: 12px;
+        }
+        .status-answered { background-color: #6366F1 !important; color: white !important; border-color: #6366F1 !important; }
+        .status-current { border: 2px solid #6366F1 !important; color: #6366F1 !important; }
+        
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- LOGIN SCREEN -->
+    <div id="screen-login" class="fixed inset-0 z-50 bg-indigo-600 flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl text-center">
+            <div class="w-20 h-20 bg-indigo-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <span class="text-4xl">🚀</span>
+            </div>
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">WUIZZIZZ</h1>
+            <p class="text-slate-500 mb-8 font-medium">Masuk untuk memulai simulasi cerdas</p>
+            
+            <div class="space-y-4">
+                <input type="text" id="input-name" placeholder="Nama Lengkap" 
+                    class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-500 transition-all font-semibold">
+                <input type="password" id="input-pass" placeholder="Password Akses" 
+                    class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-500 transition-all font-semibold">
+                <button onclick="handleLogin()" 
+                    class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                    Mulai Sekarang
+                </button>
+            </div>
+            <p class="mt-6 text-xs text-slate-400 font-bold uppercase tracking-widest">Password: AKUPASTIBISA</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP INTERFACE -->
+    <div id="screen-quiz" class="hidden min-h-screen pb-32">
+        <!-- Header -->
+        <header class="bg-white p-4 sticky top-0 z-30 flex items-center justify-between border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold">W</div>
+                <div>
+                    <h2 id="header-user" class="text-sm font-bold leading-none">User</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">LCC Challenge IPA</p>
+                </div>
+            </div>
+            <div id="timer-box" class="bg-rose-50 px-4 py-2 rounded-xl border border-rose-100">
+                <span id="timer-text" class="text-rose-600 font-black font-mono text-lg">25:00</span>
+            </div>
+        </header>
+
+        <!-- Navigation Grid (Collapsible) -->
+        <div class="px-4 py-4 overflow-x-auto flex gap-2 border-b border-slate-50 bg-white shadow-sm">
+            <template id="nav-item-template">
+                <button class="flex-shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 text-slate-400 font-bold text-xs transition-all flex items-center justify-center"></button>
+            </template>
+            <div id="nav-container" class="flex gap-2"></div>
+        </div>
+
+        <!-- Question Slider -->
+        <div id="question-slider" class="question-slider">
+            <!-- Questions injected here -->
+        </div>
+
+        <!-- Sticky Mobile Actions -->
+        <div class="sticky-footer p-4 flex items-center gap-3">
+            <button onclick="prevQuestion()" class="p-4 bg-slate-100 rounded-2xl text-slate-600 active:bg-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button id="btn-submit" onclick="toggleSubmitModal()" class="flex-grow py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 active:scale-95 transition-all">
+                Kirim Jawaban
+            </button>
+            <button onclick="nextQuestion()" class="p-4 bg-slate-100 rounded-2xl text-slate-600 active:bg-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="screen-result" class="hidden min-h-screen bg-white p-6 pb-12">
+        <div class="max-w-md mx-auto">
+            <div id="result-icon" class="text-7xl mb-4 text-center">🏆</div>
+            <h1 class="text-3xl font-black text-center text-slate-900 mb-2">Selesai!</h1>
+            <p id="result-desc" class="text-center text-slate-500 font-medium mb-8">Hasil perjuanganmu telah direkap.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-indigo-50 p-6 rounded-[2rem] text-center border-2 border-indigo-100">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase mb-1">Skor Akhir</p>
+                    <h2 id="final-score" class="text-4xl font-black text-indigo-600">0</h2>
+                </div>
+                <div class="bg-emerald-50 p-6 rounded-[2rem] text-center border-2 border-emerald-100">
+                    <p class="text-[10px] font-black text-emerald-400 uppercase mb-1">Akurasi</p>
+                    <h2 id="final-accuracy" class="text-4xl font-black text-emerald-600">0%</h2>
+                </div>
+            </div>
+
+            <!-- Nominasi & Motivasi -->
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white mb-8 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+                <h3 id="nomination-title" class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-3">NOMINASI: ELITE STRATEGIST</h3>
+                <p id="motivation-text" class="text-slate-300 text-sm leading-relaxed mb-6 font-medium">"Pertahankan apinya, jalanmu menuju juara sudah terlihat!"</p>
+                <div class="pt-6 border-t border-white/10">
+                    <h4 class="text-xs font-black text-white/40 uppercase mb-3 tracking-widest">Tips & Tricks</h4>
+                    <p id="tips-text" class="text-xs text-slate-400 italic font-medium leading-relaxed">Fokus pada manajemen waktu dan eliminasi jawaban yang mustahil terlebih dahulu.</p>
+                </div>
+            </div>
+
+            <h3 class="font-black text-slate-900 mb-4 px-2">Review Jawaban</h3>
+            <div id="review-container" class="space-y-3 mb-8">
+                <!-- Review items -->
+            </div>
+
+            <button onclick="location.reload()" class="w-full py-5 bg-slate-100 text-slate-900 rounded-3xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
+                Coba Lagi
+            </button>
+        </div>
+    </div>
+
+    <!-- CONFIRM SUBMIT MODAL -->
+    <div id="modal-submit" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 transform transition-all shadow-2xl">
+            <h3 class="text-2xl font-black text-slate-900 mb-2">Sudah Yakin?</h3>
+            <p class="text-slate-500 text-sm mb-8 font-medium">Pastikan semua soal sudah terjawab dengan teliti sebelum dikirim.</p>
+            <div class="flex flex-col gap-3">
+                <button onclick="submitQuiz()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold">Ya, Kirim Sekarang</button>
+                <button onclick="toggleSubmitModal()" class="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold">Nanti Dulu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const QUESTIONS = [
+    { 
+        q: "Berdasarkan UU No. 5 Tahun 2017, manakah di bawah ini yang termasuk dalam daftar 10 Objek Pemajuan Kebudayaan Indonesia?", 
+        o: ["Cagar Budaya dan Museum", "Manuskrip, Tradisi Lisan, dan Ritus", "Situs Arkeologi Perang", "Pembangunan Galeri Seni Modern"], 
+        a: 1 
+    },
+    { 
+        q: "Unsur kebudayaan universal yang dianggap sebagai 'jantung' dari suatu budaya karena mengatur hubungan manusia dengan penciptanya adalah...", 
+        o: ["Sistem Pengetahuan", "Sistem Religi", "Sistem Kemasyarakatan", "Kesenian"], 
+        a: 1 
+    },
+    { 
+        q: "Subsektor ekonomi kreatif yang berkaitan dengan penciptaan konten gambar bergerak, termasuk animasi dan pascaproduksi adalah...", 
+        o: ["Desain Komunikasi Visual", "Film, Animasi, dan Video", "Fotografi", "Periklanan"], 
+        a: 1 
+    },
+    { 
+        q: "Upacara adat 'Rambu Solo' di Toraja yang merupakan bentuk penghormatan terakhir kepada orang yang wafat termasuk dalam kategori...", 
+        o: ["Tradisi Lisan", "Ritus", "Pengetahuan Tradisional", "Seni Pertunjukan"], 
+        a: 1 
+    },
+    { 
+        q: "Sistem kekerabatan yang menarik garis keturunan dari pihak ayah (Paternal) seperti yang dianut masyarakat Batak disebut...", 
+        o: ["Matrilineal", "Patrilineal", "Bilateral", "Ambilineal"], 
+        a: 1 
+    },
+    { 
+        q: "Salah satu pilar ekonomi kreatif adalah 'HAKI'. Apa peran utama HAKI bagi pelaku ekonomi kreatif?", 
+        o: ["Memberikan modal usaha gratis", "Melindungi hak moral dan ekonomi atas karya cipta", "Menurunkan pajak penjualan produk kreatif", "Mempercepat proses produksi massal"], 
+        a: 1 
+    },
+    { 
+        q: "Teknologi tradisional dalam unsur kebudayaan universal mencakup alat-alat produktif. Contoh alat produksi tradisional di Indonesia adalah...", 
+        o: ["Mesin Diesel", "Anu (Alat Tenun Bukan Mesin)", "Traktor Listrik", "Smartphone"], 
+        a: 1 
+    },
+    { 
+        q: "Seni pertunjukan Wayang Kulit telah diakui UNESCO sebagai 'Masterpiece of Oral and Intangible Heritage of Humanity'. Unsur utama di dalamnya adalah...", 
+        o: ["Tradisi Lisan dan Seni Rupa", "Olahraga Tradisional", "Arsitektur Modern", "Teknologi Digital"], 
+        a: 0 
+    },
+    { 
+        q: "Subsektor ekonomi kreatif yang menggabungkan unsur fungsionalitas dan estetika pada produk yang digunakan sehari-hari adalah...", 
+        o: ["Desain Produk", "Kriya", "Arsitektur", "Fashion"], 
+        a: 0 
+    },
+    { 
+        q: "Objek Pemajuan Kebudayaan yang berupa kumpulan narasi, cerita rakyat, atau pantun yang diwariskan secara turun-temurun disebut...", 
+        o: ["Manuskrip", "Tradisi Lisan", "Adat Istiadat", "Bahasa"], 
+        a: 1 
+    },
+    { 
+        q: "Provinsi yang dikenal dengan julukan 'The Sunrise of Java' dan memiliki tradisi 'Gandrung' sebagai identitas budayanya adalah...", 
+        o: ["Banyuwangi", "Solo", "Yogyakarta", "Bali"], 
+        a: 0 
+    },
+    { 
+        q: "Istilah 'Local Wisdom' dalam kebudayaan merujuk pada...", 
+        o: ["Teknologi yang diimpor dari luar negeri", "Gaya hidup modern masyarakat kota", "Kebijaksanaan atau pengetahuan lokal suatu masyarakat", "Sistem politik pemerintahan pusat"], 
+        a: 2 
+    },
+    { 
+        q: "Dalam ekonomi kreatif, subsektor 'Kuliner' memberikan kontribusi PDB terbesar. Fokus pengembangan kreatifnya terletak pada...", 
+        o: ["Hanya pada rasa makanan", "Proses produksi, presentasi, dan nilai budaya makanan", "Penjualan bahan mentah", "Pengurangan harga bahan baku"], 
+        a: 1 
+    },
+    { 
+        q: "Rumah adat 'Limas' yang tercetak pada lembaran uang kertas Rp10.000 berasal dari daerah...", 
+        o: ["Sumatera Barat", "Sumatera Selatan", "Jambi", "Bengkulu"], 
+        a: 1 
+    },
+    { 
+        q: "Manakah yang merupakan subsektor ekonomi kreatif yang paling banyak menggunakan teknologi digital dan logika pemrograman?", 
+        o: ["Desain Interior", "Aplikasi dan Game Developer", "Penerbitan", "Seni Rupa"], 
+        a: 1 
+    },
+    { 
+        q: "Seni kriya batik yang menggunakan alat bernama 'Canting' untuk menorehkan malam (lilin) disebut...", 
+        o: ["Batik Cap", "Batik Tulis", "Batik Lukis", "Batik Celup"], 
+        a: 1 
+    },
+    { 
+        q: "Tujuan utama dari gerakan 'Pemajuan Kebudayaan' menurut undang-undang adalah...", 
+        o: ["Menjual benda cagar budaya ke luar negeri", "Meningkatkan ketahanan budaya dan kontribusi budaya di dunia", "Menghapus budaya lokal yang sudah kuno", "Membatasi masuknya teknologi asing"], 
+        a: 1 
+    },
+    { 
+        q: "Unsur kebudayaan universal yang berfungsi sebagai alat komunikasi utama dalam interaksi sosial adalah...", 
+        o: ["Kesenian", "Bahasa", "Organisasi Sosial", "Sistem Ekonomi"], 
+        a: 1 
+    },
+    { 
+        q: "Subsektor ekonomi kreatif yang mencakup perencanaan ruang, desain bangunan, dan lanskap adalah...", 
+        o: ["Desain Interior", "Arsitektur", "Konstruksi Bina Marga", "Perencanaan Wilayah"], 
+        a: 1 
+    },
+    { 
+        q: "Festival Budaya yang terkenal dengan atraksi perang-perangan antar suku di Lembah Baliem bertujuan untuk...", 
+        o: ["Memicu konflik nyata", "Melestarikan tradisi dan menarik pariwisata budaya", "Mencari wilayah kekuasaan baru", "Latihan militer rahasia"], 
+        a: 1 
+    }
+];
+
+        let currentIdx = 0;
+        let answers = new Array(QUESTIONS.length).fill(null);
+        let timeLeft = 25 * 60;
+        let timerInterval;
+        let userName = "";
+
+        // UI Helpers
+        const $ = id => document.getElementById(id);
+
+        function handleLogin() {
+            const name = $('input-name').value;
+            const pass = $('input-pass').value;
+
+            if (name.trim() === "") return alert("Masukkan namamu!");
+            if (pass !== "AKUPASTIBISA") return alert("Password salah!");
+
+            userName = name;
+            $('header-user').innerText = userName;
+            $('screen-login').classList.add('hidden');
+            $('screen-quiz').classList.remove('hidden');
+            
+            initQuiz();
+            startTimer();
+        }
+
+        function initQuiz() {
+            const slider = $('question-slider');
+            const nav = $('nav-container');
+            const template = $('nav-item-template');
+
+            QUESTIONS.forEach((q, i) => {
+                // Create Slide
+                const slide = document.createElement('div');
+                slide.className = 'question-slide';
+                slide.innerHTML = `
+                    <div class="mb-6">
+                        <span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider">Soal No. ${i+1}</span>
+                        <h2 class="text-xl font-bold text-slate-800 mt-4 leading-snug">${q.q}</h2>
+                    </div>
+                    <div class="space-y-3">
+                        ${q.o.map((opt, oi) => `
+                            <div onclick="selectOption(${i}, ${oi})" id="q${i}o${oi}" 
+                                class="option-card p-5 rounded-2xl flex items-center gap-4 cursor-pointer bg-white">
+                                <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center font-bold text-slate-400 text-xs border border-slate-100 uppercase">
+                                    ${String.fromCharCode(65 + oi)}
+                                </div>
+                                <span class="font-semibold text-slate-700">${opt}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                slider.appendChild(slide);
+
+                // Create Nav Item
+                const navBtn = template.content.cloneNode(true).querySelector('button');
+                navBtn.innerText = i + 1;
+                navBtn.id = `nav-${i}`;
+                navBtn.onclick = () => goToQuestion(i);
+                nav.appendChild(navBtn);
+            });
+            updateNavState();
+        }
+
+        function selectOption(qIdx, oIdx) {
+            answers[qIdx] = oIdx;
+            
+            // UI Visual update for options
+            for(let i=0; i<4; i++) {
+                const el = $(`q${qIdx}o${i}`);
+                if(i === oIdx) el.classList.add('active');
+                else el.classList.remove('active');
+            }
+            
+            updateNavState();
+            setTimeout(() => nextQuestion(), 300);
+        }
+
+        function goToQuestion(idx) {
+            if (idx < 0 || idx >= QUESTIONS.length) return;
+            currentIdx = idx;
+            $('question-slider').scrollTo({
+                left: window.innerWidth * idx,
+                behavior: 'smooth'
+            });
+            updateNavState();
+        }
+
+        function nextQuestion() {
+            if (currentIdx < QUESTIONS.length - 1) goToQuestion(currentIdx + 1);
+        }
+
+        function prevQuestion() {
+            if (currentIdx > 0) goToQuestion(currentIdx - 1);
+        }
+
+        function updateNavState() {
+            for(let i=0; i<QUESTIONS.length; i++) {
+                const btn = $(`nav-${i}`);
+                btn.className = "flex-shrink-0 w-10 h-10 rounded-xl border-2 font-bold text-xs transition-all flex items-center justify-center ";
+                
+                if (answers[i] !== null) btn.classList.add('status-answered');
+                else if (i === currentIdx) btn.classList.add('status-current');
+                else btn.classList.add('border-slate-100', 'text-slate-400');
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                $('timer-text').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function toggleSubmitModal() {
+            $('modal-submit').classList.toggle('hidden');
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            $('modal-submit').classList.add('hidden');
+            $('screen-quiz').classList.add('hidden');
+            $('screen-result').classList.remove('hidden');
+
+            let correctCount = 0;
+            const container = $('review-container');
+            container.innerHTML = "";
+
+            QUESTIONS.forEach((q, i) => {
+                const isCorrect = answers[i] === q.a;
+                if (isCorrect) correctCount++;
+
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-2xl border-2 flex items-center justify-between ${isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}">${i+1}</div>
+                        <p class="text-xs font-bold text-slate-700 truncate w-40">${q.q}</p>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-tighter ${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">
+                        ${isCorrect ? 'BENAR' : 'SALAH'}
+                    </span>
+                `;
+                container.appendChild(div);
+            });
+
+            const score = (correctCount / QUESTIONS.length) * 100;
+            $('final-score').innerText = correctCount;
+            $('final-accuracy').innerText = Math.round(score) + "%";
+
+            generateMotivation(score);
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function generateMotivation(score) {
+            const nominations = [
+                { min: 90, title: "🏆 GOD OF SCIENCE", motivation: "Kamu benar-benar luar biasa! Penguasaan materimu berada di level elit. Pertahankan kecemerlanganmu!", tips: "Bagikan ilmu ini ke teman-temanmu agar pemahamanmu makin tajam.", icon: "👑" },
+                { min: 70, title: "🔥 ELITE STRATEGIST", motivation: "Hasil yang sangat memuaskan! Kamu memiliki potensi besar untuk menjadi yang terbaik.", tips: "Perdalam materi yang kamu anggap sulit agar akurasi mencapai 100%.", icon: "💎" },
+                { min: 50, title: "💪 RISING STAR", motivation: "Awal yang bagus! Teruslah asah kemampuanmu, juara tidak dibangun dalam semalam.", tips: "Gunakan teknik eliminasi jawaban jika kamu merasa ragu.", icon: "⭐" },
+                { min: 0, title: "🛡️ TOUGH FIGHTER", motivation: "Jangan menyerah! Setiap kegagalan adalah pelajaran berharga untuk kemenangan nanti.", tips: "Baca kembali buku materi dan coba lagi. Konsistensi adalah kunci!", icon: "🔥" }
+            ];
+
+            const n = nominations.find(x => score >= x.min);
+            $('nomination-title').innerText = `NOMINASI: ${n.title}`;
+            $('motivation-text').innerText = `"${n.motivation}"`;
+            $('tips-text').innerText = n.tips;
+            $('result-icon').innerText = n.icon;
+        }
+    </script>
+</body>
+</html>
+
