@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMULASI MASCOT 2K26</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --duo-green: #58cc02;
+            --duo-green-dark: #46a302;
+            --duo-blue: #1cb0f6;
+            --duo-blue-dark: #1899d6;
+            --duo-red: #ff4b4b;
+            --duo-yellow: #ffc800;
+            --duo-gray: #e5e5e5;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f9fa;
+            color: #4b4b4b;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .duo-btn-green {
+            background-color: var(--duo-green);
+            border-bottom: 5px solid var(--duo-green-dark);
+            transition: all 0.1s;
+        }
+        .duo-btn-green:active {
+            border-bottom-width: 0;
+            transform: translateY(4px);
+        }
+
+        .duo-btn-blue {
+            background-color: var(--duo-blue);
+            border-bottom: 5px solid var(--duo-blue-dark);
+        }
+        .duo-btn-blue:active {
+            border-bottom-width: 0;
+            transform: translateY(4px);
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid var(--duo-gray);
+            border-bottom: 5px solid var(--duo-gray);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .option-btn.correct {
+            background-color: #d7ffb8;
+            border-color: #58cc02;
+            border-bottom-color: #46a302;
+            color: #46a302;
+        }
+        .option-btn.wrong {
+            background-color: #ffdfe0;
+            border-color: #ff4b4b;
+            border-bottom-color: #ea2b2b;
+            color: #ea2b2b;
+        }
+
+        .bento-item {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-bottom: 4px solid rgba(0,0,0,0.1);
+        }
+
+        .power-up-anim {
+            animation: float-up 1s ease-out forwards;
+            position: absolute;
+            color: var(--duo-green);
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        .timer-badge {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 2px solid var(--duo-gray);
+            border-radius: 20px;
+            padding: 4px 16px;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 4rem;
+            font-weight: 900;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .screen { display: none; height: 100vh; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        #q-text { font-size: clamp(1.25rem, 5vw, 1.75rem); line-height: 1.3; }
+
+        .btn-ragu-active {
+            background-color: #fff9e6 !important;
+            border-color: #ffc800 !important;
+            color: #856404 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="watermark">DEVELOPED BY ZAM ZAM</div>
+
+    <!-- START SCREEN -->
+    <div id="screen-login" class="screen active p-6 items-center justify-center">
+        <div class="w-full max-w-sm text-center">
+            <div class="text-6xl mb-2 animate-bounce">💡</div>
+            <h1 class="text-4xl font-black text-blue-500 mb-1">WUIZZIZZ</h1>
+            <p class="text-sm font-bold text-gray-400 mb-8 uppercase tracking-widest">Quiz Apps</p>
+            
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-2 border-gray-100 mb-8">
+                <input type="text" id="username" placeholder="Namamu, Juara..." class="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-blue-400 outline-none text-center font-bold text-lg mb-4">
+                <button onclick="startQuiz()" class="w-full duo-btn-green text-white font-extrabold py-4 rounded-2xl text-xl">GASPOL!</button>
+            </div>
+            <p class="text-[10px] text-gray-300">ZOREY © 2024 • DEVELOPED BY ZAM ZAM</p>
+        </div>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="screen-quiz" class="screen">
+        <!-- Floating HUD -->
+        <div class="fixed top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-none">
+            <div id="quiz-timer" class="timer-badge font-black text-lg flex items-center gap-2 pointer-events-auto shadow-sm">
+                ⏱️ <span id="timer-val">01:00:00</span>
+            </div>
+            <button onclick="toggleBento()" class="p-3 bg-white border-2 border-gray-200 rounded-2xl pointer-events-auto shadow-sm active:scale-95 transition-transform">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="2" fill="#1CB0F6"/>
+                    <rect x="14" y="3" width="7" height="7" rx="2" fill="#58CC02"/>
+                    <rect x="3" y="14" width="7" height="7" rx="2" fill="#FFC800"/>
+                    <rect x="14" y="14" width="7" height="7" rx="2" fill="#FF4B4B"/>
+                </svg>
+            </button>
+        </div>
+
+        <main class="flex-grow flex flex-col p-6 pt-20 pb-28 overflow-y-auto">
+            <div class="max-w-xl mx-auto w-full">
+                <div id="img-container" class="mb-4 hidden">
+                    <img id="q-image" src="" class="w-full max-h-48 object-cover rounded-3xl border-4 border-white shadow-md">
+                </div>
+                <div class="mb-4">
+                    <span id="q-category" class="bg-blue-100 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">Kategori</span>
+                </div>
+                <h2 id="q-text" class="font-extrabold text-gray-800 mb-8">Pertanyaan?</h2>
+                <div id="options-container" class="grid gap-3"></div>
+            </div>
+        </main>
+
+        <div id="bento-overlay" class="fixed inset-0 bg-white/95 z-[60] hidden p-8 flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-2xl">NAVIGASI SOAL</h3>
+                <button onclick="toggleBento()" class="text-4xl font-light">×</button>
+            </div>
+            <div id="bento-grid" class="grid grid-cols-5 gap-3 overflow-y-auto pr-2"></div>
+            <div class="mt-auto pt-6 flex justify-between items-center text-xs font-bold text-gray-400">
+                <div class="flex gap-4">
+                    <span>🔵 Terisi</span>
+                    <span>🟡 Ragu</span>
+                </div>
+                <button onclick="finishQuiz()" class="bg-red-500 text-white px-6 py-3 rounded-xl">SELESAI SEKARANG</button>
+            </div>
+        </div>
+
+        <div id="power-up-area" class="fixed pointer-events-none inset-0 flex items-center justify-center"></div>
+
+        <footer class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t-2 border-gray-100 z-40">
+            <div class="max-w-xl mx-auto flex items-center gap-3">
+                <button onclick="prevQuestion()" class="p-4 bg-gray-100 rounded-2xl active:bg-gray-200">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button id="btn-ragu" onclick="toggleRagu()" class="flex-1 py-4 border-2 border-gray-200 rounded-2xl font-black text-sm uppercase tracking-tighter">
+                    🤔 RAGU-RAGU
+                </button>
+                <button id="btn-next" onclick="nextQuestion()" class="p-4 duo-btn-blue text-white rounded-2xl">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="screen-result" class="screen p-6 items-center justify-center">
+        <div class="w-full max-w-sm text-center">
+            <h1 class="text-4xl font-black text-blue-500 mb-8">HASIL AKHIR</h1>
+            <div class="relative mb-12 flex justify-center items-end gap-2">
+                <div class="w-20 bg-gray-200 h-20 rounded-t-xl flex flex-col justify-end pb-2 font-bold text-gray-500">2nd</div>
+                <div class="w-24 bg-yellow-400 h-32 rounded-t-xl shadow-lg flex flex-col justify-end pb-4 font-black text-white relative">
+                    <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-3xl">👑</span>
+                    1st
+                </div>
+                <div class="w-20 bg-orange-300 h-16 rounded-t-xl flex flex-col justify-end pb-2 font-bold text-white">3rd</div>
+            </div>
+            <div class="bg-white border-2 border-gray-100 rounded-[2.5rem] p-8 shadow-sm mb-8 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Skor</p>
+                    <p id="final-score" class="text-5xl font-black text-green-500">0</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Benar</p>
+                    <p id="final-correct" class="text-5xl font-black text-blue-500">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="w-full duo-btn-green text-white font-extrabold py-4 rounded-2xl text-xl shadow-lg">COBA LAGI</button>
+        </div>
+    </div>
+
+    <script>
+          const dbSoal = [
+    // IPA (25 soal)
+    { cat: "IPA", q: "Organel mana yang disebut 'Pembangkit Tenaga' sel?", img: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?w=500", o: ["Ribosom", "Mitokondria", "Lisosom", "Vakuola"], a: 1 },
+    { cat: "IPA", q: "Proses fotosintesis pada tumbuhan menghasilkan...", o: ["Oksigen dan air", "Oksigen dan glukosa", "Karbon dioksida dan air", "Karbon dioksida dan glukosa"], a: 1 },
+    { cat: "IPA", q: "Sistem peredaran darah manusia termasuk jenis peredaran darah...", o: ["Terbuka", "Setengah terbuka", "Tertutup", "Ganda"], a: 2 },
+    { cat: "IPA", q: "Bagian mata yang berfungsi mengatur banyaknya cahaya yang masuk adalah...", o: ["Kornea", "Iris", "Retina", "Lensa"], a: 1 },
+    { cat: "IPA", q: "Hukum Newton I dikenal juga dengan hukum...", o: ["Aksi-reaksi", "Gaya", "Kelembaman", "Gravitasi"], a: 2 },
+    { cat: "IPA", q: "Enzim yang berfungsi mencerna protein dalam lambung adalah...", o: ["Amilase", "Lipase", "Pepsin", "Tripsin"], a: 2 },
+    { cat: "IPA", q: "Planet terdekat dari matahari adalah...", o: ["Venus", "Bumi", "Merkurius", "Mars"], a: 2 },
+    { cat: "IPA", q: "Zat yang dihasilkan oleh kelenjar adrenal adalah...", o: ["Insulin", "Adrenalin", "Tiroksin", "Estrogen"], a: 1 },
+    { cat: "IPA", q: "Peralatan yang menggunakan prinsip induksi elektromagnetik adalah...", o: ["Baterai", "Generator", "Kapasitor", "Transformator"], a: 1 },
+    { cat: "IPA", q: "Peristiwa perubahan wujud dari padat menjadi gas disebut...", o: ["Mencair", "Menyublim", "Menguap", "Mengembun"], a: 1 },
+    { cat: "IPA", q: "Hewan yang berkembang biak dengan cara bertelur dan menyusui disebut...", o: ["Reptil", "Aves", "Marsupial", "Monotremata"], a: 3 },
+    { cat: "IPA", q: "Bunyi yang frekuensinya di atas 20.000 Hz disebut...", o: ["Infrasonik", "Audiosonik", "Ultrasonik", "Supersonik"], a: 2 },
+    { cat: "IPA", q: "Simbol kimia untuk unsur Natrium adalah...", o: ["Na", "N", "K", "Ca"], a: 0 },
+    { cat: "IPA", q: "Penyakit yang disebabkan oleh kekurangan vitamin C adalah...", o: ["Rakitis", "Skorbut", "Anemia", "Beriberi"], a: 1 },
+    { cat: "IPA", q: "Alat yang digunakan untuk mengukur tekanan darah adalah...", o: ["Termometer", "Sphygmomanometer", "Stetoskop", "Barometer"], a: 1 },
+    { cat: "IPA", q: "Contoh sumber energi terbarukan adalah...", o: ["Batu bara", "Minyak bumi", "Energi matahari", "Gas alam"], a: 2 },
+    { cat: "IPA", q: "Pada rantai makanan, organisme yang berperan sebagai produsen adalah...", o: ["Herbivora", "Karnivora", "Pengurai", "Tumbuhan hijau"], a: 3 },
+    { cat: "IPA", q: "Penyebab utama pemanasan global adalah meningkatnya gas... di atmosfer.", o: ["Oksigen", "Nitrogen", "Karbon dioksida", "Hidrogen"], a: 2 },
+    { cat: "IPA", q: "Bagian bunga yang berfungsi sebagai alat kelamin jantan adalah...", o: ["Putik", "Benang sari", "Mahkota", "Kelopak"], a: 1 },
+    { cat: "IPA", q: "Jenis gaya yang bekerja tanpa sentuhan langsung antar benda adalah...", o: ["Gaya gesek", "Gaya magnet", "Gaya otot", "Gaya pegas"], a: 1 },
+    { cat: "IPA", q: "Sistem ekskresi pada manusia melibatkan organ berikut, KECUALI...", o: ["Ginjal", "Paru-paru", "Hati", "Lambung"], a: 3 },
+    { cat: "IPA", q: "Satuan SI untuk kuat arus listrik adalah...", o: ["Volt", "Watt", "Ampere", "Ohm"], a: 2 },
+    { cat: "IPA", q: "Penyakit menular yang disebabkan oleh bakteri Mycobacterium tuberculosis adalah...", o: ["Tifus", "Tuberkulosis", "Kolera", "Difteri"], a: 1 },
+    { cat: "IPA", q: "Planet yang memiliki cincin paling jelas terlihat adalah...", img: "https://images.unsplash.com/photo-1447433819943-74a20887a81e?w=500", o: ["Jupiter", "Saturnus", "Uranus", "Neptunus"], a: 1 },
+    { cat: "IPA", q: "Pembelahan sel untuk pertumbuhan dan perbaikan jaringan disebut...", o: ["Meiosis", "Mitosis", "Fertilisasi", "Oogenesis"], a: 1 },
+
+    // MATEMATIKA (25 soal)
+    { cat: "MTK", q: "Hasil dari 12 x 12 - 44?", o: ["100", "88", "110", "120"], a: 0 },
+    { cat: "MTK", q: "Nilai dari 3⁻² adalah...", o: ["9", "1/9", "-9", "-1/9"], a: 1 },
+    { cat: "MTK", q: "Jika sebuah segitiga memiliki alas 10 cm dan tinggi 8 cm, luasnya adalah...", img: "https://images.unsplash.com/photo-1580983218765-f663bec07b37?w=500", o: ["40 cm²", "50 cm²", "60 cm²", "80 cm²"], a: 0 },
+    { cat: "MTK", q: "Bentuk sederhana dari 2x + 3y - x + 5y adalah...", o: ["x + 8y", "3x + 8y", "x - 2y", "3x - 2y"], a: 0 },
+    { cat: "MTK", q: "Persamaan garis yang melalui titik (2,3) dan bergradien 2 adalah...", o: ["y = 2x - 1", "y = 2x + 1", "y = -2x + 7", "y = 3x + 2"], a: 0 },
+    { cat: "MTK", q: "Faktor dari x² - 5x + 6 adalah...", o: ["(x-2)(x-3)", "(x+2)(x+3)", "(x-1)(x-6)", "(x+1)(x-6)"], a: 0 },
+    { cat: "MTK", q: "Hasil dari √144 + √64 adalah...", o: ["20", "22", "24", "28"], a: 0 },
+    { cat: "MTK", q: "Nilai rata-rata dari data 7, 8, 6, 9, 10 adalah...", o: ["7", "8", "9", "10"], a: 1 },
+    { cat: "MTK", q: "Bentuk desimal dari 3/8 adalah...", o: ["0.125", "0.25", "0.375", "0.5"], a: 2 },
+    { cat: "MTK", q: "Jika sebuah lingkaran memiliki jari-jari 7 cm, kelilingnya adalah... (π=22/7)", o: ["44 cm", "88 cm", "154 cm", "22 cm"], a: 0 },
+    { cat: "MTK", q: "Himpunan penyelesaian dari 2x - 4 = 10 adalah...", o: ["{3}", "{5}", "{7}", "{10}"], a: 2 },
+    { cat: "MTK", q: "Bilangan prima terkecil antara 20 dan 30 adalah...", o: ["21", "23", "27", "29"], a: 1 },
+    { cat: "MTK", q: "Nilai dari 5! (5 faktorial) adalah...", o: ["20", "60", "120", "720"], a: 2 },
+    { cat: "MTK", q: "Jika 2/3 = x/12, maka nilai x adalah...", o: ["6", "8", "10", "12"], a: 1 },
+    { cat: "MTK", q: "Volume kubus dengan panjang rusuk 5 cm adalah...", o: ["25 cm³", "100 cm³", "125 cm³", "150 cm³"], a: 2 },
+    { cat: "MTK", q: "Suku ke-10 dari barisan aritmatika 2, 5, 8, 11,... adalah...", o: ["26", "29", "32", "35"], a: 1 },
+    { cat: "MTK", q: "Diagram berikut menunjukkan 40% siswa suka Matematika. Jika total siswa 200, yang suka Matematika ada...", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500", o: ["40 orang", "80 orang", "100 orang", "120 orang"], a: 1 },
+    { cat: "MTK", q: "Hasil dari (2a)³ adalah...", o: ["2a³", "6a³", "8a³", "8a"], a: 2 },
+    { cat: "MTK", q: "Nilai dari 0,25 + 0,75 adalah...", o: ["0.5", "1.0", "1.5", "2.0"], a: 1 },
+    { cat: "MTK", q: "Jika log 100 = x, maka nilai x adalah...", o: ["1", "2", "10", "100"], a: 1 },
+    { cat: "MTK", q: "Bentuk persen dari 0,05 adalah...", o: ["0.05%", "0.5%", "5%", "50%"], a: 2 },
+    { cat: "MTK", q: "Panjang sisi miring segitiga siku-siku dengan sisi 6 cm dan 8 cm adalah...", o: ["10 cm", "12 cm", "14 cm", "20 cm"], a: 0 },
+    { cat: "MTK", q: "Peluang munculnya mata dadu genap pada pelemparan sebuah dadu adalah...", o: ["1/6", "1/3", "1/2", "2/3"], a: 2 },
+    { cat: "MTK", q: "Nilai maksimum dari fungsi f(x) = -x² + 4x + 5 adalah...", o: ["5", "7", "9", "11"], a: 2 },
+    { cat: "MTK", q: "Hasil dari 7² + 8² adalah...", o: ["49", "64", "113", "15"], a: 2 },
+
+    // IPS (25 soal)
+    { cat: "IPS", q: "Benua terkecil di dunia adalah...", o: ["Asia", "Eropa", "Australia", "Afrika"], a: 2 },
+    { cat: "IPS", q: "Ibukota negara Jepang adalah...", o: ["Seoul", "Beijing", "Tokyo", "Bangkok"], a: 2 },
+    { cat: "IPS", q: "Tokoh yang dikenal sebagai Bapak Pendidikan Indonesia adalah...", img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=500", o: ["Soekarno", "Ki Hajar Dewantara", "Moh. Hatta", "R.A. Kartini"], a: 1 },
+    { cat: "IPS", q: "Peristiwa Rengasdengklok terjadi pada tanggal...", o: ["15 Agustus 1945", "16 Agustus 1945", "17 Agustus 1945", "18 Agustus 1945"], a: 1 },
+    { cat: "IPS", q: "Peninggalan sejarah berupa candi Buddha terbesar di dunia adalah...", o: ["Borobudur", "Prambanan", "Mendut", "Pawon"], a: 0 },
+    { cat: "IPS", q: "Sistem ekonomi di mana segala kegiatan ekonomi diatur oleh pemerintah adalah...", o: ["Liberal", "Kapitalis", "Komando", "Campuran"], a: 2 },
+    { cat: "IPS", q: "Lembaga negara yang memiliki kewenangan mengubah UUD 1945 adalah...", o: ["Presiden", "DPR", "MK", "MPR"], a: 3 },
+    { cat: "IPS", q: "Pertempuran 10 November 1945 terjadi di kota...", o: ["Jakarta", "Bandung", "Semarang", "Surabaya"], a: 3 },
+    { cat: "IPS", q: "Organisasi perdagangan dunia adalah...", o: ["UNESCO", "WHO", "WTO", "IMF"], a: 2 },
+    { cat: "IPS", q: "Negara penghasil minyak terbesar di kawasan Timur Tengah adalah...", o: ["Irak", "Arab Saudi", "Iran", "Kuwait"], a: 1 },
+    { cat: "IPS", q: "Kerajaan Hindu pertama di Indonesia adalah...", o: ["Majapahit", "Sriwijaya", "Kutai", "Mataram"], a: 2 },
+    { cat: "IPS", q: "Pertukaran barang dengan barang dalam perdagangan disebut...", o: ["Ekspor", "Impor", "Barter", "Monopoli"], a: 2 },
+    { cat: "IPS", q: "Gunung tertinggi di Indonesia adalah...", o: ["Semeru", "Rinjani", "Kerinci", "Jaya Wijaya"], a: 3 },
+    { cat: "IPS", q: "Perjanjian yang mengakui kedaulatan Indonesia secara penuh setelah KMB adalah...", o: ["Perjanjian Renville", "Perjanjian Linggarjati", "Konferensi Meja Bundar", "Perjanjian Roem-Royen"], a: 2 },
+    { cat: "IPS", q: "Mata uang negara Thailand adalah...", o: ["Ringgit", "Baht", "Peso", "Dollar"], a: 1 },
+    { cat: "IPS", q: "Pahlawan nasional dari Aceh yang dikenal dengan perang gerilyanya melawan Belanda adalah...", o: ["Tuanku Imam Bonjol", "Pangeran Diponegoro", "Cut Nyak Dien", "Sultan Hasanuddin"], a: 2 },
+    { cat: "IPS", q: "Zaman ketika manusia sudah mengenal tulisan disebut zaman...", o: ["Paleolitikum", "Mesolitikum", "Neolitikum", "Sejarah"], a: 3 },
+    { cat: "IPS", q: "Lembaga yang bertugas mengawasi peredaran uang di Indonesia adalah...", o: ["BI", "OJK", "BEI", "KPK"], a: 0 },
+    { cat: "IPS", q: "Suku Asmat berasal dari pulau...", o: ["Jawa", "Sumatera", "Sulawesi", "Papua"], a: 3 },
+    { cat: "IPS", q: "Perang Dunia II berlangsung pada tahun...", o: ["1914-1918", "1939-1945", "1945-1950", "1950-1953"], a: 1 },
+    { cat: "IPS", q: "Bentuk pemerintahan Indonesia adalah...", o: ["Monarki", "Republik", "Kerajaan", "Kesultanan"], a: 1 },
+    { cat: "IPS", q: "Provinsi termuda di Indonesia (hingga 2025) adalah...", o: ["Kalimantan Utara", "Sulawesi Barat", "Papua Barat Daya", "Gorontalo"], a: 2 },
+    { cat: "IPS", q: "Tokoh proklamator Indonesia adalah...", o: ["Soekarno & Hatta", "Soekarno & Sjahrir", "Hatta & Syahrir", "Soekarno & Tan Malaka"], a: 0 },
+    { cat: "IPS", q: "Negara dengan jumlah penduduk terbesar di dunia adalah...", o: ["India", "Amerika Serikat", "Indonesia", "China"], a: 3 },
+    { cat: "IPS", q: "Kerajaan Islam pertama di Jawa adalah...", o: ["Demak", "Samudera Pasai", "Mataram", "Banten"], a: 0 },
+
+    // BAHASA INDONESIA (25 soal)
+    { cat: "B. IND", q: "Kata yang tepat untuk melengkapi kalimat: 'Ia ... buku di perpustakaan' adalah...", o: ["membaca", "dibaca", "terbaca", "pembaca"], a: 0 },
+    { cat: "B. IND", q: "Majas yang digunakan dalam kalimat 'Wajahnya cantik bagai bulan purnama' adalah...", o: ["Metafora", "Personifikasi", "Simile", "Hiperbola"], a: 2 },
+    { cat: "B. IND", q: "Imbuhan yang bermakna 'tidak' adalah...", o: ["ber-", "me-", "ter-", "tak-"], a: 3 },
+    { cat: "B. IND", q: "Sinonim dari kata 'bijaksana' adalah...", o: ["cerdas", "arif", "pandai", "kaya"], a: 1 },
+    { cat: "B. IND", q: "Kalimat yang menggunakan kata baku adalah...", o: ["Saya sudah makan tadi pagi.", "Kami sedang belajar di sekolah.", "Dia pergi kemarin sore.", "Apa kamu sudah mengerjakan PR?"], a: 1 },
+    { cat: "B. IND", q: "Langkah pertama dalam menulis teks eksposisi adalah...", o: ["Menentukan topik", "Membuat kesimpulan", "Mengumpulkan data", "Menulis draf"], a: 0 },
+    { cat: "B. IND", q: "Teks yang menceritakan pengalaman pribadi disebut...", o: ["Deskripsi", "Eksposisi", "Narasi", "Argumentasi"], a: 2 },
+    { cat: "B. IND", q: "Kalimat efektif adalah...", o: ["Kakak pergi ke toko membeli beberapa macam buah-buahan.", "Adik sedang membaca buku cerita yang sangat bagus.", "Ibu memasak di dapur untuk makan siang nanti.", "Dia datang terlambat karena bangun kesiangan."], a: 0 },
+    { cat: "B. IND", q: "Antonim dari kata 'murah' adalah...", o: ["hemat", "mahal", "sedikit", "banyak"], a: 1 },
+    { cat: "B. IND", q: "Pengarang novel 'Laskar Pelangi' adalah...", img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500", o: ["Tere Liye", "Andrea Hirata", "Dee Lestari", "Pramoedya Ananta Toer"], a: 1 },
+    { cat: "B. IND", q: "Kata 'rumah sakit' termasuk jenis kata...", o: ["Frasa", "Kata majemuk", "Kata dasar", "Ungkapan"], a: 1 },
+    { cat: "B. IND", q: "Surat yang ditulis untuk kepentingan resmi atau dinas disebut surat...", o: ["pribadi", "dinas", "niaga", "undangan"], a: 1 },
+    { cat: "B. IND", q: "Berikut yang termasuk kalimat fakta adalah...", o: ["Indonesia adalah negara terindah di dunia.", "Ibu kota Indonesia adalah Jakarta.", "Makanan itu sangat enak.", "Pemandangan pantai itu menakjubkan."], a: 1 },
+    { cat: "B. IND", q: "Tanda baca yang digunakan untuk memisahkan bagian-bagian dalam kalimat adalah...", o: ["Titik (.)", "Koma (,)", "Tanda seru (!)", "Tanda tanya (?)"], a: 1 },
+    { cat: "B. IND", q: "Puisi yang terdiri dari 4 baris dalam satu bait disebut...", o: ["soneta", "haiku", "pantun", "gurindam"], a: 2 },
+    { cat: "B. IND", q: "Kata 'selfie' merupakan contoh kata serapan dari bahasa...", o: ["Inggris", "Arab", "Sanskerta", "Jawa"], a: 0 },
+    { cat: "B. IND", q: "Kalimat yang mengandung konjungsi (kata hubung) waktu adalah...", o: ["Saya belajar agar lulus ujian.", "Ia makan lalu tidur.", "Ketika hujan turun, saya berada di rumah.", "Kamu harus rajin supaya pandai."], a: 2 },
+    { cat: "B. IND", q: "Imbuhan 'pe-' dalam kata 'pelari' memiliki makna...", o: ["yang melakukan", "tempat", "alat", "sifat"], a: 0 },
+    { cat: "B. IND", q: "Salah satu unsur intrinsik cerpen adalah...", o: ["Tokoh", "Latar belakang pengarang", "Biografi penulis", "Sejarah penerbitan"], a: 0 },
+    { cat: "B. IND", q: "Teks yang bertujuan menggambarkan objek secara detail disebut teks...", o: ["Prosedur", "Eksposisi", "Deskripsi", "Laporan"], a: 2 },
+    { cat: "B. IND", q: "Kalimat: 'Buku itu dibaca oleh adik.' adalah kalimat...", o: ["Aktif", "Pasif", "Transitif", "Intransitif"], a: 1 },
+    { cat: "B. IND", q: "Gagasan utama dalam sebuah paragraf disebut juga...", o: ["Kalimat penjelas", "Ide pokok", "Kesimpulan", "Pembuka"], a: 1 },
+    { cat: "B. IND", q: "Karya sastra berbentuk dialog yang dimaksudkan untuk dipentaskan disebut...", o: ["Puisi", "Prosa", "Drama", "Cerpen"], a: 2 },
+    { cat: "B. IND", q: "Penulisan alamat surat yang benar adalah...", o: ["Kepada Yth. Bapak Kepala Sekolah", "Yth. Bapak Kepala Sekolah", "Kpd. Yth. Bapak Kepala Sekolah", "Kepada Yth: Bapak Kepala Sekolah"], a: 1 },
+    { cat: "B. IND", q: "Kata ulang yang menyatakan 'banyak dan bermacam-macam' adalah...", o: ["rumah-rumah", "berjalan-jalan", "sayur-mayur", "mondar-mandir"], a: 2 }
+];
+        let userAnswer = new Array(dbSoal.length).fill(null);
+        let raguState = new Array(dbSoal.length).fill(false);
+        let currentIndex = 0;
+        let timeLeft = 3600; // 1 Jam (3600 Detik)
+        let timerInterval;
+        let totalScore = 0;
+        let correctCount = 0;
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function toggleBento() {
+            const el = document.getElementById('bento-overlay');
+            el.classList.toggle('hidden');
+            el.classList.toggle('flex');
+            if (!el.classList.contains('hidden')) renderBento();
+        }
+
+        function startQuiz() {
+            const name = document.getElementById('username').value;
+            if(!name) return;
+            showScreen('screen-quiz');
+            renderQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if (timeLeft <= 0) finishQuiz();
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            // Format HH:MM:SS
+            const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+            const m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            
+            const el = document.getElementById('timer-val');
+            el.innerText = `${h}:${m}:${s}`;
+            
+            if (timeLeft < 60) el.parentElement.classList.add('text-red-500', 'animate-pulse');
+            else el.parentElement.classList.remove('text-red-500', 'animate-pulse');
+        }
+
+        function renderQuestion() {
+            const q = dbSoal[currentIndex];
+            document.getElementById('q-category').innerText = q.cat;
+            document.getElementById('q-text').innerText = q.q;
+            
+            const imgCont = document.getElementById('img-container');
+            if(q.img) {
+                document.getElementById('q-image').src = q.img;
+                imgCont.classList.remove('hidden');
+            } else {
+                imgCont.classList.add('hidden');
+            }
+
+            const optCont = document.getElementById('options-container');
+            optCont.innerHTML = '';
+            
+            q.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn p-5 rounded-3xl text-left font-bold text-lg flex items-center gap-4`;
+                
+                if (userAnswers[currentIndex] !== null) {
+                    if (idx === q.a) btn.classList.add('correct');
+                    else if (idx === userAnswers[currentIndex]) btn.classList.add('wrong');
+                }
+
+                btn.innerHTML = `<span class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">${String.fromCharCode(65+idx)}</span> <span>${opt}</span>`;
+                
+                btn.onclick = () => {
+                    if (userAnswers[currentIndex] === null) selectOption(idx, btn);
+                };
+                optCont.appendChild(btn);
+            });
+
+            const raguBtn = document.getElementById('btn-ragu');
+            if (raguState[currentIndex]) raguBtn.classList.add('btn-ragu-active');
+            else raguBtn.classList.remove('btn-ragu-active');
+        }
+
+        function selectOption(idx, btnEl) {
+            const q = dbSoal[currentIndex];
+            userAnswers[currentIndex] = idx;
+            
+            if (idx === q.a) {
+                btnEl.classList.add('correct');
+                correctCount++;
+                totalScore += 2;
+                spawnPowerUp("+5s");
+                timeLeft += 5; // Power-up bonus waktu
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
+            } else {
+                btnEl.classList.add('wrong');
+                setTimeout(() => renderQuestion(), 300);
+            }
+            updateTimerUI();
+            setTimeout(() => nextQuestion(), 800);
+        }
+
+        function spawnPowerUp(txt) {
+            const el = document.createElement('div');
+            el.className = 'power-up-anim text-2xl font-black';
+            el.innerText = txt;
+            document.getElementById('power-up-area').appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function toggleRagu() {
+            raguState[currentIndex] = !raguState[currentIndex];
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentIndex < dbSoal.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                toggleBento();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function renderBento() {
+            const grid = document.getElementById('bento-grid');
+            grid.innerHTML = '';
+            dbSoal.forEach((_, i) => {
+                const box = document.createElement('div');
+                box.className = 'bento-item ';
+                box.innerText = i + 1;
+                
+                if (raguState[i]) box.classList.add('bg-yellow-400', 'text-white');
+                else if (userAnswers[i] !== null) box.classList.add('bg-blue-500', 'text-white');
+                else box.classList.add('bg-gray-200', 'text-gray-400');
+
+                if (i === currentIndex) box.classList.add('ring-4', 'ring-blue-200');
+
+                box.onclick = () => {
+                    currentIndex = i;
+                    renderQuestion();
+                    toggleBento();
+                };
+                grid.appendChild(box);
+            });
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById('final-score').innerText = totalScore;
+            document.getElementById('final-correct').innerText = correctCount;
+            showScreen('screen-result');
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>
+
