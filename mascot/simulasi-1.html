@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WUIZZIZZ: QUIZ APPS</title>
+    <title>TRY OUT MASCOT 2K26</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -125,20 +125,20 @@
 </head>
 <body>
 
-    <div class="watermark">ѕтυ∂єƙαѕα</div>
+    <div class="watermark">DEVELOPED BY ZAM ZAM</div>
 
     <!-- START SCREEN -->
     <div id="screen-login" class="screen active p-6 items-center justify-center">
         <div class="w-full max-w-sm text-center">
             <div class="text-6xl mb-2 animate-bounce">💡</div>
-            <h1 class="text-4xl font-black text-blue-500 mb-1">WUIZZIZZ</h1>
-            <p class="text-sm font-bold text-gray-400 mb-8 uppercase tracking-widest">Quiz Apps</p>
+            <h1 class="text-4xl font-black text-blue-500 mb-1">SIMULASI MASCOT 2K26</h1>
+            <p class="text-sm font-bold text-gray-400 mb-8 uppercase tracking-widest">Quiz Apps - PAKET 1</p>
             
             <div class="bg-white p-6 rounded-[2rem] shadow-xl border-2 border-gray-100 mb-8">
                 <input type="text" id="username" placeholder="Namamu, Juara..." class="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-blue-400 outline-none text-center font-bold text-lg mb-4">
                 <button onclick="startQuiz()" class="w-full duo-btn-green text-white font-extrabold py-4 rounded-2xl text-xl">GASPOL!</button>
             </div>
-            <p class="text-[10px] text-gray-300">ZOREY © 2025 • DEVELOPED BY ZAM ZAM</p>
+            <p class="text-[10px] text-gray-300">WUIZZIZZ © 2025 • DEVELOPED BY ZAM ZAM</p>
         </div>
     </div>
 
@@ -147,7 +147,7 @@
         <!-- Floating HUD -->
         <div class="fixed top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-none">
             <div id="quiz-timer" class="timer-badge font-black text-lg flex items-center gap-2 pointer-events-auto shadow-sm">
-                ⏱️ <span id="timer-val">00:00</span>
+                ⏱️ <span id="timer-val">01:00:00</span>
             </div>
             <button onclick="toggleBento()" class="p-3 bg-white border-2 border-gray-200 rounded-2xl pointer-events-auto shadow-sm active:scale-95 transition-transform">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -161,32 +161,23 @@
 
         <main class="flex-grow flex flex-col p-6 pt-20 pb-28 overflow-y-auto">
             <div class="max-w-xl mx-auto w-full">
-                <!-- Image Holder -->
                 <div id="img-container" class="mb-4 hidden">
                     <img id="q-image" src="" class="w-full max-h-48 object-cover rounded-3xl border-4 border-white shadow-md">
                 </div>
-
                 <div class="mb-4">
                     <span id="q-category" class="bg-blue-100 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">Kategori</span>
                 </div>
-                
                 <h2 id="q-text" class="font-extrabold text-gray-800 mb-8">Pertanyaan?</h2>
-
-                <div id="options-container" class="grid gap-3">
-                    <!-- Options injected here -->
-                </div>
+                <div id="options-container" class="grid gap-3"></div>
             </div>
         </main>
 
-        <!-- Bento Menu Overlay -->
         <div id="bento-overlay" class="fixed inset-0 bg-white/95 z-[60] hidden p-8 flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="font-black text-2xl">NAVIGASI SOAL</h3>
                 <button onclick="toggleBento()" class="text-4xl font-light">×</button>
             </div>
-            <div id="bento-grid" class="grid grid-cols-5 gap-3 overflow-y-auto pr-2">
-                <!-- Bento boxes here -->
-            </div>
+            <div id="bento-grid" class="grid grid-cols-5 gap-3 overflow-y-auto pr-2"></div>
             <div class="mt-auto pt-6 flex justify-between items-center text-xs font-bold text-gray-400">
                 <div class="flex gap-4">
                     <span>🔵 Terisi</span>
@@ -196,10 +187,8 @@
             </div>
         </div>
 
-        <!-- Power Up Container -->
         <div id="power-up-area" class="fixed pointer-events-none inset-0 flex items-center justify-center"></div>
 
-        <!-- Sticky Footer -->
         <footer class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t-2 border-gray-100 z-40">
             <div class="max-w-xl mx-auto flex items-center gap-3">
                 <button onclick="prevQuestion()" class="p-4 bg-gray-100 rounded-2xl active:bg-gray-200">
@@ -219,7 +208,6 @@
     <div id="screen-result" class="screen p-6 items-center justify-center">
         <div class="w-full max-w-sm text-center">
             <h1 class="text-4xl font-black text-blue-500 mb-8">HASIL AKHIR</h1>
-            
             <div class="relative mb-12 flex justify-center items-end gap-2">
                 <div class="w-20 bg-gray-200 h-20 rounded-t-xl flex flex-col justify-end pb-2 font-bold text-gray-500">2nd</div>
                 <div class="w-24 bg-yellow-400 h-32 rounded-t-xl shadow-lg flex flex-col justify-end pb-4 font-black text-white relative">
@@ -228,7 +216,6 @@
                 </div>
                 <div class="w-20 bg-orange-300 h-16 rounded-t-xl flex flex-col justify-end pb-2 font-bold text-white">3rd</div>
             </div>
-
             <div class="bg-white border-2 border-gray-100 rounded-[2.5rem] p-8 shadow-sm mb-8 grid grid-cols-2 gap-4">
                 <div>
                     <p class="text-[10px] font-black text-gray-400 uppercase">Skor</p>
@@ -239,13 +226,11 @@
                     <p id="final-correct" class="text-5xl font-black text-blue-500">0</p>
                 </div>
             </div>
-
             <button onclick="location.reload()" class="w-full duo-btn-green text-white font-extrabold py-4 rounded-2xl text-xl shadow-lg">COBA LAGI</button>
         </div>
     </div>
 
     <script>
-        // Database Soal
         const dbSoal = [
     // IPA (25 soal)
     { cat: "IPA", q: "Organel mana yang disebut 'Pembangkit Tenaga' sel?", img: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?w=500", o: ["Ribosom", "Mitokondria", "Lisosom", "Vakuola"], a: 1 },
@@ -356,15 +341,13 @@
     { cat: "B. IND", q: "Kata ulang yang menyatakan 'banyak dan bermacam-macam' adalah...", o: ["rumah-rumah", "berjalan-jalan", "sayur-mayur", "mondar-mandir"], a: 2 }
 ];
 
-        // State
         let userAnswers = new Array(dbSoal.length).fill(null);
         let raguState = new Array(dbSoal.length).fill(false);
         let currentIndex = 0;
-        let timeLeft = 60;
+        let timeLeft = 3600; // 1 Jam (3600 Detik)
         let timerInterval;
         let totalScore = 0;
         let correctCount = 0;
-        let lastActionTime = Date.now();
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -427,7 +410,6 @@
                 const btn = document.createElement('button');
                 btn.className = `option-btn p-5 rounded-3xl text-left font-bold text-lg flex items-center gap-4`;
                 
-                // Jika sudah dijawab, tampilkan statusnya
                 if (userAnswers[currentIndex] !== null) {
                     if (idx === q.a) btn.classList.add('correct');
                     else if (idx === userAnswers[currentIndex]) btn.classList.add('wrong');
@@ -444,8 +426,6 @@
             const raguBtn = document.getElementById('btn-ragu');
             if (raguState[currentIndex]) raguBtn.classList.add('btn-ragu-active');
             else raguBtn.classList.remove('btn-ragu-active');
-
-            lastActionTime = Date.now();
         }
 
         function selectOption(idx, btnEl) {
@@ -457,16 +437,13 @@
                 correctCount++;
                 totalScore += 2;
                 spawnPowerUp("+5s");
-                timeLeft += 5;
+                timeLeft += 5; // Power-up bonus waktu
                 confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
             } else {
                 btnEl.classList.add('wrong');
-                // Tampilkan jawaban yang benar juga
                 setTimeout(() => renderQuestion(), 300);
             }
             updateTimerUI();
-            
-            // Auto next after delay
             setTimeout(() => nextQuestion(), 800);
         }
 
@@ -488,7 +465,7 @@
                 currentIndex++;
                 renderQuestion();
             } else {
-                toggleBento(); // Buka bento untuk review akhir
+                toggleBento();
             }
         }
 
@@ -527,12 +504,7 @@
             document.getElementById('final-score').innerText = totalScore;
             document.getElementById('final-correct').innerText = correctCount;
             showScreen('screen-result');
-            
-            confetti({
-                particleCount: 200,
-                spread: 100,
-                origin: { y: 0.6 }
-            });
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
         }
     </script>
 </body>
