@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRY OUT MASCOT 2K26</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --duo-green: #58cc02;
+            --duo-green-dark: #46a302;
+            --duo-blue: #1cb0f6;
+            --duo-blue-dark: #1899d6;
+            --duo-red: #ff4b4b;
+            --duo-yellow: #ffc800;
+            --duo-gray: #e5e5e5;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f9fa;
+            color: #4b4b4b;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .duo-btn-green {
+            background-color: var(--duo-green);
+            border-bottom: 5px solid var(--duo-green-dark);
+            transition: all 0.1s;
+        }
+        .duo-btn-green:active {
+            border-bottom-width: 0;
+            transform: translateY(4px);
+        }
+
+        .duo-btn-blue {
+            background-color: var(--duo-blue);
+            border-bottom: 5px solid var(--duo-blue-dark);
+        }
+        .duo-btn-blue:active {
+            border-bottom-width: 0;
+            transform: translateY(4px);
+        }
+
+        .option-btn {
+            background-color: #fff;
+            border: 2px solid var(--duo-gray);
+            border-bottom: 5px solid var(--duo-gray);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .option-btn.correct {
+            background-color: #d7ffb8;
+            border-color: #58cc02;
+            border-bottom-color: #46a302;
+            color: #46a302;
+        }
+        .option-btn.wrong {
+            background-color: #ffdfe0;
+            border-color: #ff4b4b;
+            border-bottom-color: #ea2b2b;
+            color: #ea2b2b;
+        }
+
+        .bento-item {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-bottom: 4px solid rgba(0,0,0,0.1);
+        }
+
+        .power-up-anim {
+            animation: float-up 1s ease-out forwards;
+            position: absolute;
+            color: var(--duo-green);
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        .timer-badge {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 2px solid var(--duo-gray);
+            border-radius: 20px;
+            padding: 4px 16px;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 4rem;
+            font-weight: 900;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .screen { display: none; height: 100vh; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        #q-text { font-size: clamp(1.25rem, 5vw, 1.75rem); line-height: 1.3; }
+
+        .btn-ragu-active {
+            background-color: #fff9e6 !important;
+            border-color: #ffc800 !important;
+            color: #856404 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="watermark">ѕтυ∂єƙαѕα</div>
+
+    <!-- START SCREEN -->
+    <div id="screen-login" class="screen active p-6 items-center justify-center">
+        <div class="w-full max-w-sm text-center">
+            <div class="text-6xl mb-2 animate-bounce">💡</div>
+            <h1 class="text-4xl font-black text-blue-500 mb-1">SIMULASI MASCOT 2K26</h1>
+            <p class="text-sm font-bold text-gray-400 mb-8 uppercase tracking-widest">Quiz Apps - PAKET 1</p>
+            
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-2 border-gray-100 mb-8">
+                <input type="text" id="username" placeholder="Namamu, Juara..." class="w-full p-4 rounded-2xl border-2 border-gray-100 focus:border-blue-400 outline-none text-center font-bold text-lg mb-4">
+                <button onclick="startQuiz()" class="w-full duo-btn-green text-white font-extrabold py-4 rounded-2xl text-xl">GASPOL!</button>
+            </div>
+            <p class="text-[10px] text-gray-300">WUIZZIZZ © 2025 • DEVELOPED BY ZAM ZAM</p>
+        </div>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="screen-quiz" class="screen">
+        <!-- Floating HUD -->
+        <div class="fixed top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-none">
+            <div id="quiz-timer" class="timer-badge font-black text-lg flex items-center gap-2 pointer-events-auto shadow-sm">
+                ⏱️ <span id="timer-val">01:00:00</span>
+            </div>
+            <button onclick="toggleBento()" class="p-3 bg-white border-2 border-gray-200 rounded-2xl pointer-events-auto shadow-sm active:scale-95 transition-transform">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="2" fill="#1CB0F6"/>
+                    <rect x="14" y="3" width="7" height="7" rx="2" fill="#58CC02"/>
+                    <rect x="3" y="14" width="7" height="7" rx="2" fill="#FFC800"/>
+                    <rect x="14" y="14" width="7" height="7" rx="2" fill="#FF4B4B"/>
+                </svg>
+            </button>
+        </div>
+
+        <main class="flex-grow flex flex-col p-6 pt-20 pb-28 overflow-y-auto">
+            <div class="max-w-xl mx-auto w-full">
+                <div id="img-container" class="mb-4 hidden">
+                    <img id="q-image" src="" class="w-full max-h-48 object-cover rounded-3xl border-4 border-white shadow-md">
+                </div>
+                <div class="mb-4">
+                    <span id="q-category" class="bg-blue-100 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">Kategori</span>
+                </div>
+                <h2 id="q-text" class="font-extrabold text-gray-800 mb-8">Pertanyaan?</h2>
+                <div id="options-container" class="grid gap-3"></div>
+            </div>
+        </main>
+
+        <div id="bento-overlay" class="fixed inset-0 bg-white/95 z-[60] hidden p-8 flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-2xl">NAVIGASI SOAL</h3>
+                <button onclick="toggleBento()" class="text-4xl font-light">×</button>
+            </div>
+            <div id="bento-grid" class="grid grid-cols-5 gap-3 overflow-y-auto pr-2"></div>
+            <div class="mt-auto pt-6 flex justify-between items-center text-xs font-bold text-gray-400">
+                <div class="flex gap-4">
+                    <span>🔵 Terisi</span>
+                    <span>🟡 Ragu</span>
+                </div>
+                <button onclick="finishQuiz()" class="bg-red-500 text-white px-6 py-3 rounded-xl">SELESAI SEKARANG</button>
+            </div>
+        </div>
+
+        <div id="power-up-area" class="fixed pointer-events-none inset-0 flex items-center justify-center"></div>
+
+        <footer class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t-2 border-gray-100 z-40">
+            <div class="max-w-xl mx-auto flex items-center gap-3">
+                <button onclick="prevQuestion()" class="p-4 bg-gray-100 rounded-2xl active:bg-gray-200">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button id="btn-ragu" onclick="toggleRagu()" class="flex-1 py-4 border-2 border-gray-200 rounded-2xl font-black text-sm uppercase tracking-tighter">
+                    🤔 RAGU-RAGU
+                </button>
+                <button id="btn-next" onclick="nextQuestion()" class="p-4 duo-btn-blue text-white rounded-2xl">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="screen-result" class="screen p-6 items-center justify-center">
+        <div class="w-full max-w-sm text-center">
+            <h1 class="text-4xl font-black text-blue-500 mb-8">HASIL AKHIR</h1>
+            <div class="relative mb-12 flex justify-center items-end gap-2">
+                <div class="w-20 bg-gray-200 h-20 rounded-t-xl flex flex-col justify-end pb-2 font-bold text-gray-500">2nd</div>
+                <div class="w-24 bg-yellow-400 h-32 rounded-t-xl shadow-lg flex flex-col justify-end pb-4 font-black text-white relative">
+                    <span class="absolute -top-8 left-1/2 -translate-x-1/2 text-3xl">👑</span>
+                    1st
+                </div>
+                <div class="w-20 bg-orange-300 h-16 rounded-t-xl flex flex-col justify-end pb-2 font-bold text-white">3rd</div>
+            </div>
+            <div class="bg-white border-2 border-gray-100 rounded-[2.5rem] p-8 shadow-sm mb-8 grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Skor</p>
+                    <p id="final-score" class="text-5xl font-black text-green-500">0</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Benar</p>
+                    <p id="final-correct" class="text-5xl font-black text-blue-500">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="w-full duo-btn-green text-white font-extrabold py-4 rounded-2xl text-xl shadow-lg">COBA LAGI</button>
+        </div>
+    </div>
+
+    <script>
+        const dbSoalHOTS = [
+    // IPA HOTS (25 soal)
+    { cat: "IPA", q: "Sebuah percobaan menunjukkan tanaman diletakkan di ruang gelap selama seminggu. Warna daun berubah menjadi pucat kekuningan. Analisis yang paling tepat untuk fenomena ini adalah...", img: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500", o: ["Tanaman mengalami dehidrasi", "Pembentukan klorofil terhambat karena tidak ada cahaya", "Tanaman mengalami kelebihan air", "Proses respirasi terhenti"], a: 1 },
+    { cat: "IPA", q: "Data percobaan: Larutan A mengubah lakmus biru menjadi merah, larutan B tidak mengubah warna lakmus. Jika dicampur, pH campuran menjadi 7. Kesimpulan yang tepat adalah...", o: ["A basa kuat, B asam kuat", "A asam, B basa dengan kekuatan seimbang", "A asam, B netral", "A basa, B asam lemah"], a: 1 },
+    { cat: "IPA", q: "Perhatikan rantai makanan: Padi → tikus → ular → elang. Jika populasi ular diburu manusia hingga hampir punah, prediksi yang paling mungkin terjadi adalah...", o: ["Populasi elang meningkat, padi menurun", "Populasi tikus meningkat tajam, padi rusak parah", "Populasi elang langsung punah", "Tidak ada perubahan signifikan"], a: 1 },
+    { cat: "IPA", q: "Sebuah benda dilempar vertikal ke atas dengan kecepatan awal 20 m/s. Jika g = 10 m/s², kapan energi kinetik benda sama dengan energi potensialnya? (abaikan gesekan udara)", o: ["Saat kecepatan 10 m/s", "Saat ketinggian 10 m", "Saat benda di titik tertinggi", "Saat kecepatan 15 m/s"], a: 0 },
+    { cat: "IPA", q: "Pasien dengan gejala sering haus, banyak kencing, berat badan turun drastis. Hasil tes gula darah tinggi. Gangguan organ apakah yang paling mungkin?", o: ["Hati", "Pankreas", "Ginjal", "Usus halus"], a: 1 },
+    { cat: "IPA", q: "Perhatikan sirkuit listrik dengan 3 resistor paralel (2Ω, 3Ω, 6Ω) dihubungkan seri dengan resistor 4Ω. Jika arus total 3A, berapa tegangan sumber?", o: ["12V", "18V", "24V", "30V"], a: 2 },
+    { cat: "IPA", q: "Es massa 100g suhu -10°C dipanaskan hingga menjadi air 50°C. Kalor jenis es 2100 J/kg°C, kalor lebur es 336.000 J/kg, kalor jenis air 4200 J/kg°C. Berapa total kalor yang dibutuhkan?", o: ["73.500 J", "84.100 J", "92.300 J", "105.000 J"], a: 1 },
+    { cat: "IPA", q: "Dua planet A dan B mengorbit matahari. Periode orbit A 8 tahun, jarak A ke matahari 4 AU. Jika periode orbit B 1 tahun, berapa jarak B ke matahari? (Hukum Kepler III)", o: ["1 AU", "2 AU", "0.5 AU", "4 AU"], a: 0 },
+    { cat: "IPA", q: "Pasangan DNA: A-T, G-C. Jika suatu untaian DNA memiliki basa 30% Adenin, berapa persen Guanin?", o: ["20%", "30%", "40%", "70%"], a: 0 },
+    { cat: "IPA", q: "Logam X dapat mendesak logam Y dari larutan garamnya, tetapi tidak dapat mendesak logam Z. Logam Z dapat mendesak logam Y. Urutan kekuatan reduktor dari kuat ke lemah adalah...", o: ["X > Z > Y", "Z > X > Y", "Y > X > Z", "X > Y > Z"], a: 0 },
+    { cat: "IPA", q: "Sebuah transformator step-down dengan efisiensi 90% memiliki Np:Ns = 10:1. Jika daya primer 200W, berapa arus sekunder jika tegangan sekunder 12V?", o: ["12 A", "13.5 A", "15 A", "18 A"], a: 2 },
+    { cat: "IPA", q: "Sebuah lensa cembung (f=20cm) membentuk bayangan nyata dengan perbesaran 2 kali. Jarak benda dari lensa adalah...", o: ["10 cm", "15 cm", "30 cm", "40 cm"], a: 2 },
+    { cat: "IPA", q: "Ditemukan fosil dengan kandungan C-14 tersisa 25% dari semula. Jika waktu paruh C-14 5730 tahun, perkiraan usia fosil tersebut adalah...", o: ["5730 tahun", "11460 tahun", "17190 tahun", "22920 tahun"], a: 1 },
+    { cat: "IPA", q: "Data: (1) Angiospermae (2) Paku (3) Lumut (4) Ganggang hijau. Urutan evolusi tumbuhan dari yang paling primitif adalah...", o: ["4-3-2-1", "3-4-2-1", "4-2-3-1", "1-2-3-4"], a: 0 },
+    { cat: "IPA", q: "Senyawa dengan rumus C₄H₁₀O memiliki isomer gugus fungsi alkohol sebanyak...", o: ["3", "4", "5", "6"], a: 1 },
+    { cat: "IPA", q: "Sebuah benda bergerak melingkar beraturan dengan periode 0.5 s dan jari-jari 2 m. Percepatan sentripetalnya adalah... (π²≈10)", o: ["80 m/s²", "160 m/s²", "320 m/s²", "640 m/s²"], a: 2 },
+    { cat: "IPA", q: "Pada persilangan dihibrida (AaBb × AaBb), persentase keturunan dengan genotip AABB adalah...", o: ["6.25%", "12.5%", "25%", "50%"], a: 0 },
+    { cat: "IPA", q: "Jika suhu mutlak gas ideal dinaikkan menjadi 4 kali semula dan volumenya dijadikan 1/2 kali semula, maka tekanan gas menjadi... kali semula.", o: ["2", "4", "6", "8"], a: 3 },
+    { cat: "IPA", q: "Sebuah sistem ekologi mengalami eutrofikasi akibat limbah pupuk. Prediksi jangka panjang yang paling tepat adalah...", o: ["Populasi ikan meningkat", "Kadar oksigen terlarut meningkat", "Ledakan populasi alga diikuti kematian ikan massal", "Keanekaragaman hayati meningkat"], a: 2 },
+    { cat: "IPA", q: "Sebuah sel darah merah dimasukkan ke dalam larutan hipertonik. Peristiwa yang terjadi adalah...", img: "https://images.unsplash.com/photo-1631815589967-b2b2d4c5f30d?w=500", o: ["Sel mengembang dan mungkin pecah", "Sel mengerut (krenasi)", "Sel tetap normal", "Sel membelah diri"], a: 1 },
+    { cat: "IPA", q: "Reaksi: 2H₂ + O₂ → 2H₂O + energi. Jika volume H₂ 10 L (STP), berapa energi yang dihasilkan? (∆H = -286 kJ/mol)", o: ["-127.5 kJ", "-255 kJ", "-510 kJ", "-1020 kJ"], a: 1 },
+    { cat: "IPA", q: "Sebuah balok (ρ=0.8 g/cm³) mengapung di air. Persentase volume balok yang tercelup adalah...", o: ["20%", "40%", "60%", "80%"], a: 3 },
+    { cat: "IPA", q: "Sinar laser dengan panjang gelombang 600 nm melewati celah tunggal lebar 0.12 mm. Jarak pita gelap pertama ke terang pusat pada layar 2 m adalah...", o: ["2 mm", "5 mm", "10 mm", "20 mm"], a: 2 },
+    { cat: "IPA", q: "Urutan saluran pencernaan: mulut → A → lambung → B → usus besar. Jika B disumbat, dampak utama adalah...", o: ["Penyerapan air terganggu", "Penyerapan protein terganggu", "Penyerapan glukosa terganggu", "Pencernaan lemak terhambat"], a: 0 },
+    { cat: "IPA", q: "Sebuah reaksi: A + B → C memiliki data: [A] tetap, [B] dinaikkan 2x → laju naik 4x; [B] tetap, [A] dinaikkan 2x → laju naik 2x. Orde reaksi total adalah...", o: ["1", "2", "3", "4"], a: 2 },
+
+    // MATEMATIKA HOTS (25 soal)
+    { cat: "MTK", q: "Diketahui f(x) = 2x - 3 dan g(x) = x² + 1. Nilai dari (f∘g)(2) adalah...", o: ["1", "3", "5", "7"], a: 1 },
+    { cat: "MTK", q: "Sebuah fungsi kuadrat memiliki titik puncak (2, -1) dan melalui (0, 3). Persamaan fungsi tersebut adalah...", o: ["y = x² - 4x + 3", "y = 2x² - 8x + 3", "y = x² + 4x - 3", "y = -x² + 4x - 3"], a: 0 },
+    { cat: "MTK", q: "Diketahui barisan geometri: 2, 6, 18, ... Jumlah 6 suku pertama adalah...", o: ["242", "364", "486", "728"], a: 3 },
+    { cat: "MTK", q: "Sebuah segitiga siku-siku memiliki sisi miring 13 cm dan salah satu sisi lainnya 5 cm. Jika segitiga tersebut diperbesar sehingga sisi miringnya menjadi 39 cm, luas segitiga baru adalah...", img: "https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?w=500", o: ["54 cm²", "108 cm²", "135 cm²", "270 cm²"], a: 3 },
+    { cat: "MTK", q: "Himpunan penyelesaian dari sistem persamaan: 2x + y = 7 dan x² - y = 1 adalah...", o: ["{(2,3), (-4,15)}", "{(2,3)}", "{(-2,11), (3,1)}", "{(3,1), (-2,5)}"], a: 0 },
+    { cat: "MTK", q: "Dalam kantong terdapat 5 bola merah, 3 biru, dan 2 hijau. Diambil 2 bola sekaligus. Peluang terambil keduanya berbeda warna adalah...", o: ["1/4", "31/45", "11/45", "7/15"], a: 1 },
+    { cat: "MTK", q: "Diketahui log 2 = 0.3010, log 3 = 0.4771. Nilai dari log √72 adalah...", o: ["0.8781", "0.9286", "1.4281", "1.9286"], a: 1 },
+    { cat: "MTK", q: "Sebuah lingkaran memiliki persamaan x² + y² - 6x + 4y - 12 = 0. Panjang jari-jarinya adalah...", o: ["3", "4", "5", "6"], a: 2 },
+    { cat: "MTK", q: "Diketahui matriks A = [[2,1],[3,4]] dan B = [[1,0],[-1,2]]. Hasil dari A × B adalah...", o: ["[[1,2],[2,8]]", "[[2,0],[-3,8]]", "[[1,2],[-1,8]]", "[[3,2],[1,12]]"], a: 2 },
+    { cat: "MTK", q: "Nilai maksimum dari fungsi f(x) = -2x² + 8x + 5 pada interval 0 ≤ x ≤ 3 adalah...", o: ["5", "11", "13", "15"], a: 2 },
+    { cat: "MTK", q: "Diketahui vektor a = (3, -2) dan b = (1, 4). Proyeksi skalar orthogonal vektor a pada b adalah...", o: ["-1", "-√5", "√5", "5"], a: 0 },
+    { cat: "MTK", q: "Turunan pertama dari f(x) = (2x - 1)³(x + 2) adalah f'(x) = ...", o: ["3(2x-1)²(x+2)+(2x-1)³", "6(2x-1)²(x+2)+(2x-1)³", "3(2x-1)²(3x+5)", "6(2x-1)²(3x+1)"], a: 3 },
+    { cat: "MTK", q: "Diketahui sin α = 3/5 dengan α sudut lancip. Nilai dari tan 2α adalah...", o: ["12/25", "24/7", "24/25", "7/24"], a: 1 },
+    { cat: "MTK", q: "Nilai dari lim(x→2) (x² - 4)/(x - 2) adalah...", o: ["0", "2", "4", "tidak ada"], a: 2 },
+    { cat: "MTK", q: "Sebuah dadu dan uang logam dilempar bersama. Peluang muncul mata dadu prima dan gambar pada uang logam adalah...", o: ["1/4", "1/3", "1/2", "2/3"], a: 0 },
+    { cat: "MTK", q: "Diketahui kubus ABCD.EFGH dengan panjang rusuk 6 cm. Jarak titik B ke bidang DEG adalah...", o: ["2√3 cm", "3√2 cm", "4 cm", "6 cm"], a: 0 },
+    { cat: "MTK", q: "Integral dari ∫(3x² - 2x + 1) dx adalah...", o: ["x³ - x² + x + C", "x³ - x² + C", "3x³ - 2x² + x + C", "6x - 2 + C"], a: 0 },
+    { cat: "MTK", q: "Suku banyak f(x) = 2x³ - 5x² + ax + b dibagi (x-1) bersisa 4, dibagi (x+1) bersisa -2. Nilai a + b = ...", o: ["-3", "-1", "1", "3"], a: 3 },
+    { cat: "MTK", q: "Persamaan garis singgung lingkaran x² + y² = 25 di titik (3,4) adalah...", o: ["3x + 4y = 25", "4x + 3y = 25", "3x - 4y = 25", "4x - 3y = 25"], a: 0 },
+    { cat: "MTK", q: "Diketahui f(x) = 2ˣ dan g(x) = log₂ x. Nilai dari (f∘g)(8) + (g∘f)(3) adalah...", o: ["10", "11", "12", "13"], a: 1 },
+    { cat: "MTK", q: "Nilai rata-rata 10 bilangan adalah 55. Jika ditambahkan 2 bilangan baru, rata-ratanya menjadi 60. Rata-rata kedua bilangan baru tersebut adalah...", o: ["70", "75", "80", "85"], a: 3 },
+    { cat: "MTK", q: "Diketahui fungsi f(x) = |2x - 4|. Nilai f'(2) adalah...", o: ["-2", "0", "2", "tidak ada"], a: 3 },
+    { cat: "MTK", q: "Banyaknya bilangan 4 digit berbeda yang dapat dibentuk dari angka 1,2,3,4,5,6 dan habis dibagi 5 adalah...", o: ["24", "60", "120", "720"], a: 1 },
+    { cat: "MTK", q: "Diketahui limas segiempat beraturan T.ABCD dengan AB = 8 cm dan TA = 10 cm. Volume limas adalah...", o: ["128√2 cm³", "256√2/3 cm³", "512/3 cm³", "256 cm³"], a: 1 },
+    { cat: "MTK", q: "Jika 2ˣ⁺² = 16³⁻ˣ, maka nilai x = ...", o: ["-1", "0", "1", "2"], a: 2 },
+
+    // IPS HOTS (25 soal)
+    { cat: "IPS", q: "Analisis dampak Revolusi Industri 4.0 terhadap struktur ketenagakerjaan di Indonesia adalah...", img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=500", o: ["Meningkatnya permintaan tenaga kerja sektor pertanian", "Berkurangnya pekerjaan rutin, meningkatnya kebutuhan skill digital", "Stabilnya lapangan kerja di sektor manufaktur", "Hilangnya seluruh pekerjaan di sektor jasa"], a: 1 },
+    { cat: "IPS", q: "Jika pemerintah menaikkan suku bunga acuan (BI Rate) secara signifikan, prediksi yang paling tepat terhadap perekonomian adalah...", o: ["Investasi asing langsung masuk deras", "Inflasi meningkat pesat", "Nilai tukar rupiah menguat", "Kredit usaha rakyat meningkat"], a: 2 },
+    { cat: "IPS", q: "Perbedaan utama sistem ekonomi campuran dengan sistem ekonomi komando terletak pada...", o: ["Peran pemerintah dalam alokasi sumber daya", "Kepemilikan alat produksi", "Mekanisme harga", "Kebebasan individu dalam konsumsi"], a: 0 },
+    { cat: "IPS", q: "Berdasarkan teori Malthus, jika pertumbuhan penduduk mengikuti deret ukur (geometri) dan produksi pangan mengikuti deret hitung (aritmatika), implikasi jangka panjang adalah...", o: ["Kesejahteraan meningkat", "Terjadi kelaparan massal", "Distribusi penduduk merata", "Kemandirian pangan tercapai"], a: 1 },
+    { cat: "IPS", q: "Konflik sosial di masyarakat multikultural sering disebabkan oleh primordialisme. Solusi yang paling efektif adalah...", o: ["Mengisolasi kelompok berbeda", "Memaksakan budaya dominan", "Mengembangkan pendidikan multikultural", "Membatasi interaksi antarkelompok"], a: 2 },
+    { cat: "IPS", q: "Faktor utama yang menyebabkan Jepang menyerah tanpa syarat kepada Sekutu pada Agustus 1945 adalah...", o: ["Kalah dalam Pertempuran Midway", "Dibom atom di Hiroshima dan Nagasaki", "Invasi Soviet ke Manchuria", "Blokade ekonomi oleh Sekutu"], a: 1 },
+    { cat: "IPS", q: "Kebijakan 'divide et impera' yang diterapkan Belanda di Indonesia bertujuan untuk...", o: ["Memajukan pendidikan pribumi", "Memecah belah kekuatan perlawanan", "Mengembangkan ekonomi lokal", "Menyatukan berbagai kerajaan"], a: 1 },
+    { cat: "IPS", q: "Dampak utama Perang Dingin terhadap negara-negara berkembang seperti Indonesia adalah...", o: ["Mendapat bantuan ekonomi dari kedua blok", "Terpaksa memilih salah satu blok", "Mengalami kemajuan teknologi pesat", "Terhindar dari konflik internasional"], a: 0 },
+    { cat: "IPS", q: "Globalisasi dalam budaya ditandai dengan fenomena...", o: ["Hilangnya seluruh budaya lokal", "Dominasi budaya Barat secara mutlak", "Pertukaran dan persilangan budaya", "Kembali ke tradisi kuno"], a: 2 },
+    { cat: "IPS", q: "Jika sebuah negara mengalami defisit neraca perdagangan yang terus-menerus, kebijakan yang tepat adalah...", o: ["Mendevaluasi mata uang", "Menaikkan impor barang mewah", "Mengurangi ekspor komoditas", "Menaikkan suku bunga"], a: 0 },
+    { cat: "IPS", q: "Penyebab utama urbanisasi di negara berkembang adalah...", o: ["Kesempatan kerja dan pendidikan lebih baik di kota", "Kondisi lingkungan pedesaan yang rusak", "Kebijakan pemerintah memindahkan penduduk", "Budaya hidup mewah di perkotaan"], a: 0 },
+    { cat: "IPS", q: "Perjanjian Linggarjati (1947) menunjukkan bahwa Belanda...", o: ["Mengakui kedaulatan RI sepenuhnya", "Hanya mengakui Jawa dan Sumatera sebagai wilayah RI", "Menolak berunding dengan Indonesia", "Mengakui RI sebagai bagian dari RIS"], a: 1 },
+    { cat: "IPS", q: "Jika indeks Gini suatu negara meningkat dari 0.3 menjadi 0.5, interpretasi yang tepat adalah...", o: ["Kemiskinan berkurang", "Kesenjangan pendapatan meningkat", "Pertumbuhan ekonomi negatif", "Distribusi pendapatan merata"], a: 1 },
+    { cat: "IPS", q: "Salah satu penyebab kegagalan Liga Bangsa-Bangsa dalam mencegah Perang Dunia II adalah...", o: ["Tidak memiliki anggota yang cukup", "Tidak memiliki pasukan militer sendiri", "Berpusat di benua yang salah", "Didominasi negara berkembang"], a: 1 },
+    { cat: "IPS", q: "Revolusi Hijau di Indonesia tahun 1970-an memberikan dampak negatif berupa...", o: ["Ketergantungan pada pupuk dan pestisida kimia", "Penurunan produksi pangan", "Peningkatan impor beras", "Kerusakan industri pertanian"], a: 0 },
+    { cat: "IPS", q: "Faktor utama runtuhnya Kerajaan Majapahit menurut berbagai sumber sejarah adalah...", o: ["Serangan dari kerajaan asing", "Bencana alam besar", "Konflik internal dan perang saudara", "Krisis ekonomi global"], a: 2 },
+    { cat: "IPS", q: "Dampak kolonialisme Belanda dalam bidang sosial adalah...", o: ["Munculnya golongan terpelajar pribumi", "Penghapusan sistem kasta", "Persatuan antarsuku meningkat", "Hilangnya feodalisme sepenuhnya"], a: 0 },
+    { cat: "IPS", q: "Kebijakan 'Tanam Paksa' (Cultuurstelsel) lebih merugikan daripada sistem sewa tanah sebelumnya karena...", o: ["Rakyat wajib menanam tanaman ekspor bukan makanan", "Pemerintah kolonial tidak ambil untung", "Rakyat bebas memilih tanaman", "Hasilnya dibagi rata"], a: 0 },
+    { cat: "IPS", q: "Sistem demokrasi terpimpin era Soekarno ditandai dengan...", o: ["Kekuasaan terpusat pada presiden", "Pemilu multipartai bebas", "Otonomi daerah kuat", "Kebebasan pers penuh"], a: 0 },
+    { cat: "IPS", q: "APBN defisit dapat dibiayai dengan hutang luar negeri. Risiko utama dari kebijakan ini adalah...", o: ["Ketergantungan pada negara donor", "Nilai tukar rupiah menguat", "Inflasi menurun drastis", "Investasi domestik meningkat"], a: 0 },
+    { cat: "IPS", q: "Pengaruh letak geostrategis Indonesia terhadap politik luar negeri adalah...", o: ["Harus berpihak pada salah satu blok", "Dapat menjalankan politik bebas aktif", "Terisolasi dari dunia internasional", "Fokus hanya pada ASEAN"], a: 1 },
+    { cat: "IPS", q: "Perbedaan utama Orde Baru dengan Reformasi dalam hal kebebasan berpendapat adalah...", o: ["Orde Baru lebih membatasi kritik terhadap pemerintah", "Reformasi membatasi media sosial", "Tidak ada perbedaan signifikan", "Orde Baru lebih bebas"], a: 0 },
+    { cat: "IPS", q: "Kerja sama ASEAN di bidang ekonomi ditunjukkan dengan...", o: ["Pembentukan AFTA (ASEAN Free Trade Area)", "Pembentukan pasukan perdamaian", "Penyatuan mata uang", "Pembubaran tarif impor sepenuhnya"], a: 0 },
+    { cat: "IPS", q: "Penyebab utama konflik horizontal di masyarakat multietnis seringkali adalah...", o: ["Perbedaan bahasa daerah", "Kesenjangan ekonomi dan persaingan sumber daya", "Perbedaan warna kulit", "Perbedaan agama secara doktrinal"], a: 1 },
+    { cat: "IPS", q: "Berdasarkan teori dependensi, negara berkembang sulit maju karena...", o: ["Terlalu bergantung pada negara maju", "Kurangnya sumber daya alam", "Penduduk yang terlalu sedikit", "Iklim yang tidak mendukung"], a: 0 },
+
+    // BAHASA INDONESIA HOTS (25 soal)
+    { cat: "B. IND", q: "Teks eksposisi berikut bertema lingkungan. Paragraf pembuka yang paling efektif adalah...", o: ["'Lingkungan hidup adalah segala sesuatu di sekitar kita.'", "'Menurut data BPS, deforestasi Indonesia mencapai 600.000 ha/tahun, mengancam ekosistem.'", "'Kita harus menjaga lingkungan agar anak cucu kita dapat menikmatinya.'", "'Pernahkah Anda melihat sungai yang tercemar limbah?'"], a: 1 },
+    { cat: "B. IND", q: "Kalimat kompleks yang mengandung hubungan sebab-akibat adalah...", o: ["Meskipun hujan deras, ia tetap berangkat bekerja.", "Ketika bel berbunyi, semua siswa masuk kelas.", "Karena studi menunjukkan manfaatnya, pemerintah merekomendasikan vaksinasi.", "Jika kamu rajin belajar, kamu akan pandai."], a: 2 },
+    { cat: "B. IND", q: "Kesalahan penalaran (logical fallacy) dalam argumen: 'Produk ini pasti bagus karena dibeli banyak artis' adalah...", o: ["Ad hominem", "Bandwagon effect", "False causality", "Hasty generalization"], a: 1 },
+    { cat: "B. IND", q: "Kalimat yang mengandung metafora implisit adalah...", o: ["Waktu adalah uang.", "Dia adalah bintang kelas kami.", "Pikiran tajamnya seperti pisau.", "Hatinya sekeras batu."], a: 0 },
+    { cat: "B. IND", q: "Paragraf deduktif yang baik memiliki karakteristik...", o: ["Dimulai dengan contoh lalu kesimpulan", "Dimulai dengan pernyataan umum lalu penjelasan", "Memiliki banyak kalimat tanya", "Berisi deskripsi detail tanpa gagasan utama"], a: 1 },
+    { cat: "B. IND", q: "Dalam teks negosiasi, langkah 'penyampaian tujuan' sebaiknya disampaikan dengan...", o: ["Kaku dan memaksa", "Santai tanpa struktur", "Jelas, sopan, dan logis", "Menggunakan ancaman terselubung"], a: 2 },
+    { cat: "B. IND", q: "Kesalahan penggunaan tanda baca terdapat pada kalimat...", o: ["'Kapan kamu berangkat?' tanya ibu.", "Jakarta, 15 Januari 2026", "Kami membeli: buku, pensil, dan penghapus.", "Dia berkata, 'Saya akan datang.'"], a: 2 },
+    { cat: "B. IND", q: "Analisis struktur teks prosedur yang tepat adalah...", o: ["Tujuan → material → langkah-langkah", "Abstrak → orientasi → komplikasi", "Tesis → argumentasi → penegasan ulang", "Pernyataan umum → deskripsi bagian"], a: 0 },
+    { cat: "B. IND", q: "Kalimat yang mengandung pleonasme adalah...", o: ["Maju ke depan dengan cepat!", "Dia naik tangga ke lantai dua.", "Saya melihat dengan mata kepala sendiri.", "Mereka saling berpandangan."], a: 2 },
+    { cat: "B. IND", q: "Perbedaan utama cerpen dengan novel adalah...", o: ["Cerpen memiliki alur lebih kompleks", "Novel lebih pendek dari cerpen", "Cerpen fokus pada satu konflik tunggal", "Novel tidak memiliki tokoh utama"], a: 2 },
+    { cat: "B. IND", q: "Jika ingin membuat teks persuasif tentang bahaya merokok, strategi yang paling efektif adalah...", o: ["Menyajikan data statistik kematian akibat rokok", "Hanya menceritakan pengalaman pribadi", "Menggunakan bahasa teknis medis yang rumit", "Menghindari fakta ilmiah sama sekali"], a: 0 },
+    { cat: "B. IND", q: "Karya sastra angkatan Pujangga Baru bercirikan...", o: ["Menggunakan bahasa Melayu pasar", "Bersifat individualistis dan romantis", "Bertema perjuangan kemerdekaan", "Mengutamakan bentuk bebas tanpa aturan"], a: 1 },
+    { cat: "B. IND", q: "Kalimat yang efektif untuk karya ilmiah adalah...", o: ["'Penelitian ini membuktikan bahwa tanaman tumbuh lebih cepat di tempat terang.'", "'Menurut saya, tanaman butuh cahaya untuk tumbuh.'", "'Tanaman itu kelihatan lebih segar kalau kena sinar matahari.'", "'Wah, tanaman di tempat terang tumbuhnya cepet banget!'"], a: 0 },
+    { cat: "B. IND", q: "Unsur ekstrinsik cerita 'Robohnya Surau Kami' yang relevan adalah...", o: ["Latar sosial ekonomi masyarakat Minang", "Biografi lengkap A.A. Navis", "Harga buku saat pertama terbit", "Jumlah halaman dalam cerita"], a: 0 },
+    { cat: "B. IND", q: "Teks berikut termasuk jenis... 'Pertama, siapkan bahan. Kedua, campurkan. Ketiga, panaskan.'", o: ["Deskripsi", "Eksposisi", "Prosedur", "Narasi"], a: 2 },
+    { cat: "B. IND", q: "Kesalahan penggunaan kata serapan terdapat pada...", o: ["sistem", "objektif", "ijin (untuk 'izin')", "aktivitas"], a: 2 },
+    { cat: "B. IND", q: "Dalam debat, sanggahan yang logis terhadap pernyataan 'Semua siswa yang tidak lulus karena malas' adalah...", o: ["'Kamu sendiri juga malas!'", "'Data menunjukkan 30% siswa tidak lulus karena faktor ekonomi.'", "'Itu hanya pendapatmu saja.'", "'Tidak semua orang sepakat.'"], a: 1 },
+    { cat: "B. IND", q: "Puisi kontemporer bercirikan...", o: ["Terikat rima dan bait ketat", "Menggunakan bahasa sehari-hari bebas", "Selalu bertema cinta", "Harus terdiri dari 4 baris"], a: 1 },
+    { cat: "B. IND", q: "Kalimat yang mengandung antonim parsial adalah...", o: ["besar - kecil", "hidup - mati", "pria - wanita", "naik - turun"], a: 0 },
+    { cat: "B. IND", q: "Teks editorial/opini bertujuan untuk...", o: ["Menyajikan fakta objektif semata", "Mempengaruhi pendapat pembaca", "Memberikan instruksi teknis", "Menceritakan pengalaman pribadi"], a: 1 },
+    { cat: "B. IND", q: "Jika ingin memperkuat argumentasi tentang pentingnya membaca, bukti yang paling relevan adalah...", o: ["Kutipan filsuf terkenal", "Data penelitian tentang korelasi membaca dan prestasi", "Cerita sukses seorang teman", "Perasaan pribadi penulis"], a: 1 },
+    { cat: "B. IND", q: "Kesalahan kohesi dalam paragraf: 'Siswa belajar. Mereka membaca buku. Dia mengerjakan PR.' adalah...", o: ["Perubahan subjek dari 'mereka' ke 'dia' tanpa kejelasan", "Penggunaan kata kerja berlebihan", "Tidak ada kata penghubung", "Kalimat terlalu pendek"], a: 0 },
+    { cat: "B. IND", q: "Langkah revisi yang tepat untuk kalimat 'Penelitian dilakukan oleh peneliti di laboratorium.' adalah...", o: ["Menghapus kata 'oleh peneliti'", "Mengganti 'dilakukan' dengan 'dikerjakan'", "Menambahkan kata 'sangat' sebelum 'dilakukan'", "Mengubah urutan kata"], a: 0 },
+    { cat: "B. IND", q: "Perbedaan pantun dan syair terletak pada...", o: ["Pantun memiliki sampiran dan isi, syair semua baris adalah isi", "Pantun lebih panjang dari syair", "Syair harus berima a-b-a-b", "Pantun selalu bertema nasihat"], a: 0 },
+    { cat: "B. IND", q: "Dalam menulis resensi buku, elemen yang harus ada adalah...", o: ["Identitas buku, sinopsis, analisis kelebihan/kekurangan", "Biografi lengkap pengarang", "Harga buku di berbagai toko", "Jumlah halaman dan jenis kertas"], a: 0 }
+];
+        let userAnswers = new Array(dbSoal.length).fill(null);
+        let raguState = new Array(dbSoal.length).fill(false);
+        let currentIndex = 0;
+        let timeLeft = 3600; // 1 Jam (3600 Detik)
+        let timerInterval;
+        let totalScore = 0;
+        let correctCount = 0;
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function toggleBento() {
+            const el = document.getElementById('bento-overlay');
+            el.classList.toggle('hidden');
+            el.classList.toggle('flex');
+            if (!el.classList.contains('hidden')) renderBento();
+        }
+
+        function startQuiz() {
+            const name = document.getElementById('username').value;
+            if(!name) return;
+            showScreen('screen-quiz');
+            renderQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if (timeLeft <= 0) finishQuiz();
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            // Format HH:MM:SS
+            const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+            const m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            
+            const el = document.getElementById('timer-val');
+            el.innerText = `${h}:${m}:${s}`;
+            
+            if (timeLeft < 60) el.parentElement.classList.add('text-red-500', 'animate-pulse');
+            else el.parentElement.classList.remove('text-red-500', 'animate-pulse');
+        }
+
+        function renderQuestion() {
+            const q = dbSoal[currentIndex];
+            document.getElementById('q-category').innerText = q.cat;
+            document.getElementById('q-text').innerText = q.q;
+            
+            const imgCont = document.getElementById('img-container');
+            if(q.img) {
+                document.getElementById('q-image').src = q.img;
+                imgCont.classList.remove('hidden');
+            } else {
+                imgCont.classList.add('hidden');
+            }
+
+            const optCont = document.getElementById('options-container');
+            optCont.innerHTML = '';
+            
+            q.o.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn p-5 rounded-3xl text-left font-bold text-lg flex items-center gap-4`;
+                
+                if (userAnswers[currentIndex] !== null) {
+                    if (idx === q.a) btn.classList.add('correct');
+                    else if (idx === userAnswers[currentIndex]) btn.classList.add('wrong');
+                }
+
+                btn.innerHTML = `<span class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">${String.fromCharCode(65+idx)}</span> <span>${opt}</span>`;
+                
+                btn.onclick = () => {
+                    if (userAnswers[currentIndex] === null) selectOption(idx, btn);
+                };
+                optCont.appendChild(btn);
+            });
+
+            const raguBtn = document.getElementById('btn-ragu');
+            if (raguState[currentIndex]) raguBtn.classList.add('btn-ragu-active');
+            else raguBtn.classList.remove('btn-ragu-active');
+        }
+
+        function selectOption(idx, btnEl) {
+            const q = dbSoal[currentIndex];
+            userAnswers[currentIndex] = idx;
+            
+            if (idx === q.a) {
+                btnEl.classList.add('correct');
+                correctCount++;
+                totalScore += 2;
+                spawnPowerUp("+5s");
+                timeLeft += 5; // Power-up bonus waktu
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 } });
+            } else {
+                btnEl.classList.add('wrong');
+                setTimeout(() => renderQuestion(), 300);
+            }
+            updateTimerUI();
+            setTimeout(() => nextQuestion(), 800);
+        }
+
+        function spawnPowerUp(txt) {
+            const el = document.createElement('div');
+            el.className = 'power-up-anim text-2xl font-black';
+            el.innerText = txt;
+            document.getElementById('power-up-area').appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function toggleRagu() {
+            raguState[currentIndex] = !raguState[currentIndex];
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentIndex < dbSoal.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                toggleBento();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function renderBento() {
+            const grid = document.getElementById('bento-grid');
+            grid.innerHTML = '';
+            dbSoal.forEach((_, i) => {
+                const box = document.createElement('div');
+                box.className = 'bento-item ';
+                box.innerText = i + 1;
+                
+                if (raguState[i]) box.classList.add('bg-yellow-400', 'text-white');
+                else if (userAnswers[i] !== null) box.classList.add('bg-blue-500', 'text-white');
+                else box.classList.add('bg-gray-200', 'text-gray-400');
+
+                if (i === currentIndex) box.classList.add('ring-4', 'ring-blue-200');
+
+                box.onclick = () => {
+                    currentIndex = i;
+                    renderQuestion();
+                    toggleBento();
+                };
+                grid.appendChild(box);
+            });
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById('final-score').innerText = totalScore;
+            document.getElementById('final-correct').innerText = correctCount;
+            showScreen('screen-result');
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>
+
