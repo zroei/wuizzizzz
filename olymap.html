@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OLYMAP IPS SMP - Final Version</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --olym-green: #58cc02;
+            --olym-blue: #1cb0f6;
+            --olym-orange: #ff9600;
+            --olym-purple: #ce82ff;
+            --duo-gray: #e5e5e5;
+            --text-dark: #3c3c3c;
+            --bg-body: #f8fafc;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .navbar {
+            background: white;
+            border-bottom: 2px solid var(--duo-gray);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 12px 16px;
+        }
+        .navbar-brand { font-weight: 800; color: var(--olym-green); display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+
+        .tab-slider {
+            background: white;
+            border-bottom: 1px solid var(--duo-gray);
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 15px;
+            gap: 10px;
+            scrollbar-width: none;
+        }
+        .tab-slider::-webkit-scrollbar { display: none; }
+        
+        .nav-link-custom {
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--duo-gray);
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+            color: #999;
+            background: white;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .nav-link-custom.active { color: white; border-color: transparent; }
+        .nav-link-custom.active.geo { background: var(--olym-green); }
+        .nav-link-custom.active.eco { background: var(--olym-blue); }
+        .nav-link-custom.active.his { background: var(--olym-orange); }
+        .nav-link-custom.active.soc { background: var(--olym-purple); }
+
+        /* --- CARDS --- */
+        .card-materi {
+            background: white;
+            border: 2px solid var(--duo-gray);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            transition: transform 0.1s;
+        }
+        .card-materi:active { transform: scale(0.98); }
+        .card-materi.pinned { border-color: var(--olym-blue); background: #f0f9ff; border-width: 2px; }
+        .card-materi.done { opacity: 0.6; background: #f1f1f1; border-style: dashed; }
+        
+        .materi-body { flex-grow: 1; cursor: pointer; }
+        .materi-title { font-weight: 800; font-size: 0.95rem; line-height: 1.2; margin-bottom: 4px; color: #1a1a1a; }
+        .materi-meta { font-size: 0.7rem; color: #777; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        .pin-tag {
+            position: absolute; top: -10px; left: 15px;
+            background: var(--olym-blue); color: white;
+            font-size: 0.6rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;
+        }
+
+        .check-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            border: 3px solid var(--duo-gray);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; cursor: pointer; transition: 0.2s;
+        }
+        .check-btn.active { background: var(--olym-green); border-color: #46a302; color: white; }
+
+        /* --- MODALS & MEDIA --- */
+        .viewer-img { width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--duo-gray); }
+        .yt-wrapper { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
+        .yt-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        
+        /* --- BUTTONS --- */
+        .btn-3d {
+            border: none; border-bottom: 4px solid rgba(0,0,0,0.2);
+            border-radius: 12px; font-weight: 800; transition: 0.1s;
+        }
+        .btn-3d:active { transform: translateY(2px); border-bottom-width: 0; }
+        .btn-green { background: var(--olym-green); color: white; }
+
+        /* --- FOOTER --- */
+        footer { background: white; border-top: 2px solid var(--duo-gray); padding: 40px 20px; text-align: center; margin-top: 30px; }
+        .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.75rem; font-weight: 700; margin-bottom: 20px; }
+        .footer-links a { color: var(--olym-blue); text-decoration: none; }
+        .studekasa-badge { background: #111; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand"><i class="bi bi-map-fill"></i> OLYMAP IPS SMP</div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-3d btn-green px-3 py-1" onclick="openEditor()"><i class="bi bi-plus-lg"></i></button>
+            <button class="btn btn-light border-2" style="border-radius: 10px;" data-bs-toggle="offcanvas" data-bs-target="#menuSide"><i class="bi bi-list fs-5"></i></button>
+        </div>
+    </nav>
+
+    <!-- Category Tabs -->
+    <div class="tab-slider">
+        <a href="javascript:void(0)" class="nav-link-custom geo active" onclick="changeTab('geo')">🗺️ Geografi</a>
+        <a href="javascript:void(0)" class="nav-link-custom eco" onclick="changeTab('eco')">📈 Ekonomi</a>
+        <a href="javascript:void(0)" class="nav-link-custom his" onclick="changeTab('his')">📜 Sejarah</a>
+        <a href="javascript:void(0)" class="nav-link-custom soc" onclick="changeTab('soc')">🫂 Sosiologi</a>
+    </div>
+
+    <!-- Main List Container -->
+    <div class="container py-4">
+        <div id="list-container">
+            <!-- Items injected by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="menuSide">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="fw-800 mb-0">PUSAT KONTROL</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div id="stats-panel" class="mb-4"></div>
+            <div class="d-grid gap-2">
+                <button class="btn btn-light border-2 text-start fw-bold" onclick="showHelp()"><i class="bi bi-info-circle me-2"></i> Cara Penggunaan</button>
+                <button class="btn btn-light border-2 text-start fw-bold" onclick="showPrivacy()"><i class="bi bi-shield-lock me-2"></i> Kebijakan Privasi</button>
+                <hr>
+                <button class="btn btn-light border-2 text-start fw-bold" onclick="exportData()"><i class="bi bi-download me-2"></i> Ekspor Data (JSON)</button>
+                <button class="btn btn-light border-2 text-start fw-bold" onclick="document.getElementById('importTrigger').click()"><i class="bi bi-upload me-2"></i> Impor Data (JSON)</button>
+                <input type="file" id="importTrigger" hidden onchange="importData(event)">
+                <button class="btn btn-outline-danger border-2 text-start fw-bold mt-3" onclick="resetAppData()"><i class="bi bi-trash3 me-2"></i> Reset Perangkat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Viewer Modal -->
+    <div class="modal fade" id="viewerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4 overflow-hidden">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span id="v-tag" class="badge rounded-pill bg-primary">#materi</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <h3 class="fw-800" id="v-title">Judul Roadmap</h3>
+                    <div id="v-deadline" class="small text-danger fw-bold mb-3"></div>
+                    
+                    <div id="v-media"></div>
+                    
+                    <div class="p-3 bg-light rounded-3 mb-3">
+                        <p id="v-note" class="small text-secondary mb-0" style="white-space: pre-line;"></p>
+                    </div>
+
+                    <div id="v-link-btn" class="mb-3"></div>
+
+                    <div class="d-flex gap-2 pt-2">
+                        <button class="btn btn-light border-2 fw-bold w-100" id="btn-edit-active">EDIT MATERI</button>
+                        <button class="btn btn-3d btn-green w-100" data-bs-dismiss="modal">SUDAH PAHAM</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Modal -->
+    <div class="modal fade" id="editorModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-body p-4">
+                    <h5 class="fw-800 mb-3" id="editor-title">Tambah Materi</h5>
+                    <div class="mb-2">
+                        <label class="small fw-bold">Judul Roadmap</label>
+                        <input type="text" id="e-title" class="form-control border-2 rounded-3">
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="small fw-bold">Tag</label>
+                            <input type="text" id="e-tag" class="form-control border-2 rounded-3" value="#materi">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Deadline</label>
+                            <input type="date" id="e-date" class="form-control border-2 rounded-3">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold">Catatan Belajar</label>
+                        <textarea id="e-note" class="form-control border-2 rounded-3" rows="3"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="small fw-bold">URL Media (YT/Gambar)</label>
+                        <input type="text" id="e-url" class="form-control border-2 rounded-3" placeholder="https://youtube.com/watch?v=...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold">Link PDF / Web Materi</label>
+                        <input type="text" id="e-link" class="form-control border-2 rounded-3" placeholder="https://...">
+                    </div>
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="e-pin">
+                        <label class="form-check-label small fw-bold" for="e-pin">Pin di urutan teratas</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-danger btn-3d px-3" id="btn-del-e"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-3d btn-green w-100" onclick="saveData()">SIMPAN DATA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="javascript:void(0)" onclick="showHelp()">Panduan</a>
+            <a href="javascript:void(0)" onclick="showPrivacy()">Privasi</a>
+            <a href="https://olympedia.web.id" target="_blank">Olympedia</a>
+            <a href="https://folym.web.id" target="_blank">Folym</a>
+            <a href="https://olymnote.web.id" target="_blank">Olymnote</a>
+        </div>
+        <div class="studekasa-badge">
+            Supported by <a href="https://studekasa.web.id" target="_blank" class="text-white text-decoration-none">ѕтυ∂єƙαѕα</a>
+        </div>
+        <p class="mt-3 text-muted" style="font-size: 0.6rem;">© 2026 olymap.studekasa.web.id • Offline Storage Mode</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentTab = 'geo';
+        let activeEditId = null;
+        const DEFAULT_DEADLINE = "2026-01-18";
+
+        const demoData = {
+    "geo": [
+        { "id": 1, "title": "🌍 Geologi: Lapisan Bumi & Tektonik", "tag": "#litosfer #tektonik", "note": "Pelajari: Komposisi inti dalam/luar, diskontinuitas Moho & Gutenberg, teori apungan benua, jenis batas lempeng, alat ukur gempa.", "date": "2024-12-01", "url": "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&auto=format&fit=crop", "link": "https://www.geologinesia.com/2023/03/struktur-lapisan-bumi.html", "pin": true, "done": false },
+        { "id": 2, "title": "🌋 Vulkanisme & Tipe Gunung Api", "tag": "#vulkanologi", "note": "Pelajari: Perbedaan magma-lava-lahar, intrusi & ekstrusi magma, erupsi efusif vs eksplosif, tipe gunung api (perisai, strato, maar), manifestasi pasca vulkanik.", "date": "2024-12-01", "url": "https://images.unsplash.com/photo-1614022840786-da9363c2858e?w=800&auto=format&fit=crop", "link": "https://ilmugeografi.com/geologi/vulkanisme", "pin": false, "done": false },
+        { "id": 3, "title": "🪨 Siklus & Jenis Batuan", "tag": "#petrologi", "note": "Pelajari: Klasifikasi batuan beku (dalam, gang, luar), sedimen (klastik, kimia, organik), metamorf (kontak, dinamo, pneumatolitik) beserta contohnya.", "date": "2024-12-02", "url": "https://images.pexels.com/photos/2341290/pexels-photo-2341290.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.saintif.com/jenis-jenis-batuan/", "pin": false, "done": false },
+        { "id": 4, "title": "🌱 Pedosfer: Profil & Jenis Tanah Indonesia", "tag": "#pedosfer", "note": "Pelajari: Horizon O-A-E-B-C-R, tekstur & struktur tanah, KTK, pH, klasifikasi tanah (Andosol, Aluvial, Organosol, Laterit, dll.), erosi & konservasinya.", "date": "2024-12-02", "url": "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://ilmugeografi.com/ilmu-bumi/tanah/jenis-jenis-tanah-di-indonesia", "pin": false, "done": false },
+        { "id": 5, "title": "🌫️ Atmosfer: Lapisan & Komposisi Udara", "tag": "#atmosfer", "note": "Pelajari: 5 lapisan atmosfer (Troposfer hingga Eksosfer) & karakteristiknya, komposisi gas permanen, gradien termis, fungsi lapisan ozon.", "date": "2024-12-03", "url": "https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=800&auto=format&fit=crop", "link": "https://www.kelaspintar.id/blog/edutech/lapisan-atmosfer-6786/", "pin": false, "done": false },
+        { "id": 6, "title": "⛅ Cuaca, Iklim & Awan", "tag": "#klimatologi", "note": "Pelajari: Unsur cuaca/iklim (insolasi, tekanan, angin, kelembapan), jenis awan (Sirus, Kumulus, Stratus), proses adveksi/konveksi, efek rumah kaca.", "date": "2024-12-03", "url": "https://images.pexels.com/photos/1643409/pexels-photo-1643409.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://ilmugeografi.com/ilmu-bumi/cuaca-dan-iklim/pengertian-cuaca-dan-iklim", "pin": false, "done": false },
+        { "id": 7, "title": "💨 Sirkulasi Angin Global & Fenomena", "tag": "#angin #iklim", "note": "Pelajari: Sel Hadley-Ferrel-Polar, angin Passat/Barat/Timur, ITCZ, fenomena El Nino, La Nina, dan Dipole Mode beserta dampaknya.", "date": "2024-12-04", "url": "https://images.unsplash.com/photo-1563974318768-2f6eb6a4d0cf?w=800&auto=format&fit=crop", "link": "https://www.ruangguru.com/blog/sirkulasi-angin-di-bumi", "pin": false, "done": false },
+        { "id": 8, "title": "💧 Hidrosfer: Siklus Air & Bentang Sungai", "tag": "#hidrosfer", "note": "Pelajari: Siklus air pendek/sedang/panjang, proses evapotranspirasi-infiltarsi-perkolasi, DAS, bentuk sungai (meander, oxbow lake, delta).", "date": "2024-12-04", "url": "https://images.pexels.com/photos/1295138/pexels-photo-1295138.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://ilmugeografi.com/hidrologi/siklus-air", "pin": false, "done": false },
+        { "id": 9, "title": "🌊 Oseanografi: Karakteristik & Arus Laut", "tag": "#oseanografi", "note": "Pelajari: Salinitas, stratifikasi suhu (termoklin), arus laut utama (Kuroshio, Gulf Stream), upwelling, morfologi dasar laut.", "date": "2024-12-05", "url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop", "link": "https://ilmugeografi.com/oseanografi/arus-laut", "pin": false, "done": false },
+        { "id": 10, "title": "🌿 Biosfer: Faktor Persebaran & Bioma", "tag": "#biogeografi", "note": "Pelajari: 4 faktor persebaran flora-fauna (klimatik, edafik, fisiografis, biotik), 6 wilayah fauna Wallace, 7 bioma utama dunia.", "date": "2024-12-05", "url": "https://images.pexels.com/photos/1038916/pexels-photo-1038916.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kelaspintar.id/blog/tips-pintar/bioma-6754/", "pin": true, "done": false },
+        { "id": 11, "title": "🦎 Fauna Indonesia & Garis Wallace", "tag": "#zoogeografi", "note": "Pelajari: Ciri fauna Asiatis, Peralihan, Australis beserta contohnya. Pahami perbedaan garis Wallace, Weber, dan Lydekker.", "date": "2024-12-06", "url": "https://images.unsplash.com/photo-1551085254-e96b210db58a?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/persebaran-fauna-di-indonesia", "pin": false, "done": false },
+        { "id": 12, "title": "🛡️ SDA, Konservasi & Pembangunan Berkelanjutan", "tag": "#lingkungan", "note": "Pelajari: Klasifikasi SDA renewable vs non-renewable, konservasi in-situ/ex-situ, konsep green economy, AMDAL, carbon footprint.", "date": "2024-12-06", "url": "https://images.pexels.com/photos/2592801/pexels-photo-2592801.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://dlh.bulelengkab.go.id/informasi/detail/artikel/66-pengertian-amdal-analisis-mengenai-dampak-lingkungan", "pin": false, "done": false },
+        { "id": 13, "title": "🚨 Mitigasi Bencana Alam", "tag": "#kebencanaan", "note": "Pelajari: Klasifikasi bencana (geologis, hidrometeorologis), siklus mitigasi (pra, saat, pasca), early warning system, rehabilitasi.", "date": "2024-12-07", "url": "https://images.unsplash.com/photo-1599059813005-2e2daf2b71f4?w=800&auto=format&fit=crop", "link": "https://bnpb.go.id/berita/pengertian-mitigasi-bencana", "pin": false, "done": false },
+        { "id": 14, "title": "👨‍👩‍👧‍👦 Antroposfer: Dinamika & Kualitas Penduduk", "tag": "#kependudukan", "note": "Pelajari: Rumus CBR, CDR, proyeksi geometrik/eksponensial, jenis migrasi, indikator IPM, dependency ratio, bonus demografi.", "date": "2024-12-07", "url": "https://images.pexels.com/photos/3064069/pexels-photo-3064069.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.bps.go.id/subject/12/kependudukan.html", "pin": false, "done": false },
+        { "id": 15, "title": "🏡 Pola Keruangan Desa-Kota & Interaksi", "tag": "#tataruang", "note": "Pelajari: Pola desa (memanjang, melingkar), teori struktur kota (Konsentris, Sektoral, Inti Ganda), hukum gravitasi & titik henti Reilly.", "date": "2024-12-08", "url": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&auto=format&fit=crop", "link": "https://www.kompas.com/skola/read/2020/12/18/160000369/interaksi-desa-dan-kota", "pin": false, "done": false },
+        { "id": 16, "title": "🗺️ Konsep Wilayah & Pusat Pertumbuhan", "tag": "#wilayah", "note": "Pelajari: Perbedaan wilayah formal, fungsional, vernakular. Teori pusat pertumbuhan (Polarisasi, Trickle Down, Spread & Backwash Effect).", "date": "2024-12-08", "url": "https://images.pexels.com/photos/267394/pexels-photo-267394.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://jurnal.uns.ac.id/jpg/article/view/38744", "pin": false, "done": false },
+        { "id": 17, "title": "🛰️ Teknologi Geospasial: SIG & Penginderaan Jauh", "tag": "#sig #inderaja", "note": "Pelajari: Komponen SIG, operasi (layering, buffering, overlay). Resolusi citra, interpretasi (rona, tekstur), jenis sensor/wahana.", "date": "2024-12-09", "url": "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&auto=format&fit=crop", "link": "https://www.big.go.id/berita-single/pengertian-sig-dan-penginderaan-jauh", "pin": true, "done": false }
+    ],
+    "eco": [
+        { "id": 18, "title": "⚖️ Kelangkaan & Sistem Ekonomi", "tag": "#pengantar", "note": "Pelajari: Konsep kelangkaan, biaya peluang, 3 masalah ekonomi, perbedaan sistem ekonomi (komando, pasar, campuran, Pancasila).", "date": "2024-12-01", "url": "https://images.pexels.com/photos/6693666/pexels-photo-6693666.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.zenius.net/blog/konsep-kelangkaan-dalam-ekonomi", "pin": false, "done": false },
+        { "id": 19, "title": "🧠 Teori Perilaku Konsumen & Produsen", "tag": "#mikro", "note": "Pelajari: Hukum Gossen I & II, kurva indiferens & garis anggaran, fungsi produksi, law of diminishing return.", "date": "2024-12-01", "url": "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&auto=format&fit=crop", "link": "https://www.ruangguru.com/blog/teori-perilaku-konsumen", "pin": false, "done": false },
+        { "id": 20, "title": "📊 Mekanisme Pasar & Elastisitas", "tag": "#mikro", "note": "Pelajari: Hukum permintaan/penawaran, pergeseran vs pergerakan kurva, harga keseimbangan, elastisitas harga/silang/pendapatan.", "date": "2024-12-02", "url": "https://images.pexels.com/photos/210607/pexels-photo-210607.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.zenius.net/blog/elastisitas-permintaan-dan-penawaran", "pin": false, "done": false },
+        { "id": 21, "title": "🏢 Struktur Pasar (Sempurna hingga Monopoli)", "tag": "#mikro", "note": "Pelajari: Ciri-ciri pasar persaingan sempurna, monopoli, oligopoli (kurva patah), dan persaingan monopolistik.", "date": "2024-12-02", "url": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&auto=format&fit=crop", "link": "https://www.studiobelajar.com/struktur-pasar/", "pin": false, "done": false },
+        { "id": 22, "title": "🧾 Siklus Akuntansi Dasar", "tag": "#akuntansi", "note": "Pelajari: Persamaan dasar akuntansi, proses dari bukti transaksi hingga neraca saldo, jurnal penyesuaian (AJP).", "date": "2024-12-03", "url": "https://images.pexels.com/photos/6693665/pexels-photo-6693665.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.jurnal.id/id/blog/siklus-akuntansi/", "pin": false, "done": false },
+        { "id": 23, "title": "📈 Laporan Keuangan (Laba Rugi, Neraca)", "tag": "#akuntansi", "note": "Pelajari: Komponen & penyusunan Laporan Laba/Rugi, Laporan Perubahan Modal, Neraca, dan Laporan Arus Kas.", "date": "2024-12-03", "url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop", "link": "https://www.ocbcnisp.com/id/article/2022/07/07/laporan-keuangan", "pin": true, "done": false },
+        { "id": 24, "title": "📦 Akuntansi Dagang & Harga Pokok Penjualan", "tag": "#akuntansi", "note": "Pelajari: Syarat pembayaran (2/10, n/30), syarat penyerahan (FOB), jurnal khusus, perhitungan HPP (Harga Pokok Penjualan).", "date": "2024-12-04", "url": "https://images.pexels.com/photos/5669602/pexels-photo-5669602.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.paper.id/t/blog/harga-pokok-penjualan", "pin": false, "done": false },
+        { "id": 25, "title": "📊 Analisis Rasio Keuangan", "tag": "#akuntansi #keuangan", "note": "Pelajari: Rasio Likuiditas (Current Ratio), Profitabilitas (ROA, ROE), Solvabilitas, dan Aktivitas.", "date": "2024-12-04", "url": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&auto=format&fit=crop", "link": "https://www.jojonomic.com/blog/rasio-keuangan/", "pin": false, "done": false },
+        { "id": 26, "title": "💰 Pendapatan Nasional & Metode Hitung", "tag": "#makro", "note": "Pelajari: Konsep PDB, PNB, NNP, NNI, PI, DI. 3 metode penghitungan (Pendapatan, Pengeluaran, Produksi). PDB Riil vs Nominal.", "date": "2024-12-05", "url": "https://images.pexels.com/photos/7567567/pexels-photo-7567567.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.bps.go.id/subject/11/produk-domestik-bruto--lapangan-usaha-.html", "pin": true, "done": false },
+        { "id": 27, "title": "💸 Kebijakan Moneter & Inflasi", "tag": "#moneter", "note": "Pelajari: Penyebab inflasi (demand-pull, cost-push), alat kebijakan moneter (OPT, discount rate, GWM), definisi uang M1 & M2.", "date": "2024-12-05", "url": "https://images.unsplash.com/photo-1621552141563-4ce2b8c4332a?w=800&auto=format&fit=crop", "link": "https://www.bi.go.id/id/moneter/kebijakan-moneter/default.aspx", "pin": false, "done": false },
+        { "id": 28, "title": "🏛️ Kebijakan Fiskal & APBN", "tag": "#fiskal", "note": "Pelajari: Struktur APBN (penerimaan pajak/non-pajak, belanja), kebijakan fiskal ekspansif vs kontraktif, fungsi pajak & subsidi.", "date": "2024-12-06", "url": "https://images.pexels.com/photos/6693668/pexels-photo-6693668.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kemenkeu.go.id/apbn", "pin": false, "done": false },
+        { "id": 29, "title": "🌐 Ekonomi Internasional: Kurs & Neraca", "tag": "#internasional", "note": "Pelajari: Sistem kurs (fixed, floating), devaluasi vs apresiasi, komponen Neraca Pembayaran (berjalan, modal), hambatan perdagangan.", "date": "2024-12-06", "url": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop", "link": "https://www.bi.go.id/id/fungsi-utama/sistem-pembayaran/npk/default.aspx", "pin": false, "done": false },
+        { "id": 30, "title": "👷‍♂️ Ketenagakerjaan & Jenis Pengangguran", "tag": "#ketenagakerjaan", "note": "Pelajari: Definisi angkatan kerja, TPAK, klasifikasi pengangguran (friksional, struktural, siklis, musiman).", "date": "2024-12-07", "url": "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.bps.go.id/subject/6/tenaga-kerja.html", "pin": false, "done": false }
+    ],
+    "his": [
+        { "id": 31, "title": "🗿 Zaman Praaksara: Batu & Logam", "tag": "#praaksara", "note": "Pelajari: Ciri kehidupan & hasil budaya tiap zaman (Paleolitikum, Mesolitikum, Neolitikum, Megalitikum), serta teori asal usul manusia Indonesia.", "date": "2024-12-01", "url": "https://images.pexels.com/photos/2486168/pexels-photo-2486168.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kelaspintar.id/blog/tips-pintar/zaman-praaksara-di-indonesia-12157/", "pin": false, "done": false },
+        { "id": 32, "title": "🕉️ Hindu-Buddha: Teori Masuk & Kerajaan Awal", "tag": "#hindu-buddha", "note": "Pelajari: 4 teori masuk Hindu-Buddha (Brahmana, Ksatria, Waisya, Arus Balik), kerajaan Kutai (Yupa), Tarumanegara (prasasti).", "date": "2024-12-01", "url": "https://images.unsplash.com/photo-1600070787349-7b4b5d5f2c2b?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/kerajaan-hindu-budha-di-indonesia", "pin": false, "done": false },
+        { "id": 33, "title": "⚓ Sriwijaya & Majapahit: Kedatuan Maritim & Nusantara", "tag": "#hindu-buddha", "note": "Pelajari: Kejayaan Sriwijaya sebagai pusat perdagangan & agama Buddha, kejayaan Majapahit di bawah Gajah Mada & Sumpah Palapa.", "date": "2024-12-02", "url": "https://images.pexels.com/photos/1638347/pexels-photo-1638347.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kompas.com/stori/read/2022/10/06/090000779/kerajaan-sriwijaya-puncak-kejayaan-dan-penyebab-keruntuhan", "pin": true, "done": false },
+        { "id": 34, "title": "☪️ Masuk & Berkembangnya Islam di Nusantara", "tag": "#islam", "note": "Pelajari: Teori masuk Islam (Gujarat, Persia, Mekkah), saluran penyebaran (dagang, perkawinan, pendidikan), peran Wali Songo.", "date": "2024-12-02", "url": "https://images.unsplash.com/photo-1562887189-e5d078343de4?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/kerajaan-islam-di-indonesia", "pin": false, "done": false },
+        { "id": 35, "title": "⚔️ Kerajaan-Kerajaan Islam Nusantara", "tag": "#islam", "note": "Pelajari: Perkembangan Samudera Pasai, Demak, Mataram Islam, Banten, Gowa-Tallo, Ternate-Tidore beserta peninggalan & kontribusinya.", "date": "2024-12-03", "url": "https://images.pexels.com/photos/5853381/pexels-photo-5853381.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.ruangguru.com/blog/kerajaan-islam-di-indonesia", "pin": false, "done": false },
+        { "id": 36, "title": "🚢 Kolonialisme Portugis & VOC", "tag": "#kolonial", "note": "Pelajari: Tujuan kedatangan Portugis, sistem monopoli & kebijakan VOC (verplichte leverantie, contingenten), faktor kemunduran VOC.", "date": "2024-12-03", "url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop", "link": "https://www.kompas.com/skola/read/2020/06/26/170000269/masa-pemerintahan-voc-di-indonesia", "pin": false, "done": false },
+        { "id": 37, "title": "🌾 Sistem Tanam Paksa & Politik Etis", "tag": "#kolonial", "note": "Pelajari: Kebijakan Tanam Paksa (Cultuurstelsel) Van den Bosch & dampaknya. Trilogi Politik Etis (Irigasi, Edukasi, Transmigrasi) beserta realitanya.", "date": "2024-12-04", "url": "https://images.pexels.com/photos/673857/pexels-photo-673857.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.ruangguru.com/blog/sistem-tanam-paksa", "pin": true, "done": false },
+        { "id": 38, "title": "📜 Pergerakan Nasional: Awal & Sarekat Islam", "tag": "#pergerakan", "note": "Pelajari: Latar belakang kebangkitan nasional, peran Budi Utomo (1908), perkembangan Sarekat Islam (SI) dari ekonomi ke politik.", "date": "2024-12-04", "url": "https://images.unsplash.com/photo-1589998059171-988d887df646?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/pergerakan-nasional-indonesia", "pin": false, "done": false },
+        { "id": 39, "title": "🔥 Organisasi Radikal & Sumpah Pemuda", "tag": "#pergerakan", "note": "Pelajari: Perjuangan Indische Partij (Tiga Serangkai) & PNI (Soekarno). Peristiwa & makna Sumpah Pemuda 28 Oktober 1928.", "date": "2024-12-05", "url": "https://images.pexels.com/photos/76969/cold-war-border-guard-berlin-76969.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kemdikbud.go.id/main/blog/2018/10/sumpah-pemuda-dan-sejarahnya", "pin": false, "done": false },
+        { "id": 40, "title": "⚡ Pendudukan Jepang & Dampaknya", "tag": "#pergerakan", "note": "Pelajari: Propaganda Jepang (3A), organisasi bentukan (Putera, Jawa Hokokai, PETA), serta praktik romusha & persiapan kemerdekaan.", "date": "2024-12-05", "url": "https://images.unsplash.com/photo-1582544459999-5df3c5b7c9f9?w=800&auto=format&fit=crop", "link": "https://www.kompas.com/skola/read/2020/08/10/150000869/pendudukan-jepang-di-indonesia", "pin": false, "done": false },
+        { "id": 41, "title": "🇮🇩 Proklamasi: Detik-detik & Penyusunan Naskah", "tag": "#revolusi", "note": "Pelajari: Peristiwa Rengasdengklok, perumusan naskah di rumah Laksamana Maeda, pembacaan proklamasi 17 Agustus 1945.", "date": "2024-12-06", "url": "https://images.pexels.com/photos/76969/cold-war-border-guard-berlin-76969.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kemdikbud.go.id/main/blog/2017/08/detik-detik-proklamasi-kemerdekaan-indonesia", "pin": true, "done": false },
+        { "id": 42, "title": "🕊️ Diplomasi & Perjuangan Fisik Mempertahankan Kemerdekaan", "tag": "#revolusi", "note": "Pelajari: Perjanjian Linggarjati, Renville, KMB. Pertempuran 10 November Surabaya & Palagan Ambarawa.", "date": "2024-12-06", "url": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/perjanjian-linggarjati-renville-kmb", "pin": false, "done": false },
+        { "id": 43, "title": "🗳️ Demokrasi Liberal & Jatuh Bangun Kabinet", "tag": "#politik", "note": "Pelajari: Ciri sistem Demokrasi Liberal (1950-1959), pergantian 7 kabinet dalam waktu singkat, penyebab instabilitas politik.", "date": "2024-12-07", "url": "https://images.pexels.com/photos/1550340/pexels-photo-1550340.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.ruangguru.com/blog/masa-demokrasi-liberal-di-indonesia", "pin": false, "done": false },
+        { "id": 44, "title": "👑 Demokrasi Terpimpin & Konfrontasi", "tag": "#politik", "note": "Pelajari: Dekrit Presiden 5 Juli 1959, konsep NASAKOM, politik konfrontasi dengan Malaysia, dan situasi menjelang G30S.", "date": "2024-12-07", "url": "https://images.unsplash.com/photo-1562922591-3f588d68a46e?w=800&auto=format&fit=crop", "link": "https://www.kompas.com/skola/read/2020/11/19/140000269/masa-demokrasi-terpimpin-di-indonesia", "pin": false, "done": false },
+        { "id": 45, "title": "🏗️ Orde Baru: Stabilisasi & Pembangunan", "tag": "#politik", "note": "Pelajari: Lahirnya Orde Baru (Supersemar), stabilisasi politik, Trilogi Pembangunan (stabilitas, pertumbuhan, pemerataan), Dwi Fungsi ABRI.", "date": "2024-12-08", "url": "https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.ruangguru.com/blog/masa-orde-baru", "pin": false, "done": false },
+        { "id": 46, "title": "📢 Reformasi 1998 & Transisi Demokrasi", "tag": "#politik", "note": "Pelajari: Faktor penyebab krisis 1998 (krisis moneter, KKN, kesenjangan), peristiwa Tragedi Trisakti, dan pengunduran diri Soeharto.", "date": "2024-12-08", "url": "https://images.unsplash.com/photo-1584464454451-49c8bf6c42f4?w=800&auto=format&fit=crop", "link": "https://www.kompas.com/skola/read/2020/05/21/130000569/reformasi-1998-latar-belakang-tuntutan-dan-dampaknya", "pin": true, "done": false }
+    ],
+    "soc": [
+        { "id": 47, "title": "🤝 Interaksi Sosial: Syarat & Bentuk", "tag": "#interaksi", "note": "Pelajari: Dua syarat interaksi (kontak & komunikasi). 6 faktor pendorong. Bentuk asosiatif (kerja sama, asimilasi) & disosiatif (konflik).", "date": "2024-12-01", "url": "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.ruangguru.com/blog/interaksi-sosial", "pin": false, "done": false },
+        { "id": 48, "title": "👶 Sosialisasi & Tahap Perkembangan Diri", "tag": "#sosialisasi", "note": "Pelajari: 4 tahap sosialisasi menurut Mead (Preparatory, Play, Game, Generalized Other). Agen sosialisasi (Keluarga, Sekolah, Media).", "date": "2024-12-01", "url": "https://images.unsplash.com/photo-1541692641319-981cc79ee10a?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/sosialisasi-dan-pembentukan-kepribadian", "pin": false, "done": false },
+        { "id": 49, "title": "📜 Nilai & Norma Sosial (Usage hingga Custom)", "tag": "#norma", "note": "Pelajari: Hierarki norma sosial dari yang terlonggar ke terkuat: Usage (cara), Folkways (kebiasaan), Mores (tata kelakuan), Custom (adat).", "date": "2024-12-02", "url": "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.studiobelajar.com/nilai-dan-norma-sosial/", "pin": false, "done": false },
+        { "id": 50, "title": "🏛️ Lembaga Sosial: Fungsi & Jenis", "tag": "#lembaga", "note": "Pelajari: 5 karakteristik lembaga sosial. Fungsi lembaga keluarga, agama, ekonomi, pendidikan, dan politik.", "date": "2024-12-02", "url": "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop", "link": "https://www.ruangguru.com/blog/lembaga-sosial", "pin": true, "done": false },
+        { "id": 51, "title": "➡️ Diferensiasi Sosial (Perbedaan Horizontal)", "tag": "#stratifikasi", "note": "Pelajari: Bentuk diferensiasi berdasarkan ras, suku, agama (klen, agama), gender, dan profesi. Ini perbedaan tanpa tingkatan.", "date": "2024-12-03", "url": "https://images.pexels.com/photos/3826667/pexels-photo-3826667.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.studiobelajar.com/diferensiasi-sosial/", "pin": false, "done": false },
+        { "id": 52, "title": "⬆️ Stratifikasi Sosial (Pelapisan Vertikal)", "tag": "#stratifikasi", "note": "Pelajari: Dasar stratifikasi (ekonomi, kekuasaan, kehormatan). Sifatnya (tertutup/kasta, terbuka, campuran). Contoh di masyarakat.", "date": "2024-12-03", "url": "https://images.unsplash.com/photo-1581089781785-603411fa81f5?w=800&auto=format&fit=crop", "link": "https://www.zenius.net/blog/stratifikasi-sosial", "pin": false, "done": false },
+        { "id": 53, "title": "🪜 Mobilitas Sosial: Saluran & Faktor", "tag": "#mobilitas", "note": "Pelajari: Jenis mobilitas (vertikal/horizontal, antargenerasi). Saluran mobilitas (pendidikan, militer, organisasi). Faktor pendorong.", "date": "2024-12-04", "url": "https://images.pexels.com/photos/1666779/pexels-photo-1666779.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.ruangguru.com/blog/mobilitas-sosial", "pin": false, "done": false },
+        { "id": 54, "title": "⚠️ Penyimpangan Sosial: Teori & Pengendalian", "tag": "#penyimpangan", "note": "Pelajari: Teori labeling, anomie, asosiasi diferensial. Penyimpangan primer vs sekunder. Cara pengendalian (preventif, represif).", "date": "2024-12-04", "url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop", "link": "https://www.studiobelajar.com/penyimpangan-sosial/", "pin": false, "done": false },
+        { "id": 55, "title": "⚔️ Konflik Sosial & Bentuk Akomodasi", "tag": "#konflik", "note": "Pelajari: Faktor penyebab konflik (perbedaan, kepentingan). Bentuk akomodasi: konsiliasi, mediasi, arbitrase, stalemate, adjudikasi.", "date": "2024-12-05", "url": "https://images.pexels.com/photos/1112048/pexels-photo-1112048.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.zenius.net/blog/konflik-sosial", "pin": true, "done": false },
+        { "id": 56, "title": "🧩 Integrasi Sosial & Bentuknya", "tag": "#integrasi", "note": "Pelajari: Proses penyesuaian unsur masyarakat. Bentuk integrasi: normatif (nilai), fungsional (saling ketergantungan), koersif (paksaan).", "date": "2024-12-05", "url": "https://images.unsplash.com/photo-1559028012-481c04fa702d?w=800&auto=format&fit=crop", "link": "https://www.ruangguru.com/blog/integrasi-sosial", "pin": false, "done": false },
+        { "id": 57, "title": "🔄 Perubahan Sosial: Bentuk & Faktor", "tag": "#perubahan", "note": "Pelajari: Evolusi vs Revolusi. Perubahan direncanakan vs tidak. Faktor pendorong (penemuan baru, konflik, globalisasi).", "date": "2024-12-06", "url": "https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.studiobelajar.com/perubahan-sosial/", "pin": false, "done": false },
+        { "id": 58, "title": "🏚️ Kemiskinan & Kesenjangan Sosial", "tag": "#masalahsosial", "note": "Pelajari: Kemiskinan absolut vs relatif. Indikator kesenjangan (Gini Ratio). Dampak dan beberapa penyebab strukturalnya.", "date": "2024-12-06", "url": "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&auto=format&fit=crop", "link": "https://www.bps.go.id/subject/23/kemiskinan-dan-ketimpangan.html", "pin": false, "done": false },
+        { "id": 59, "title": "🚫 Eksklusi Sosial & Ketidakadilan Gender", "tag": "#masalahsosial", "note": "Pelajari: Konsep eksklusi sosial (terpinggirkan dari partisipasi). Bentuk ketidakadilan gender (stereotip, marginalisasi, beban ganda).", "date": "2024-12-07", "url": "https://images.pexels.com/photos/4474052/pexels-photo-4474052.jpeg?auto=compress&cs=tinysrgb&w=800", "link": "https://www.kompas.com/skola/read/2021/03/08/164500069/ketidakadilan-gender-pengertian-dan-bentuknya", "pin": false, "done": false },
+        { "id": 60, "title": "🌳 Masalah Lingkungan Hidup dalam Perspektif Sosial", "tag": "#masalahsosial", "note": "Pelajari: Hubungan tindakan sosial dengan kerusakan lingkungan (eksploitasi berlebihan). Konsep keadilan lingkungan (environmental justice).", "date": "2024-12-07", "url": "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?w=800&auto=format&fit=crop", "link": "https://dlh.semarangkota.go.id/artikel/masalah-lingkungan-hidup", "pin": false, "done": false }]
+};
+
+        let appData = JSON.parse(localStorage.getItem('olymap_final_db')) || demoData;
+
+        function changeTab(t) {
+            currentTab = t;
+            document.querySelectorAll('.nav-link-custom').forEach(el => {
+                el.classList.remove('active');
+                if(el.classList.contains(t)) el.classList.add('active');
+            });
+            render();
+        }
+
+        function render() {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            
+            // Sort: Pin -> Active -> Done
+            const sorted = [...appData[currentTab]].sort((a, b) => {
+                if(a.pin !== b.pin) return b.pin - a.pin;
+                return a.done - b.done;
+            });
+
+            if(sorted.length === 0) {
+                container.innerHTML = `<div class="text-center py-5 text-muted"><i class="bi bi-folder-x fs-1"></i><p class="mt-2">Belum ada roadmap di kategori ini.</p></div>`;
+                return;
+            }
+
+            sorted.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `card-materi ${item.pin ? 'pinned' : ''} ${item.done ? 'done' : ''}`;
+                card.innerHTML = `
+                    ${item.pin ? '<span class="pin-tag"><i class="bi bi-pin-angle-fill"></i> TERSEMANGAT</span>' : ''}
+                    <div class="materi-body" onclick="viewMateri('${currentTab}', ${item.id})">
+                        <div class="materi-title">${item.title}</div>
+                        <div class="materi-meta">
+                            <span>${item.tag}</span> • 
+                            <span class="${new Date(item.date) < new Date() && !item.done ? 'text-danger' : ''}">
+                                <i class="bi bi-clock"></i> ${formatDate(item.date)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="check-btn ${item.done ? 'active' : ''}" onclick="toggleCheck('${currentTab}', ${item.id})">
+                        <i class="bi ${item.done ? 'bi-check-lg' : ''}"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            updateStats();
+            localStorage.setItem('olymap_final_db', JSON.stringify(appData));
+        }
+
+        function toggleCheck(subj, id) {
+            const item = appData[subj].find(i => i.id === id);
+            item.done = !item.done;
+            if(item.done) {
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+            }
+            render();
+        }
+
+        function viewMateri(subj, id) {
+            const item = appData[subj].find(i => i.id === id);
+            activeEditId = { subj, id };
+            
+            document.getElementById('v-title').innerText = item.title;
+            document.getElementById('v-tag').innerText = item.tag;
+            document.getElementById('v-note').innerText = item.note || "Tidak ada catatan.";
+            document.getElementById('v-deadline').innerText = `Target: ${formatDate(item.date)}`;
+            
+            // Media Processor
+            const mediaDiv = document.getElementById('v-media');
+            mediaDiv.innerHTML = '';
+            if(item.url) {
+                if(item.url.includes('youtube.com') || item.url.includes('youtu.be')) {
+                    const vid = item.url.split('v=')[1]?.split('&')[0] || item.url.split('/').pop();
+                    mediaDiv.innerHTML = `<div class="yt-wrapper"><iframe src="https://www.youtube.com/embed/${vid}" allowfullscreen></iframe></div>`;
+                } else if(item.url.match(/\.(jpeg|jpg|gif|png|webp)$/) || item.url.includes('unsplash')) {
+                    mediaDiv.innerHTML = `<img src="${item.url}" class="viewer-img" onerror="this.style.display='none'">`;
+                }
+            }
+
+            // Link Processor
+            const linkDiv = document.getElementById('v-link-btn');
+            linkDiv.innerHTML = item.link ? `<a href="${item.link}" target="_blank" class="btn btn-primary border-0 w-100 fw-bold py-2" style="border-radius:12px"><i class="bi bi-box-arrow-up-right me-2"></i> BUKA MATERI</a>` : '';
+
+            document.getElementById('btn-edit-active').onclick = () => {
+                bootstrap.Modal.getInstance(document.getElementById('viewerModal')).hide();
+                openEditor(subj, id);
+            };
+
+            new bootstrap.Modal(document.getElementById('viewerModal')).show();
+        }
+
+        function openEditor(subj = null, id = null) {
+            if(id) {
+                const item = appData[subj].find(i => i.id === id);
+                document.getElementById('editor-title').innerText = "Edit Roadmap";
+                document.getElementById('e-title').value = item.title;
+                document.getElementById('e-tag').value = item.tag;
+                document.getElementById('e-date').value = item.date;
+                document.getElementById('e-note').value = item.note;
+                document.getElementById('e-url').value = item.url;
+                document.getElementById('e-link').value = item.link;
+                document.getElementById('e-pin').checked = item.pin;
+                document.getElementById('btn-del-e').style.display = 'block';
+                document.getElementById('btn-del-e').onclick = () => deleteItem(subj, id);
+                activeEditId = { subj, id };
+            } else {
+                document.getElementById('editor-title').innerText = "Materi Baru";
+                document.getElementById('e-title').value = '';
+                document.getElementById('e-tag').value = '#materi';
+                document.getElementById('e-date').value = DEFAULT_DEADLINE;
+                document.getElementById('e-note').value = '';
+                document.getElementById('e-url').value = '';
+                document.getElementById('e-link').value = '';
+                document.getElementById('e-pin').checked = false;
+                document.getElementById('btn-del-e').style.display = 'none';
+                activeEditId = null;
+            }
+            new bootstrap.Modal(document.getElementById('editorModal')).show();
+        }
+
+        function saveData() {
+            const title = document.getElementById('e-title').value;
+            if(!title) return;
+
+            const entry = {
+                id: activeEditId ? activeEditId.id : Date.now(),
+                title: title,
+                tag: document.getElementById('e-tag').value,
+                date: document.getElementById('e-date').value,
+                note: document.getElementById('e-note').value,
+                url: document.getElementById('e-url').value,
+                link: document.getElementById('e-link').value,
+                pin: document.getElementById('e-pin').checked,
+                done: activeEditId ? appData[activeEditId.subj].find(i => i.id === activeEditId.id).done : false
+            };
+
+            if(activeEditId) {
+                const idx = appData[activeEditId.subj].findIndex(i => i.id === activeEditId.id);
+                appData[activeEditId.subj][idx] = entry;
+            } else {
+                appData[currentTab].push(entry);
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('editorModal')).hide();
+            render();
+        }
+
+        function deleteItem(subj, id) {
+            Swal.fire({ title: 'Hapus Roadmap?', icon: 'warning', showCancelButton: true }).then(res => {
+                if(res.isConfirmed) {
+                    appData[subj] = appData[subj].filter(i => i.id !== id);
+                    bootstrap.Modal.getInstance(document.getElementById('editorModal')).hide();
+                    render();
+                }
+            });
+        }
+
+        function formatDate(d) {
+            return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function updateStats() {
+            const panel = document.getElementById('stats-panel');
+            panel.innerHTML = '<h6 class="fw-800 mb-3">PROGRES BELAJAR</h6>';
+            const cats = { geo:'Geografi', eco:'Ekonomi', his:'Sejarah', soc:'Sosiologi' };
+            const colors = { geo: 'var(--olym-green)', eco: 'var(--olym-blue)', his: 'var(--olym-orange)', soc: 'var(--olym-purple)' };
+
+            Object.keys(cats).forEach(k => {
+                const total = appData[k].length;
+                const done = appData[k].filter(i => i.done).length;
+                const p = total === 0 ? 0 : Math.round((done/total)*100);
+                panel.innerHTML += `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small fw-bold mb-1"><span>${cats[k]}</span><span>${p}%</span></div>
+                        <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden">
+                            <div style="width:${p}%; height:100%; background:${colors[k]}; transition:0.5s"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function showHelp() {
+            Swal.fire({
+                title: 'Panduan OLYMAP',
+                html: '<div class="text-start small">1. Klik Tab Bidang (Geo/Eco/dll).<br>2. Klik [+] untuk buat target belajar baru.<br>3. Masukkan link YouTube atau Gambar untuk materi visual.<br>4. Pin tugas prioritas agar selalu di atas.<br>5. Klik kotak centang jika materi sudah dipahami.</div>',
+                confirmButtonText: 'Mulai Belajar!'
+            });
+        }
+
+        function showPrivacy() {
+            Swal.fire('Privasi Aman', 'Data tersimpan hanya di memori HP Anda (Local Storage). Tidak ada data yang dikirim ke internet.', 'info');
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(appData)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'olymap_backup.json'; a.click();
+        }
+
+        function importData(e) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    appData = JSON.parse(ev.target.result);
+                    render();
+                    Swal.fire('Berhasil!', 'Data roadmap telah dipulihkan.', 'success');
+                } catch(e) { Swal.fire('Error', 'File JSON tidak valid.', 'error'); }
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+
+        function resetAppData() {
+            Swal.fire({ title: 'Reset Semua Data?', text: 'Roadmap kustom Anda akan dihapus.', icon: 'warning', showCancelButton: true }).then(res => {
+                if(res.isConfirmed) { appData = demoData; render(); }
+            });
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>
+

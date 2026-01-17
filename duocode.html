@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DuoCode Polyglot - Multi-Language Editor</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Prism JS for Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            position: relative;
+            min-height: 400px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        #editing-area, #highlighting-area {
+            margin: 0;
+            padding: 15px;
+            border: 0;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            tab-size: 4;
+            white-space: pre;
+            overflow: auto;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #editing-area {
+            z-index: 1;
+            white-space: pre;
+            color: transparent;
+            background: transparent;
+            caret-color: white;
+            resize: none;
+            outline: none;
+        }
+
+        #highlighting-area {
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        code[class*="language-"] {
+            font-family: 'Fira Code', monospace !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .active-tab {
+            background-color: #1e293b;
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-700 p-2 flex items-center justify-between z-50">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="p-2 hover:bg-slate-800 rounded-md">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <h1 class="text-sm font-bold tracking-tight text-blue-400 hidden sm:block">DuoCode Polyglot</h1>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="importFile()" class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs transition">
+                <i data-lucide="file-up" class="w-4 h-4 text-green-400"></i> Impor
+            </button>
+            <button onclick="exportFile()" class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs transition">
+                <i data-lucide="file-down" class="w-4 h-4 text-blue-400"></i> Ekspor
+            </button>
+            <button onclick="addNewTab()" class="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-xs transition font-semibold">
+                <i data-lucide="plus" class="w-4 h-4"></i> Tab Baru
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="w-64 bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col">
+            <div class="p-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Berkas Terbuka</div>
+            <div id="tab-list" class="flex-1 overflow-y-auto space-y-1 p-2">
+                <!-- Tabs will be injected here -->
+            </div>
+            <div class="p-4 border-t border-slate-800 text-[10px] text-slate-500 text-center">
+                DuoCode Polyglot v1.0
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
+            <!-- Toolbar Tab Detail -->
+            <div class="bg-slate-900/50 p-2 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <input id="current-filename" type="text" oninput="updateCurrentTabInfo()" class="bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-300 w-40" placeholder="nama_file">
+                    <select id="current-language" onchange="changeLanguage()" class="bg-slate-800 border-slate-700 text-slate-300 text-xs rounded p-1">
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="json">JSON</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="c">C</option>
+                        <option value="cpp">C++</option>
+                        <option value="php">PHP</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="save-indicator" class="text-[10px] text-slate-500 italic">Tersimpan</span>
+                </div>
+            </div>
+
+            <!-- Editor & Preview Split -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <!-- Editor Pane -->
+                <div id="editor-pane" class="flex-1 relative editor-container border-r border-slate-800">
+                    <textarea id="editing-area" spellcheck="false" oninput="handleInput()" onscroll="handleScroll()"></textarea>
+                    <pre id="highlighting-area" aria-hidden="true"><code id="highlighting-content" class="language-html"></code></pre>
+                </div>
+
+                <!-- Preview/Output Pane -->
+                <div id="preview-pane" class="w-full md:w-1/3 bg-white flex flex-col">
+                    <div class="bg-slate-100 p-2 text-xs font-bold text-slate-600 flex justify-between items-center border-b">
+                        <span>PREVIEW / OUTPUT</span>
+                        <button onclick="refreshPreview()" class="text-blue-600 hover:text-blue-800">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    <div id="preview-container" class="flex-1 overflow-auto">
+                        <!-- IFRAME or CONSOLE SIMULATOR -->
+                        <iframe id="web-preview" class="w-full h-full border-none"></iframe>
+                        <div id="console-simulator" class="hidden h-full bg-black text-green-500 p-4 font-mono text-sm">
+                            <p class="mb-2 opacity-50"># Simulator Konsol DuoCode</p>
+                            <p class="mb-1">> Program dimulai...</p>
+                            <div id="sim-output"></div>
+                            <p class="mt-4 text-yellow-500 animate-pulse">Menunggu kompilasi server...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="file-input" class="hidden" onchange="handleFileSelect(event)">
+
+    <script>
+        // --- State Management ---
+        let tabs = [];
+        let activeTabId = null;
+        let isSidebarOpen = true;
+        let debounceTimer;
+
+        const STORAGE_KEY = 'duocode_polyglot_data';
+
+        // --- Initialization ---
+        window.onload = () => {
+            loadFromStorage();
+            if (tabs.length === 0) {
+                addNewTab("Untitled", "html", "<!-- Selamat datang di DuoCode Polyglot -->\n<h1>Halo Dunia!</h1>");
+            } else {
+                renderTabs();
+                switchTab(tabs[0].id);
+            }
+            lucide.createIcons();
+            
+            // Sync initial scroll
+            handleScroll();
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            isSidebarOpen = !isSidebarOpen;
+            sidebar.style.width = isSidebarOpen ? '256px' : '0px';
+            sidebar.style.opacity = isSidebarOpen ? '1' : '0';
+        }
+
+        // --- Tab Operations ---
+        function addNewTab(name = "Untitled", lang = "html", code = "") {
+            const newTab = {
+                id: Date.now().toString(),
+                name: name,
+                language: lang,
+                code: code
+            };
+            tabs.push(newTab);
+            renderTabs();
+            switchTab(newTab.id);
+            saveToStorage();
+        }
+
+        function switchTab(id) {
+            activeTabId = id;
+            const tab = tabs.find(t => t.id === id);
+            
+            document.getElementById('current-filename').value = tab.name;
+            document.getElementById('current-language').value = tab.language;
+            document.getElementById('editing-area').value = tab.code;
+            
+            updateHighlight();
+            updatePreviewVisibility();
+            renderTabs();
+        }
+
+        function deleteTab(id, event) {
+            event.stopPropagation();
+            Swal.fire({
+                title: 'Hapus Tab?',
+                text: "Data yang tidak di-export akan hilang selamanya.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    tabs = tabs.filter(t => t.id !== id);
+                    if (tabs.length === 0) {
+                        addNewTab();
+                    } else if (activeTabId === id) {
+                        switchTab(tabs[0].id);
+                    } else {
+                        renderTabs();
+                    }
+                    saveToStorage();
+                }
+            });
+        }
+
+        function renderTabs() {
+            const list = document.getElementById('tab-list');
+            list.innerHTML = '';
+            
+            tabs.forEach(tab => {
+                const icon = getLanguageIcon(tab.language);
+                const isActive = tab.id === activeTabId;
+                
+                const div = document.createElement('div');
+                div.className = `group flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all ${isActive ? 'active-tab' : 'hover:bg-slate-800 text-slate-400'}`;
+                div.onclick = () => switchTab(tab.id);
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="text-xs">${icon}</span>
+                        <span class="text-xs truncate font-medium">${tab.name}</span>
+                    </div>
+                    <button onclick="deleteTab('${tab.id}', event)" class="opacity-0 group-hover:opacity-100 hover:text-red-400 p-1">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function getLanguageIcon(lang) {
+            switch(lang) {
+                case 'html': return '<i data-lucide="layout" class="w-3.5 h-3.5 text-orange-400"></i>';
+                case 'css': return '<i data-lucide="palette" class="w-3.5 h-3.5 text-blue-400"></i>';
+                case 'javascript': return '<i data-lucide="file-json" class="w-3.5 h-3.5 text-yellow-400"></i>';
+                case 'python': return '<i data-lucide="terminal" class="w-3.5 h-3.5 text-blue-300"></i>';
+                case 'java': return '<i data-lucide="coffee" class="w-3.5 h-3.5 text-red-400"></i>';
+                default: return '<i data-lucide="code" class="w-3.5 h-3.5 text-slate-400"></i>';
+            }
+        }
+
+        // --- Editor Logic ---
+        function handleInput() {
+            const code = document.getElementById('editing-area').value;
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (tab) tab.code = code;
+            
+            updateHighlight();
+            autoSaveTrigger();
+            
+            if (['html', 'css', 'javascript'].includes(tab.language)) {
+                refreshPreview();
+            }
+        }
+
+        function updateHighlight() {
+            const code = document.getElementById('editing-area').value;
+            const lang = document.getElementById('current-language').value;
+            const content = document.getElementById('highlighting-content');
+            
+            // Syntax coloring
+            content.className = `language-${lang}`;
+            content.textContent = code + (code.endsWith('\n') ? ' ' : '');
+            Prism.highlightElement(content);
+        }
+
+        function handleScroll() {
+            const edit = document.getElementById('editing-area');
+            const high = document.getElementById('highlighting-area');
+            high.scrollTop = edit.scrollTop;
+            high.scrollLeft = edit.scrollLeft;
+        }
+
+        function changeLanguage() {
+            const lang = document.getElementById('current-language').value;
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (tab) tab.language = lang;
+            
+            updateHighlight();
+            updatePreviewVisibility();
+            renderTabs();
+            saveToStorage();
+        }
+
+        function updateCurrentTabInfo() {
+            const name = document.getElementById('current-filename').value;
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (tab) tab.name = name;
+            renderTabs();
+            autoSaveTrigger();
+        }
+
+        function updatePreviewVisibility() {
+            const lang = document.getElementById('current-language').value;
+            const isWeb = ['html', 'css', 'javascript'].includes(lang);
+            
+            document.getElementById('web-preview').classList.toggle('hidden', !isWeb);
+            document.getElementById('console-simulator').classList.toggle('hidden', isWeb);
+            
+            if (isWeb) refreshPreview();
+            else updateConsoleSim(lang);
+        }
+
+        function refreshPreview() {
+            const tab = tabs.find(t => t.id === activeTabId);
+            const iframe = document.getElementById('web-preview');
+            let content = "";
+
+            if (tab.language === 'html') {
+                content = tab.code;
+            } else if (tab.language === 'css') {
+                content = `<style>${tab.code}</style><h1>Preview CSS Mode</h1><p>Gunakan tab HTML untuk struktur lengkap.</p>`;
+            } else if (tab.language === 'javascript') {
+                content = `<script>${tab.code}<\/script><p>Cek Console browser (F12) untuk melihat output JS.</p>`;
+            }
+
+            const blob = new Blob([content], { type: 'text/html' });
+            iframe.src = URL.createObjectURL(blob);
+        }
+
+        function updateConsoleSim(lang) {
+            const output = document.getElementById('sim-output');
+            output.innerHTML = `<p class="text-white">Bahasa terdeteksi: <span class="uppercase">${lang}</span></p>`;
+            output.innerHTML += `<p class="mt-2">[INFO] Menunggu input runtime untuk simulasi ${lang}...</p>`;
+        }
+
+        // --- Import/Export ---
+        function importFile() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const ext = file.name.split('.').pop().toLowerCase();
+                const mapping = {
+                    'html': 'html', 'htm': 'html',
+                    'css': 'css',
+                    'js': 'javascript',
+                    'json': 'json',
+                    'py': 'python',
+                    'java': 'java',
+                    'c': 'c',
+                    'cpp': 'cpp', 'cc': 'cpp',
+                    'php': 'php'
+                };
+                
+                const lang = mapping[ext] || 'html';
+                addNewTab(file.name.split('.')[0], lang, content);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Impor',
+                    text: `Berkas ${file.name} telah dimuat.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            };
+            reader.readAsText(file);
+        }
+
+        function exportFile() {
+            const tab = tabs.find(t => t.id === activeTabId);
+            const extensions = {
+                'html': '.html', 'css': '.css', 'javascript': '.js',
+                'json': '.json', 'python': '.py', 'java': '.java',
+                'c': '.c', 'cpp': '.cpp', 'php': '.php'
+            };
+            
+            const fileName = tab.name + (extensions[tab.language] || '.txt');
+            const blob = new Blob([tab.code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Persistence ---
+        function autoSaveTrigger() {
+            document.getElementById('save-indicator').textContent = "Mengetik...";
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                saveToStorage();
+                document.getElementById('save-indicator').textContent = "Tersimpan";
+            }, 500);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tabs));
+        }
+
+        function loadFromStorage() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                try {
+                    tabs = JSON.parse(data);
+                } catch (e) {
+                    tabs = [];
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

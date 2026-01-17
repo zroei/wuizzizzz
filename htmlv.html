@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>REALTIME HTML VIEWER</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --bg-page: #f8fafc;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--primary);
+            height: 100dvh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Pane Transitions */
+        .pane {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            position: relative;
+        }
+
+        .pane-editor { height: 45%; }
+        .pane-preview { height: 55%; border-top: 2px solid #e2e8f0; }
+
+        /* Fullscreen/Expand states */
+        .pane.expanded { height: 90% !important; }
+        .pane.collapsed { height: 10% !important; }
+
+        .label-tab {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #94a3b8;
+            padding: 6px 12px;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #editor {
+            flex: 1;
+            width: 100%;
+            padding: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            border: none;
+            outline: none;
+            resize: none;
+            line-height: 1.5;
+            background: #ffffff;
+        }
+
+        /* Sidebar Navigation */
+        #sidebar {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            bottom: 0;
+            width: 85%;
+            max-width: 300px;
+            background: white;
+            z-index: 200;
+            transition: left 0.3s ease;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+        }
+
+        #sidebar.open { left: 0; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 190;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+        }
+
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        .side-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .side-item:active { background: #f1f5f9; color: var(--accent); }
+
+        #suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            z-index: 100;
+            display: none;
+            min-width: 120px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .suggest-item { padding: 8px 12px; font-family: 'Fira Code', monospace; font-size: 12px; border-bottom: 1px solid #f1f5f9; }
+        .suggest-item:active { background: #eff6ff; }
+
+        iframe { flex: 1; width: 100%; border: none; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="flex items-center justify-between mb-6">
+            <span class="font-bold text-lg text-blue-600">MENU VIEWER</span>
+            <button onclick="toggleSidebar()" class="p-2"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto pr-2">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Library Template</p>
+            <button class="side-item" onclick="loadTpl('hero')"><i data-lucide="layout" class="w-4 h-4"></i> Hero Section</button>
+            <button class="side-item" onclick="loadTpl('card')"><i data-lucide="user" class="w-4 h-4"></i> Profile Card</button>
+            <button class="side-item" onclick="loadTpl('pricing')"><i data-lucide="tag" class="w-4 h-4"></i> Pricing Table</button>
+            <button class="side-item" onclick="loadTpl('nav')"><i data-lucide="menu" class="w-4 h-4"></i> Navbar Style</button>
+            <button class="side-item" onclick="loadTpl('newsletter')"><i data-lucide="mail" class="w-4 h-4"></i> Newsletter</button>
+
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-6 mb-2 px-2">Alat & Berkas</p>
+            <button class="side-item" onclick="triggerImport()"><i data-lucide="upload-cloud" class="w-4 h-4"></i> Impor HTML</button>
+            <button class="side-item" onclick="exportFile()"><i data-lucide="download-cloud" class="w-4 h-4"></i> Ekspor Projek</button>
+            
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-6 mb-2 px-2">Info</p>
+            <button class="side-item" onclick="showDocs()"><i data-lucide="book-open" class="w-4 h-4"></i> Dokumentasi</button>
+            <button class="side-item" onclick="showPrivacy()"><i data-lucide="shield-check" class="w-4 h-4"></i> Kebijakan Privasi</button>
+            
+            <button class="side-item text-red-500 mt-6" onclick="clearCode()"><i data-lucide="trash-2" class="w-4 h-4"></i> Reset Editor</button>
+        </div>
+    </aside>
+
+    <header>
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="p-2"><i data-lucide="align-left" class="w-6 h-6"></i></button>
+            <div class="font-extrabold text-sm tracking-tight leading-none">REALTIME<br><span class="text-blue-600">HTML VIEWER</span></div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="copyCode()" class="p-2 bg-slate-50 rounded-lg text-blue-600 active:scale-95 transition-transform">
+                <i data-lucide="copy" class="w-5 h-5"></i>
+            </button>
+            <button onclick="exportFile()" class="p-2 bg-blue-600 rounded-lg text-white active:scale-95 transition-transform">
+                <i data-lucide="download" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="workspace">
+        <div class="pane pane-editor" id="editorPane">
+            <div class="label-tab">
+                <span>Editor Kode</span>
+                <button onclick="toggleExpand('editor')" class="text-blue-600 font-bold text-[9px] flex items-center gap-1">
+                    <i data-lucide="maximize-2" class="w-3 h-3" id="editorIcon"></i> <span id="editorText">EXPAND</span>
+                </button>
+            </div>
+            <textarea id="editor" spellcheck="false" placeholder="Tulis kode HTML/CSS di sini..."></textarea>
+            <div id="suggestions"></div>
+        </div>
+
+        <div class="pane pane-preview" id="previewPane">
+            <div class="label-tab" style="background: #f0fdf4;">
+                <span class="text-green-600">Live Preview</span>
+                <button onclick="toggleExpand('preview')" class="text-green-600 font-bold text-[9px] flex items-center gap-1">
+                    <i data-lucide="maximize-2" class="w-3 h-3" id="previewIcon"></i> <span id="previewText">EXPAND</span>
+                </button>
+            </div>
+            <iframe id="preview"></iframe>
+        </div>
+    </main>
+
+    <input type="file" id="importInput" accept=".html,.txt" class="hidden" onchange="handleImport(event)">
+
+    <script>
+        lucide.createIcons();
+
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const suggestBox = document.getElementById('suggestions');
+        
+        // --- Persistence (Local Storage) ---
+        function saveToLocal() {
+            localStorage.setItem('duocode_autosave', editor.value);
+        }
+
+        function loadFromLocal() {
+            const saved = localStorage.getItem('duocode_autosave');
+            if (saved) {
+                editor.value = saved;
+                updatePreview();
+            } else {
+                loadTpl('hero');
+            }
+        }
+
+        // --- Core Render ---
+        function updatePreview() {
+            const content = editor.value;
+            saveToLocal();
+            const doc = preview.contentWindow.document;
+            doc.open();
+            doc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                    <style>
+                        body { margin: 0; font-family: sans-serif; min-height: 100vh; background: white; }
+                    </style>
+                </head>
+                <body>${content}</body>
+                </html>
+            `);
+            doc.close();
+        }
+
+        let debounce;
+        editor.addEventListener('input', (e) => {
+            clearTimeout(debounce);
+            debounce = setTimeout(updatePreview, 400);
+            handleSuggestions(e);
+        });
+
+        // --- Suggestion ---
+        function handleSuggestions(e) {
+            const val = editor.value;
+            const pos = editor.selectionStart;
+            if (val.charAt(pos - 1) === '<') {
+                suggestBox.innerHTML = '';
+                ['div', 'p', 'h1', 'button', 'a', 'section', 'img', 'ul', 'li', 'span'].forEach(tag => {
+                    const div = document.createElement('div');
+                    div.className = 'suggest-item';
+                    div.textContent = tag;
+                    div.onclick = () => {
+                        const pre = editor.value.substring(0, pos);
+                        const post = editor.value.substring(pos);
+                        editor.value = pre + tag + "></" + tag + ">" + post;
+                        suggestBox.style.display = 'none';
+                        editor.focus();
+                        const newPos = pos + tag.length + 1;
+                        editor.setSelectionRange(newPos, newPos);
+                        updatePreview();
+                    };
+                    suggestBox.appendChild(div);
+                });
+                suggestBox.style.display = 'block';
+                suggestBox.style.left = '20px';
+                suggestBox.style.top = '40px';
+            } else {
+                suggestBox.style.display = 'none';
+            }
+        }
+
+        // --- UI Interactions ---
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function toggleExpand(target) {
+            const eP = document.getElementById('editorPane');
+            const pP = document.getElementById('previewPane');
+            
+            if(target === 'editor') {
+                if(eP.classList.contains('expanded')) {
+                    eP.classList.remove('expanded');
+                    pP.classList.remove('collapsed');
+                } else {
+                    eP.classList.add('expanded');
+                    pP.classList.add('collapsed');
+                    pP.classList.remove('expanded');
+                    eP.classList.remove('collapsed');
+                }
+            } else {
+                if(pP.classList.contains('expanded')) {
+                    pP.classList.remove('expanded');
+                    eP.classList.remove('collapsed');
+                } else {
+                    pP.classList.add('expanded');
+                    eP.classList.add('collapsed');
+                    eP.classList.remove('expanded');
+                    pP.classList.remove('collapsed');
+                }
+            }
+            setTimeout(() => lucide.createIcons(), 400);
+        }
+
+        function copyCode() {
+            // Enhanced Stable Copy for Mobile/iFrame
+            try {
+                editor.select();
+                editor.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                
+                Swal.fire({
+                    toast: true,
+                    position: 'top',
+                    icon: 'success',
+                    title: 'Kode Tersalin!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+        }
+
+        function triggerImport() { document.getElementById('importInput').click(); }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                editor.value = ev.target.result;
+                updatePreview();
+                toggleSidebar();
+                Swal.fire({ icon: 'success', title: 'Berhasil diimpor', timer: 1000, showConfirmButton: false });
+            };
+            reader.readAsText(file);
+        }
+
+        function exportFile() {
+            const blob = new Blob([editor.value], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `projek-viewer-${Date.now()}.html`;
+            a.click();
+        }
+
+        function clearCode() {
+            Swal.fire({
+                title: 'Reset Editor?',
+                text: "Semua kode akan dihapus selamanya.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then(r => {
+                if(r.isConfirmed) {
+                    editor.value = '';
+                    updatePreview();
+                    toggleSidebar();
+                }
+            });
+        }
+
+        // --- Modals ---
+        function showDocs() {
+            Swal.fire({
+                title: 'Dokumentasi',
+                html: `<div class="text-left text-sm space-y-2">
+                    <p><b>1. Realtime:</b> Setiap perubahan kode langsung tampil di bawah.</p>
+                    <p><b>2. Suggestion:</b> Ketik &lt; untuk melihat rekomendasi tag.</p>
+                    <p><b>3. Tailwind:</b> Viewer ini sudah mendukung Tailwind CSS v3 secara penuh.</p>
+                    <p><b>4. Auto-Save:</b> Jangan takut reload, kode Anda disimpan otomatis di browser.</p>
+                </div>`,
+                confirmButtonText: 'Paham'
+            });
+        }
+
+        function showPrivacy() {
+            Swal.fire({
+                title: 'Kebijakan Privasi',
+                html: `<div class="text-left text-xs text-slate-500">
+                    Kami menghargai privasi Anda. Aplikasi <b>REALTIME HTML VIEWER</b> tidak mengirimkan kode Anda ke server manapun. 
+                    Semua pemrosesan dan penyimpanan dilakukan secara lokal di perangkat Anda menggunakan LocalStorage. 
+                    Data Anda aman dan tetap menjadi milik Anda sepenuhnya.
+                </div>`,
+                confirmButtonText: 'Tutup'
+            });
+        }
+
+        // --- Templates ---
+        const templates = {
+            hero: `<div class="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center text-white">
+  <div class="w-20 h-20 bg-blue-500 rounded-3xl rotate-12 mb-8 shadow-2xl shadow-blue-500/50"></div>
+  <h1 class="text-5xl font-black mb-4 tracking-tighter">MASA DEPAN WEB</h1>
+  <p class="text-slate-400 text-lg mb-10 max-w-md">Bangun prototipe ide bisnismu dalam hitungan detik dengan Viewer Realtime.</p>
+  <button class="bg-blue-600 px-10 py-4 rounded-2xl font-bold active:scale-95 transition-all">MULAI EXPLORE</button>
+</div>`,
+            card: `<div class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+  <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden border border-gray-100 shadow-xl">
+    <div class="h-32 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
+    <div class="px-6 pb-8">
+      <div class="w-20 h-20 bg-white rounded-2xl -mt-10 border-4 border-white shadow-lg mb-4"></div>
+      <h2 class="text-2xl font-bold">Alex Rivera</h2>
+      <p class="text-slate-500">Fullstack Designer</p>
+      <div class="mt-6 flex gap-3">
+         <button class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold">Follow</button>
+         <button class="w-12 bg-slate-100 flex items-center justify-center rounded-xl">💬</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+            pricing: `<div class="p-8 bg-blue-50 min-h-screen space-y-6">
+  <div class="bg-white p-8 rounded-3xl border-2 border-blue-100">
+    <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Personal</span>
+    <h3 class="text-4xl font-black mt-4">$29<span class="text-lg text-slate-400">/mo</span></h3>
+    <ul class="mt-6 space-y-3 text-slate-500 font-medium">
+      <li>✅ Unlimited Projects</li>
+      <li>✅ Analytics Dashboard</li>
+      <li>✅ 24/7 Support</li>
+    </ul>
+    <button class="w-full mt-8 bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200">Pilih Paket</button>
+  </div>
+</div>`,
+            nav: `<nav class="p-4 bg-white border-b border-gray-100 flex items-center justify-between">
+  <div class="font-black text-xl tracking-tighter">DUO<span class="text-blue-600">APP</span></div>
+  <div class="flex gap-4">
+    <a href="#" class="font-bold text-sm text-slate-600">Home</a>
+    <a href="#" class="font-bold text-sm text-slate-600">Blog</a>
+    <a href="#" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold">Login</a>
+  </div>
+</nav>`,
+            newsletter: `<div class="p-10 bg-indigo-600">
+  <div class="text-center text-white">
+    <h2 class="text-3xl font-bold mb-4">Update Terbaru?</h2>
+    <p class="text-indigo-200 mb-8">Dapatkan berita teknologi langsung di inbox-mu setiap minggu.</p>
+    <div class="flex flex-col gap-3">
+      <input type="email" placeholder="email@kamu.com" class="px-6 py-4 rounded-2xl text-slate-900 outline-none">
+      <button class="bg-orange-400 py-4 rounded-2xl font-bold text-white shadow-lg">BERLANGGANAN</button>
+    </div>
+  </div>
+</div>`
+        };
+
+        function loadTpl(id) {
+            editor.value = templates[id];
+            updatePreview();
+            if(sidebar.classList.contains('open')) toggleSidebar();
+        }
+
+        // Init
+        window.onload = loadFromLocal;
+    </script>
+</body>
+</html>
+
