@@ -395,11 +395,15 @@
         }
 
         function updateTimerUI() {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            // Format HH:MM:SS
+            const h = Math.floor(timeLeft / 7200).toString().padStart(2, '0');
+            const m = Math.floor((timeLeft % 7200) / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
+            
             const el = document.getElementById('timer-val');
-            el.innerText = `${m}:${s}`;
-            if (timeLeft < 10) el.parentElement.classList.add('text-red-500', 'animate-pulse');
+            el.innerText = `${h}:${m}:${s}`;
+            
+            if (timeLeft < 60) el.parentElement.classList.add('text-red-500', 'animate-pulse');
             else el.parentElement.classList.remove('text-red-500', 'animate-pulse');
         }
 
