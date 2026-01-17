@@ -396,8 +396,8 @@
 
         function updateTimerUI() {
             // Format HH:MM:SS
-            const h = Math.floor(timeLeft / 7200).toString().padStart(2, '0');
-            const m = Math.floor((timeLeft % 7200) / 60).toString().padStart(2, '0');
+            const h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+            const m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
             const s = (timeLeft % 60).toString().padStart(2, '0');
             
             const el = document.getElementById('timer-val');
