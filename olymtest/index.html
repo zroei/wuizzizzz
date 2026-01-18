@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OLYMTEST - Uji Kemampuanmu!</title>
+    <meta property="og:image" content="https://iili.io/fU6OgoJ.png">
+    <link rel="icon" href="https://iili.io/fU6O8wg.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/
+    
+    <style>
+        :root {
+            --p-green: #58cc02;
+            --s-blue: #1cb0f6;
+            --a-red: #ff4b4b;
+            --acc-yellow: #ffc107;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .poppins { font-family: 'Poppins', sans-serif; }
+
+        /* Smooth Scroll & Performance Fix */
+        .smooth-scroll {
+            overflow-y: auto;
+            will-change: transform;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .duo-btn {
+            transition: transform 0.1s, border-bottom-width 0.1s;
+            border-bottom-width: 4px;
+            user-select: none;
+            will-change: transform;
+        }
+        .duo-btn:active {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
+        }
+
+        .btn-blue { background: var(--s-blue); border-color: #1899d6; color: white; }
+        .btn-green { background: var(--p-green); border-color: #46a302; color: white; }
+        .btn-red { background: var(--a-red); border-color: #d33131; color: white; }
+        .btn-yellow { background: var(--acc-yellow); border-color: #e0a800; color: white; }
+        .btn-gray { background: #fff; border-color: #e0e0e0; color: #afafaf; }
+
+        .option-card {
+            border: 2px solid #e5e5e5;
+            border-bottom-width: 4px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .option-card.selected {
+            background-color: #f0f9ff;
+            border-color: var(--s-blue);
+            transform: scale(1.02);
+        }
+        
+        #nav-sidebar {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateX(100%);
+            z-index: 100;
+        }
+        #nav-sidebar.open { transform: translateX(0); }
+
+        .nav-grid-item {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border-bottom-width: 3px;
+            transition: transform 0.1s;
+        }
+        .nav-grid-item.active { outline: 3px solid var(--s-blue); outline-offset: 2px; }
+
+        .hidden-input { display: none; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-2xl flex flex-col relative overflow-hidden">
+        
+        <!-- LOGIN SCREEN -->
+        <section id="screen-login" class="flex-1 flex flex-col p-8 items-center justify-center animate__animated animate__fadeIn">
+            <div class="w-20 h-20 bg-blue-500 rounded-[24px] mb-6 flex items-center justify-center text-white text-4xl shadow-xl shadow-blue-200">✨</div>
+            <h1 class="text-4xl font-extrabold text-slate-800 text-center tracking-tighter poppins mb-2">OLYMTEST</h1>
+            <p class="text-slate-400 text-center mb-12 font-medium text-xs tracking-widest uppercase">Tes Kemampuan Olimpiade-mu!</p>
+            
+            <div class="w-full space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Masukkin Nama Kamu!</label>
+                    <input type="text" id="username" placeholder="Siapa namamu?" class="w-full p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 focus:border-blue-400 outline-none font-bold poppins transition-all">
+                </div>
+                <button onclick="handleLogin()" class="w-full duo-btn btn-blue py-4 rounded-2xl font-black text-lg">MASUK</button>
+            </div>
+            <p class="mt-20 text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em]">Studekasa • Labs</p>
+        </section>
+
+        <!-- DASHBOARD -->
+        <section id="screen-dashboard" class="hidden flex-1 flex flex-col p-6 animate__animated animate__fadeIn">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 id="greet-user" class="text-2xl font-black poppins tracking-tighter">Halo!</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Siap Taklukkan Hari Ini?</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-xl shadow-inner">⚡</div>
+            </div>
+
+            <div class="bg-gradient-to-br from-blue-600 to-blue-400 rounded-[32px] p-6 text-white mb-6 shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="font-black poppins text-lg mb-1">Paket OSN IPS</h3>
+                    <p class="text-[10px] font-medium opacity-80 mb-4">50 Soal Pilihan Terbaik</p>
+                    <button onclick="startExam(false)" class="bg-white text-blue-600 px-6 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition">Mulai Sekarang</button>
+                </div>
+                <div class="absolute -right-4 -bottom-4 text-8xl opacity-10">🌍</div>
+            </div>
+
+            <div class="flex items-center gap-2 mb-4">
+                <div class="h-px bg-slate-100 flex-1"></div>
+                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Atau Impor</span>
+                <div class="h-px bg-slate-100 flex-1"></div>
+            </div>
+
+            <div onclick="document.getElementById('json-input').click()" class="border-2 border-dashed border-slate-200 rounded-[28px] p-6 text-center cursor-pointer hover:border-blue-300 transition-colors group bg-slate-50/50">
+                <div class="text-3xl mb-2 group-hover:scale-110 transition">📥</div>
+                <h4 class="font-bold text-slate-700 text-sm poppins">Unggah Soal - JSON</h4>
+                <p class="text-[9px] text-slate-400 font-medium">Impor bank soal buatanmu sendiri</p>
+                <input type="file" id="json-input" class="hidden-input" accept=".json" onchange="handleFileImport(event)">
+            </div>
+        </section>
+
+        <!-- SIMULATION CORE -->
+        <section id="screen-sim" class="hidden flex-1 flex flex-col h-full overflow-hidden">
+            <div class="p-4 bg-white border-b flex justify-between items-center z-20">
+                <div id="timer-box" class="bg-slate-900 text-white px-4 py-1.5 rounded-xl font-black poppins text-sm flex items-center gap-2">
+                    ⏱️ <span id="timer-val">00:00</span>
+                </div>
+                <button onclick="openSidebar()" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-600 border border-slate-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+
+            <div id="scroll-container" class="flex-1 smooth-scroll p-6 pb-40 bg-slate-50/20">
+                <div id="q-render">
+                    <div id="img-box" class="hidden mb-6 rounded-[28px] border-4 border-white shadow-sm overflow-hidden">
+                        <img id="q-img" src="" class="w-full h-auto">
+                    </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span id="q-cat" class="bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-lg uppercase poppins">MATERI</span>
+                        <span id="q-level" class="bg-white border text-slate-400 text-[9px] font-bold px-2 py-1 rounded-lg uppercase">LEVEL</span>
+                    </div>
+                    <h2 id="q-text" class="text-xl font-bold leading-relaxed poppins text-slate-800 mb-8">Memuat soal...</h2>
+                    <div id="options-container" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="nav-overlay" onclick="closeSidebar()" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"></div>
+            <div id="nav-sidebar" class="fixed top-0 right-0 h-full w-64 bg-white z-50 p-6 flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-black poppins text-lg uppercase tracking-tighter">Navigasi</h3>
+                    <button onclick="closeSidebar()" class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-full text-slate-300">✕</button>
+                </div>
+                <div id="nav-grid" class="grid grid-cols-4 gap-2 overflow-y-auto smooth-scroll pr-1 pb-4"></div>
+                <div class="mt-auto pt-4 border-t border-slate-100">
+                    <button onclick="confirmFinish()" class="w-full duo-btn btn-red py-4 rounded-2xl font-black text-sm uppercase">Selesai</button>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 w-full max-w-md bg-white border-t p-4 flex gap-3 items-center z-30 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                <button onclick="prevQ()" class="flex-1 duo-btn btn-gray py-4 rounded-2xl font-bold text-[10px] uppercase">Kembali</button>
+                <button id="btn-ragu" onclick="toggleRagu()" class="px-6 py-4 rounded-2xl border-2 border-slate-200 font-bold text-lg">🤔</button>
+                <button onclick="nextQ()" class="flex-1 duo-btn btn-blue py-4 rounded-2xl font-black text-[10px] uppercase">Lanjut</button>
+            </div>
+        </section>
+
+        <!-- RESULT & ANALYTICS -->
+        <section id="screen-result" class="hidden flex-1 flex flex-col p-6 smooth-scroll animate__animated animate__fadeIn">
+            <h2 class="text-center poppins font-black text-2xl uppercase mb-8 tracking-tighter">Hasil Analisis</h2>
+            <div class="bg-white border-2 border-slate-50 rounded-[40px] p-6 mb-8 shadow-sm">
+                <canvas id="spiderChart"></canvas>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <div class="p-6 bg-slate-900 rounded-[32px] text-center shadow-lg">
+                    <span class="text-white/40 text-[9px] font-black block mb-1">SKOR</span>
+                    <span id="res-score" class="text-white text-5xl font-black poppins">0</span>
+                </div>
+                <div class="p-6 bg-blue-500 rounded-[32px] text-center shadow-lg">
+                    <span class="text-white/40 text-[9px] font-black block mb-1">AKURASI</span>
+                    <span id="res-acc" class="text-white text-3xl font-black poppins">0%</span>
+                </div>
+            </div>
+            <div class="space-y-4 mb-10">
+                <button onclick="startReview()" class="w-full duo-btn btn-green py-4 rounded-2xl font-black uppercase">Review Pembahasan</button>
+                <button onclick="location.reload()" class="w-full duo-btn btn-gray py-4 rounded-2xl font-black uppercase text-[10px]">Keluar</button>
+            </div>
+        </section>
+
+        <!-- REVIEW SCREEN -->
+        <section id="screen-review" class="hidden flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+            <div class="p-4 bg-white border-b flex items-center justify-between sticky top-0 z-10">
+                <h2 class="font-black poppins text-lg tracking-tighter uppercase">Review</h2>
+                <button onclick="showScreen('result')" class="text-blue-500 font-black text-[10px] uppercase bg-blue-50 px-4 py-2 rounded-xl">Tutup</button>
+            </div>
+            <div id="review-list" class="flex-1 smooth-scroll p-4 space-y-6 pb-12"></div>
+        </section>
+
+    </div>
+
+    <!-- MODAL GLOBAL -->
+    <div id="modal-global" class="hidden fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-6 backdrop-blur-md">
+        <div class="bg-white rounded-[40px] p-8 w-full max-w-sm text-center animate__animated animate__zoomIn">
+            <h3 id="modal-title" class="text-xl font-black poppins mb-2 tracking-tighter"></h3>
+            <div id="modal-desc" class="text-slate-500 text-sm mb-8 leading-relaxed text-left max-h-[60vh] overflow-y-auto smooth-scroll pr-2"></div>
+            <div id="modal-actions" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+
+    <script>
+        // DEFAULT DB
+        const defaultQuestions = [
+    {
+        id: 111,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Analisis menggunakan konsep 'telecoupling' untuk memahami dampak kebakaran hutan Indonesia terhadap ekonomi global. Konsep ini menjelaskan...",
+        img: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Hanya dampak lokal di tingkat desa",
+            "Interkoneksi jarak jauh: asap lintas batas mengganggu kesehatan di Malaysia-Singapura, menghentikan penerbangan, mempengaruhi pasar minyak sawit global, dan menarik tekanan diplomasi internasional",
+            "Kebakaran hanya masalah cuaca lokal",
+            "Tidak ada kaitan dengan ekonomi global"
+        ],
+        a: 1,
+        exp: "Telecoupling framework melihat hubungan sosial-ekologis antar sistem yang berjauhan. Kebakaran hutan Indonesia dipicu permintaan global akan komoditas (sawit, kayu). Dampaknya melintasi batas: 1) Kesehatan regional (ISPA), 2) Ekonomi (tutup bandara, penurunan pariwisata), 3) Politik (ASEAN Haze Agreement), 4) Pasar (label sustainability). Ini menunjukkan kompleksitas masalah lingkungan di era globalisasi."
+    },
+    {
+        id: 112,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi eksperimental, 'ultimatum game' menunjukkan manusia sering menolak tawaran tidak adal meski rugi. Apa implikasi teori ekonomi perilaku terhadap asumsi 'rational economic man'?",
+        o: [
+            "Manusia selalu rasional sempurna",
+            "Manusia dimotivasi oleh keadilan (fairness), reciprocity, dan emosi, bukan hanya kepentingan diri sempit. Model ekonomi perlu memasukkan preferensi sosial (social preferences)",
+            "Game ini tidak relevan untuk ekonomi nyata",
+            "Semua keputusan ekonomi hanya berdasarkan perhitungan matematis"
+        ],
+        a: 1,
+        exp: "Dalam ultimatum game, proposer bagi uang, responder bisa terima atau tolak (keduanya dapat nol jika tolak). Teori rasional: responder terima apapun >0. Eksperimen: tawaran <20% sering ditolak (karena dianggap tidak adil). Ini menunjukkan norma keadilan dan hukuman (punishment) mempengaruhi keputusan. Implikasi: desain kebijakan perlu pertimbangkan persepsi keadilan masyarakat."
+    },
+    {
+        id: 113,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'multicultural citizenship' (Will Kymlicka) menawarkan alternatif untuk integrasi nasional dalam masyarakat majemuk. Penerapannya di Indonesia bisa berupa...",
+        o: [
+            "Asimilasi paksa semua kelompok ke budaya Jawa",
+            "Pengakuan hak-hak khusus (special rights) untuk komunitas adat (misal: pengelolaan hutan adat, pendidikan bilingual), sambil tetap berkomitmen pada hak-hak kewarganegaraan yang sama",
+            "Pemisahan total antar kelompok etnis",
+            "Penghapusan semua identitas lokal"
+        ],
+        a: 1,
+        exp: "Multicultural citizenship menggabungkan hak universal (civil, political) dengan hak kelompok (group-differentiated rights): 1) Hak otonomi (self-government) untuk masyarakat adat, 2) Hak poli-etnik (polyethnic rights) untuk ekspresi budaya imigran, 3) Hak representasi khusus (special representation rights). Di Indonesia, ini terwujud dalam UU Desa dan pengakuan hutan adat, meski implementasi belum optimal."
+    },
+    {
+        id: 114,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Historiografi 'dari bawah' (history from below) tentang Revolusi Nasional 1945-1949 berfokus pada pengalaman kelompok marginal. Sumber sejarah non-tradisional apa yang dapat digunakan?",
+        img: "https://images.unsplash.com/photo-1548013146-72479768bada?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Hanya dokumen resmi pemerintah",
+            "Memoar buruh pelabuhan, lagu-lagu perjuangan daerah, cerita rakyat tentang perang, arsip pengadilan militer untuk desertir, dan foto-foto keluarga biasa selama pendudukan",
+            "Hanya arsip militer Belanda",
+            "Tidak ada sumber untuk sejarah dari bawah"
+        ],
+        a: 1,
+        exp: "Sejarawan seperti William H. Frederick menggunakan sumber alternatif: 1) Oral history warga Surabaya yang selamat dari 10 November 1945, 2) Pamflet dan selebaran gerilya, 3) Arsip surat kabar lokal, 4) Autobiografi tentara pelajar. Sumber ini mengungkap bagaimana revolusi dialami berbeda oleh petani, buruh, perempuan, dan anak-anak, bukan hanya elite politik."
+    },
+    {
+        id: 115,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'planetary boundaries' (Rockström et al.) mengidentifikasi 9 batas proses sistem Bumi. Indonesia berkontribusi signifikan terhadap pelampauan batas...",
+        o: [
+            "Semua batas masih aman",
+            "Perubahan penggunaan lahan (land-system change) melalui deforestasi, dan siklus biogeokimia (phosphorus/nitrogen) dari pupuk pertanian dan kebakaran",
+            "Hanya acidifikasi laut yang relevan",
+            "Tidak ada kaitan dengan Indonesia"
+        ],
+        a: 1,
+        exp: "Planetary boundaries: 1) Perubahan iklim, 2) Integritas biosfer (hilangnya biodiversitas), 3) Perubahan sistem daratan, 4) Siklus biogeokimia (P/N), 5) Penggunaan air tawar, 6) Acidifikasi laut, 7) Penipisan ozon, 8) Aerosol atmosfer, 9) Novel entities (polusi kimia). Indonesia melampaui batas #2 dan #3 (deforestasi), serta #4 (kebakaran melepas N). Ini menunjukkan dampak global aktivitas nasional."
+    },
+    {
+        id: 116,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam teori siklus bisnis riil (Real Business Cycle theory), fluktuasi ekonomi disebabkan oleh...",
+        o: [
+            "Guncangan permintaan agregat saja",
+            "Guncangan penawaran agregat (supply shocks) seperti perubahan teknologi, harga minyak, atau regulasi yang mempengaruhi produktivitas",
+            "Hanya oleh kebijakan moneter",
+            "Spirals harga-upah saja"
+        ],
+        a: 1,
+        exp: "RBC theory (Kydland & Prescott) menekankan guncangan riil (real shocks) bukan nominal. Contoh: 1) Teknologi baru meningkatkan produktivitas (boom), 2) Kenaikan harga minyak mengurangi produktivitas (resesi), 3) Perubahan regulasi tenaga kerja. Individu merespons dengan mengubah keputusan kerja-leisure (intertemporal substitution). Kritik: teori ini mengabaikan ketidaklengkapan pasar dan rigiditas nominal yang penting dalam resesi."
+    },
+    {
+        id: 117,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Studi 'The Spirit Level' (Wilkinson & Pickett) menunjukkan bahwa masyarakat dengan ketimpangan pendapatan tinggi cenderung memiliki masalah sosial lebih buruk. Mekanisme sosial yang menjelaskan hal ini adalah...",
+        o: [
+            "Tidak ada hubungan",
+            "Status anxiety: dalam masyarakat timpang, peringkat sosial sangat penting, memicu stres kronis, kecemasan, dan kompetisi sosial yang merusak kohesi dan kepercayaan",
+            "Orang miskin memang kurang mampu",
+            "Hanya masalah jumlah uang absolut"
+        ],
+        a: 1,
+        exp: "Wilkinson & Pickett menemukan korelasi kuat antara Gini coefficient dan indikator seperti kesehatan mental, obesitas, kriminalitas, bahkan harapan hidup. Penjelasan: 1) Stres status (status anxiety) merusak kesehatan, 2) Erosi kepercayaan sosial menghambat kerja sama, 3) Mobilitas sosial menurun. Solusi bukan hanya menaikkan pendapatan, tetapi mengurangi kesenjangan melalui pajak progresif dan layanan publik universal."
+    },
+    {
+        id: 118,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan sejarah 'gendered' dalam konteks kolonialisme Belanda di Indonesia akan mengeksplorasi...",
+        o: [
+            "Hanya peran laki-laki",
+            "Bagaimana sistem kolonial mempengaruhi dan dibentuk oleh relasi gender: pekerjaan perempuan di perkebunan, regulasi perkawinan campur (concubinage), representasi perempuan dalam wacana kolonial ('nyai', 'perempuan Jawa yang eksotis'), dan perlawanan perempuan",
+            "Gender tidak relevan untuk sejarah kolonial",
+            "Hanya tentang ratu Belanda"
+        ],
+        a: 1,
+        exp: "Sejarah gender kolonial meneliti: 1) Pembagian kerja berdasarkan gender di perkebunan (perempuan sebagai pemetik teh), 2) Kebijakan moral kolonial terhadap perempuan pribumi dan hubungan dengan pria Eropa, 3) Gerakan perempuan (Kartini, organisasi perempuan Islam), 4) Representasi dalam sastra dan foto kolonial. Ini mengungkap bagaimana kolonialisme menggunakan dan mengubah struktur gender pribumi."
+    },
+    {
+        id: 119,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'nature-based solutions' (NBS) untuk adaptasi perubahan iklim di perkotaan Indonesia. Contoh efektif adalah...",
+        img: "https://images.unsplash.com/photo-1417716146732-918825b83b4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Hanya membangun tanggul beton",
+            "Restorasi mangrove sebagai pertahanan pesisir dari abrasi dan tsunami, serta pembuatan taman biopori dan rain garden untuk mengurangi banjir perkotaan dengan meningkatkan resapan air",
+            "Mengaspal semua permukaan tanah",
+            "Relokasi warga ke dataran tinggi"
+        ],
+        a: 1,
+        exp: "NBS memanfaatkan ekosistem untuk mengatasi tantangan sosial-lingkungan. Contoh: 1) Mangrove: mengurangi energi gelombang 70%, menyerap karbon, habitat ikan, 2) Taman resapan: mengurangi runoff, menambah RTH, menyejukkan kota, 3) Green roof dan vertical garden: mengurangi urban heat island. Keunggulan: multifungsi, lebih murah dalam jangka panjang, dan meningkatkan kualitas hidup."
+    },
+    {
+        id: 120,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam teori pertukaran sosial (social exchange theory), hubungan ekonomi dipandang sebagai pertukaran yang melibatkan...",
+        o: [
+            "Hanya uang dan barang",
+            "Berbagai sumber daya: material (uang), sosial (status), dan emosional (dukungan). Prinsip reciprocity, equity, dan comparative evaluation menentukan kepuasan dalam hubungan ekonomi",
+            "Hanya perhitungan matematis",
+            "Tidak ada unsur sosial"
+        ],
+        a: 1,
+        exp: "Social exchange theory (Homans, Blau) melihat interaksi sebagai pertukaran yang mengharapkan imbalan. Contoh: 1) Pekerja tidak hanya menukar tenaga dengan uang, tetapi juga mengharapkan pengakuan (social reward), 2) Hubungan bisnis jaringan (guanxi) di China melibatkan pertukaran kewajiban sosial, 3) Donasi darah bisa dilihat sebagai generalized exchange (saya memberi pada orang tak dikenal, berharap sistem akan membantu saya saat butuh)."
+    },
+    {
+        id: 121,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'ontological security' (Giddens) menjelaskan kebutuhan manusia akan rasa kontinuitas dan keteraturan dalam hidup. Bagaimana globalisasi dan media digital mengancam hal ini?",
+        o: [
+            "Tidak ada ancaman",
+            "Aliran informasi yang berlebihan, ketidakpastian kronis, dan keruntuhan tradisi lokal dapat menciptakan 'ontological insecurity', memicu keresahan eksistensial, fundamentalisme, atau pencarian identitas melalui konsumsi merek global",
+            "Globalisasi meningkatkan keamanan ontologis",
+            "Hanya ancaman bagi negara miskin"
+        ],
+        a: 1,
+        exp: "Ontological security adalah rasa stabilnya dunia dan identitas diri. Globalisasi dan digitalisasi: 1) Menghadirkan banyak pilihan gaya hidup yang bertentangan, 2) Berita buruk dari seluruh dunia datang terus-menerus, 3) Tradisi lokal tergeser. Respons: ada yang mencari kepastian dalam agama fundamentalis, nasionalisme etnis, atau membangun identitas melalui gaya hidup konsumen ('saya pengguna iPhone')."
+    },
+    {
+        id: 122,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Analisis wacana (discourse analysis) terhadap pidato Proklamasi Soekarno dapat mengungkap...",
+        o: [
+            "Hanya fakta bahwa Indonesia merdeka",
+            "Bagaimana teks pendek itu membangun narasi nasional: penggunaan kata 'kami' (mewakili rakyat), 'atas nama bangsa Indonesia' (klaim kedaulatan), dan penanggalan '17-8-'05' (menghubungkan dengan Kebangkitan Nasional 1905 dan penanggalan Jepang)",
+            "Hanya tentang membaca teks",
+            "Tidak ada makna wacana"
+        ],
+        a: 1,
+        exp: "Analisis wacana melihat bahasa sebagai praktik sosial. Proklamasi: 1) 'Kami bangsa Indonesia' menciptakan subjek kolektif imajiner, 2) 'menyatakan kemerdekaan' performatif (mengucapkan = mewujudkan), 3) Penanggalan 17-8-05: tahun Jepang 2605, menunjukkan konteks pendudukan sekaligus memutus dengan penanggalan Belanda, 4) 'hal-hal yang mengenai pemindahan kekuasaan' diserahkan pada PPKI, menunjukkan transisi teratur."
+    },
+    {
+        id: 123,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'political ecology' digunakan untuk menganalisis konflik agraria di Indonesia. Pendekatan ini menekankan...",
+        o: [
+            "Hanya faktor lingkungan fisik",
+            "Keterkaitan kekuasaan politik, ekonomi, dan ekologi: bagaimana kebijakan, hak kepemilikan, dan aktor (negara, korporasi, masyarakat lokal) membentuk akses terhadap sumber daya dan menghasilkan ketidakadilan lingkungan",
+            "Hanya tentang konservasi alam",
+            "Tidak ada kaitan dengan politik"
+        ],
+        a: 1,
+        exp: "Political ecology melihat konflik lingkungan sebagai konflik politik. Contoh konflik perkebunan sawit: 1) Kebijakan izin usaha dari pemerintah daerah yang mengabaikan hak adat, 2) Ketimpangan kekuasaan antara perusahaan dan petani, 3) Diskursus 'pembangunan' vs 'konservasi', 4) Peran NGO dan media dalam memobilisasi resistensi. Ini membantu memahami mengapa solusi teknis sering gagal tanpa keadilan politik."
+    },
+    {
+        id: 124,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi institusional baru (New Institutional Economics), 'transaction costs' menjelaskan mengapa perusahaan ada. Contoh di sektor pertanian Indonesia:",
+        o: [
+            "Tidak ada biaya transaksi",
+            "Petani kecil menghadapi biaya transaksi tinggi: mencari informasi harga, negosiasi dengan tengkulak, penegakan kontrak. Koperasi atau kontrak farming muncul untuk mengurangi biaya ini melalui skala ekonomi dan mekanisme kepercayaan",
+            "Semua transaksi mulus tanpa biaya",
+            "Biaya transaksi hanya di kota"
+        ],
+        a: 1,
+        exp: "Transaction costs (Coase): biaya mencari informasi, negosiasi, monitoring, penegakan. Di pertanian: 1) Petani kesulitan tahu harga pasar yang adil, 2) Rentenir ambil untung besar karena akses kredit bank sulit, 3) Kontrak lisan mudah dilanggar. Institusi seperti kelompok tani, marketplace online hasil pertanian, atau sertifikasi fair trade bertujuan mengurangi biaya transaksi ini."
+    },
+    {
+        id: 125,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'superdiversity' (Vertovec) menggambarkan kondisi migrasi kontemporer yang lebih kompleks dari sekedar etnis. Contoh di perkotaan Indonesia:",
+        o: [
+            "Hanya ada satu kelompok etnis",
+            "Jakarta tidak hanya memiliki kelompok etnis berbeda, tetapi variasi dalam status hukum (WNA, WNI), alasan migrasi (kerja, pendidikan, pengungsi), agama, gender, dan kelas sosial, menciptakan kompleksitas interaksi yang tidak bisa direduksi ke kategori 'pribumi vs pendatang'",
+            "Tidak ada keragaman di Jakarta",
+            "Hanya orang kaya yang migrasi"
+        ],
+        a: 1,
+        exp: "Superdiversity melihat keragaman dalam keragaman. Di Jakarta: pekerja migran Filipina (katolik, berpendidikan), pengungsi Rohingya (muslim, tanpa dokumen), ekspatriat Jepang (kontrak pendek), mahasiswa Papua (WNI, budaya berbeda), dan pekerja informal dari Flores. Masing-masing memiliki jaringan sosial, kebutuhan layanan, dan pengalaman diskriminasi yang unik. Kebijakan sosial perlu sensitif terhadap kompleksitas ini."
+    },
+    {
+        id: 126,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'histoire des mentalités' (sejarah mentalitas) dalam meneliti masyarakat Jawa abad 19 akan berfokus pada...",
+        o: [
+            "Hanya perang dan politik",
+            "Sistem kepercayaan, konsepsi waktu, sikap terhadap penyakit dan kematian, gagasan tentang kekuasaan dan hierarki sosial yang tertanam dalam budaya dan mempengaruhi respons terhadap kolonialisme",
+            "Hanya arsitektur candi",
+            "Tidak bisa diteliti"
+        ],
+        a: 1,
+        exp: "Sejarah mentalitas (Bloch, Febvre) meneliti struktur mental kolektif. Untuk Jawa abad 19: 1) Konsepsi kekuasaan sebagai wahyu (wahyu keprabon), 2) Sikap terhadap penyakit sebagai ketidakseimbangan kosmik, 3) Peran dukun dan praktik tradisional, 4) Pandangan tentang Belanda sebagai 'orang putih' dengan kekuatan magis tertentu. Ini membantu memahami mengapa perlawanan sering berbentuk pemberontakan mesianistik dengan pemimpin yang diklaim memiliki kekuatan supernatural."
+    },
+    {
+        id: 127,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Penggunaan model hidrologi SWAT (Soil & Water Assessment Tool) untuk pengelolaan DAS Citarum bertujuan untuk...",
+        img: "https://images.unsplash.com/photo-1589652043056-ba1a2c4830a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Hanya memetakan sungai",
+            "Mensimulasikan dampak perubahan penggunaan lahan dan praktik pertanian terhadap runoff, sedimentasi, dan polusi nutrisi, sehingga dapat merancang intervensi konservasi yang tepat sasaran",
+            "Mengukur kedalaman sungai saja",
+            "Tidak ada kaitan dengan pengelolaan"
+        ],
+        a: 1,
+        exp: "SWAT adalah model fisik berbasis proses yang membagi DAS menjadi sub-DAS dan HRU (Hydrologic Response Units). Input: data tanah, penggunaan lahan, cuaca. Output: prediksi aliran air, sediment, N, P di berbagai titik. Untuk Citarum yang tercemar berat, model ini dapat mengidentifikasi: area mana penyumbang sediment/polusi utama (hotspots), dan skenario mana (reboisasi, terasering, pengolahan limbah) yang paling efektif."
+    },
+    {
+        id: 128,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam teori pertumbuhan yang memperhitungkan sumber daya alam, konsep 'genuine savings' atau 'adjusted net savings' mengukur...",
+        o: [
+            "Hanya tabungan moneter",
+            "Tabungan nasional dikurangi depresiasi modal buatan manusia, ditambah investasi pendidikan (human capital), dan dikurangi eksploitasi sumber daya alam serta kerusakan lingkungan",
+            "Hanya ekspor migas",
+            "Semua pendapatan adalah tabungan"
+        ],
+        a: 1,
+        exp: "Genuine savings (World Bank) = Gross savings - consumption of fixed capital + education expenditure - energy depletion - mineral depletion - net forest depletion - CO2 damage. Jika negatif, berarti negara menggerogoti kekayaannya untuk konsumsi sekarang (unsustainable). Indonesia sering negatif karena eksploitasi sumber daya tinggi. Ini adalah indikator keberlanjutan yang lebih baik dari GDP growth."
+    },
+    {
+        id: 129,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'social acceleration' (Hartmut Rosa) menjelaskan percepatan perubahan sosial di era modern. Manifestasi dalam kehidupan sehari-hari:",
+        o: [
+            "Hidup semakin lambat",
+            "Siklus produk yang semakin pendek (ganti smartphone setiap tahun), percepatan komunikasi (harus merespons email segera), dan meningkatnya kecepatan kehidupan sosial yang menyebabkan 'time poverty' dan burnout",
+            "Tidak ada perubahan kecepatan",
+            "Hanya di sektor teknologi"
+        ],
+        a: 1,
+        exp: "Rosa mengidentifikasi tiga percepatan: 1) Teknologi (transportasi, komunikasi), 2) Perubahan sosial (mode, pekerjaan, hubungan), 3) Tempo hidup (segala sesuatu harus cepat). Dampak: masyarakat 'dromokratis' (didominasi kecepatan), kesulitan membentuk identitas stabil, dan paradoxically, kita punya lebih banyak perangkat hemat waktu tetapi merasa lebih sibuk. Ini berkaitan dengan fenomena quiet quitting dan great resignation."
+    },
+    {
+        id: 130,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'microhistory' terhadap Peristiwa 1965 akan meneliti...",
+        o: [
+            "Hanya keputusan elite di Jakarta",
+            "Pengalaman satu desa atau keluarga tertentu: bagaimana konflik nasional dimainkan dalam konteks lokal, hubungan tetangga yang berubah, mekanisme denunciation, dan ingatan kolektif yang bertahan hingga kini",
+            "Hanya statistik korban",
+            "Tidak mungkin diteliti"
+        ],
+        a: 1,
+        exp: "Microhistory 1965 (seperti karya Robert Cribb atau John Roosa) menggunakan sumber lokal: 1) Dokumen pengadilan militer setempat, 2) Wawancara dengan penyintas di satu kabupaten, 3) Arsip gereja atau pesantren. Ini mengungkap variasi pengalaman: di beberapa daerah kekerasan sistematis, di lain hanya penangkapan simbolik. Juga menunjukkan bagaimana konflik nasional dimediasi oleh rivalitas lokal lama (antar kampung, aliran agama)."
+    },
+    {
+        id: 131,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'vulnerability' dalam bencana terdiri dari tiga komponen: exposure, sensitivity, adaptive capacity. Analisis kerentanan komunitas nelayan terhadap perubahan iklim:",
+        o: [
+            "Hanya tentang terpapar badai",
+            "Exposure: tinggal di pesisir dan bergantung pada laut. Sensitivity: rumah sederhana, kapal kecil, ketergantungan pada spesies ikan tertentu yang mungkin berpindah. Adaptive capacity rendah: tabungan minim, akses informasi terbatas, alternatif mata pencaharian sedikit",
+            "Hanya tentang kemiskinan",
+            "Nelayan tidak rentan"
+        ],
+        a: 1,
+        exp: "Framework IPCC: Vulnerability = f(Exposure, Sensitivity, Adaptive Capacity). Untuk nelayan: Exposure tinggi (permukaan laut naik, badai intens). Sensitivity tinggi (infrastruktur rapuh, ekosistem rentan). Adaptive capacity sering rendah: pendidikan terbatas, jaringan sosial mungkin kuat tapi sumber daya finansial minim. Intervensi harus meningkatkan adaptive capacity: asuransi iklim, teknologi ramah cuaca, diversifikasi pendapatan (ekowisata, budidaya)."
+    },
+    {
+        id: 132,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam teori keputusan publik (public choice theory), 'rent-seeking' menjelaskan perilaku ekonomis aktor politik. Contoh di Indonesia:",
+        o: [
+            "Tidak ada rent-seeking",
+            "Perusahaan membayar 'fee' kepada pejabat untuk mendapatkan izin usaha eksklusif atau kontrak pemerintah yang menguntungkan, alih-alih berinovasi untuk bersaing di pasar. Ini merugikan ekonomi karena mengalihkan sumber daya dari kegiatan produktif",
+            "Semua bisnis bersaing sehat",
+            "Hanya terjadi di negara komunis"
+        ],
+        a: 1,
+        exp: "Rent-seeking (Krueger, Tullock): upaya mendapatkan keuntungan melalui manipulasi lingkungan ekonomi/politik daripada menciptakan nilai. Contoh: lobi untuk tarif impor tinggi (proteksi), suap untuk proyek tender, pembuatan regulasi yang rumit agar perlu 'jasa konsultan'. Dampak: deadweight loss, inefisiensi, dan konsentrasi kekayaan pada yang dekat kekuasaan. Ini menjelaskan mengapa reformasi birokrasi sulit: ada banyak pihak diuntungkan status quo."
+    },
+    {
+        id: 133,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'everyday resistance' (James C. Scott) mengacu pada bentuk perlawanan tersembunyi kelompok subordinat. Contoh dalam hubungan buruh-pengusaha di Indonesia:",
+        o: [
+            "Hanya pemogokan terbuka",
+            "Pura-pura tidak paham instruksi, kerja ala kadarnya (slowdown), menyebarkan gosip tentang atasan, atau mencuri kecil-kecilan barang perusahaan. Ini adalah taktik bertahan tanpa konfrontasi langsung yang berisiko",
+            "Tidak ada perlawanan sama sekali",
+            "Hanya dengan kekerasan"
+        ],
+        a: 1,
+        exp: "Weapons of the weak: 1) Feigned ignorance (pura-pura tidak mengerti), 2) Foot dragging (kerja lambat), 3) False compliance (patuh di depan, tidak di belakang), 4) Petty theft (ambil kertas, pulpen), 5) Character assassination (gosip). Di pabrik, ini bisa lebih aman daripada mogok (yang bisa kena PHK). Namun, ini adalah bentuk agency meski terbatas. Scott meneliti ini di petani Malaysia, tapi berlaku universal."
+    },
+    {
+        id: 134,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'histoire croisée' (entangled history) dalam meneliti gerakan Non-Blok akan menganalisis...",
+        o: [
+            "Hanya pidato Soekarno",
+            "Interkoneksi antara gerakan kemerdekaan di Asia-Afrika, pertukaran ide dan personel antar negara (misal: mahasiswa Indonesia di India, dokter Kuba di Indonesia), dan bagaimana konferensi Bandung menjadi nodal point dalam jaringan anti-kolonial global",
+            "Hanya urusan Indonesia saja",
+            "Tidak ada keterkaitan"
+        ],
+        a: 1,
+        exp: "Histoire croisée melihat sejarah saling terkait. Gerakan Non-Blok: 1) Ide Pan-Asianisme dari Jepang era perang mempengaruhi elite Indonesia, 2) Konferensi Asia-Afrika 1955 terhubung dengan Konferensi Bogor 1954 dan gerakan Afrika di Accra, 3) Jaringan intelektual seperti Ali Shariati (Iran) yang belajar dari Frantz Fanon (Aljazair) dan mempengaruhi aktivis Indonesia. Ini melampaui narasi 'Indonesia sebagai inisiator tunggal'."
+    },
+    {
+        id: 135,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'land sparing vs land sharing' dalam debat konservasi keanekaragaman hayati. Mana yang lebih sesuai untuk Indonesia?",
+        img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Land sparing: intensifikasi pertanian di lahan tertentu agar luas hutan alami bisa disisakan lebih banyak. Cocok karena tekanan deforestasi tinggi",
+            "Land sharing: integrasi pertanian dan konservasi (agroforestri). Lebih cocok karena masyarakat sekitar hutan butuh penghidupan",
+            "Keduanya tidak cocok",
+            "Tidak perlu konservasi"
+        ],
+        a: 0,
+        exp: "Land sparing vs sharing: trade-off antara produksi pangan dan konservasi. Sparing: hasil tinggi di lahan terbatas (sawah intensif, sawit produktif), sisakan koridor hutan. Cocok untuk Indonesia yang butuh pangan tapi juga punya biodiversity hotspots. Namun, sparing butuh tata ruang ketat dan bisa meminggirkan petani kecil. Sharing (kebun campuran, wanatani) lebih ramah sosial tapi mungkin kurang efisien dan tetap butuh lahan luas."
+    },
+    {
+        id: 136,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi pembangunan, konsep 'middle-income trap' menjelaskan mengapa banyak negara terjebak di pendapatan menengah. Faktor penghambat Indonesia:",
+        o: [
+            "Tidak ada hambatan, pasti jadi negara maju",
+            "Ketergantungan pada komoditas dan manufaktak rendah teknologi, produktivitas stagnan, inovasi terbatas, dan lemahnya institusi (korupsi, birokrasi tidak efisien) yang menghambat upgrading ekonomi",
+            "Hanya karena kurang sumber daya alam",
+            "Karena populasi terlalu banyak"
+        ],
+        a: 1,
+        exp: "Middle-income trap: negara berhasil naik dari low-income via industrialisasi berbasis buruh murah, tapi gagal naik ke high-income via inovasi. Indonesia: 1) Ekspor masih didominasi komoditas (CPO, batubara) dan manufaktur assembly (elektronik, otomotif) dengan value added rendah, 2) R&D hanya 0.3% GDP (Korea 4.5%), 3) Kualitas pendidikan dan kesehatan masih rendah, 4) Infrastruktur belum memadai. Keluar dari jebakan butuh lompatan produktivitas melalui inovasi."
+    },
+    {
+        id: 137,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'digital divide' memiliki tiga level: access, usage, dan outcome. Analisis untuk masyarakat pedesaan Indonesia:",
+        o: [
+            "Hanya soal punya smartphone atau tidak",
+            "Access: jaringan internet belum merata. Usage: keterampilan digital terbatas (hanya untuk media sosial, bukan produktif). Outcome: manfaat ekonomi rendah karena tidak bisa memanfaatkan e-commerce atau fintech secara optimal",
+            "Semua sudah melek digital",
+            "Tidak ada perbedaan dengan kota"
+        ],
+        a: 1,
+        exp: "Digital divide multidimensional: 1) First-level (access): sinyal lemah, harga paket data mahal di daerah, 2) Second-level (skills): literasi digital terbatas, kurang mampu bedakan hoax, tidak tahu cara buat toko online, 3) Third-level (benefit): meski akses, tetap sulit jual produk karena logistik mahal, tidak percaya sistem pembayaran digital. Solusi butuh pendekatan holistik: infrastruktur + pelatihan + ekosistem pendukung (logistik, pembayaran)."
+    },
+    {
+        id: 138,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'history of emotions' dalam meneliti peristiwa Sumpah Pemuda 1928 akan mengeksplorasi...",
+        o: [
+            "Hanya fakta tanggal dan tempat",
+            "Emosi kolektif yang dihasilkan: rasa kebersamaan (solidarity), kebanggaan nasional (national pride), dan harapan (hope) yang dipupuk melalui lagu, pidato, dan simbol seperti bendera, serta bagaimana emosi ini memobilisasi gerakan nasional berikutnya",
+            "Hanya tentang tokoh-tokohnya",
+            "Emosi tidak penting untuk sejarah"
+        ],
+        a: 1,
+        exp: "Sejarah emosi (Barbara Rosenwein) melihat bagaimana emosi dikonstruksi, dialami, dan diekspresikan dalam konteks sejarah. Sumpah Pemuda: 1) Penggunaan lagu 'Indonesia Raya' menciptakan resonansi emosional, 2) Ikrar 'satu nusa, satu bangsa, satu bahasa' menghasilkan ikatan emosional lintas etnis, 3) Pengalaman bersama dalam kongres menciptakan emotional community. Emosi ini menjadi modal sosial untuk perjuangan selanjutnya."
+    },
+    {
+        id: 139,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'blue economy' dalam pengelolaan wilayah pesisir Indonesia berbeda dengan 'blue growth'. Perbedaan mendasar:",
+        o: [
+            "Sama saja",
+            "Blue economy menekankan keberlanjutan, inklusivitas, dan kesehatan ekosistem laut sebagai dasar ekonomi. Blue growth lebih fokus pada pertumbuhan ekonomi berbasis laut tanpa selalu memperhatikan keberlanjutan ekologis",
+            "Hanya tentang penangkapan ikan",
+            "Tidak ada konsep tersebut"
+        ],
+        a: 1,
+        exp: "Blue economy (Gunter Pauli): model ekonomi yang meniru ekosistem (zero waste, regenerative). Contoh: budidaya rumput laut yang sekaligus menyaring polusi, wisata bahari berkelanjutan. Blue growth (OECD): ekspansi aktivitas ekonomi laut (perikanan, energi lepas pantai, pariwisata) yang bisa berisiko overeksploitasi. Indonesia mengadopsi 'ekonomi biru' dalam visi poros maritim, tetapi implementasi sering masih 'blue growth' yang eksploitatif."
+    },
+    {
+        id: 140,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi kewirausahaan, konsep 'effectuation' (Sarasvathy) menjelaskan bagaimana pengusaha ahli mengambil keputusan berbeda dari model kausal tradisional. Perbedaannya:",
+        o: [
+            "Pengusaha hanya mengikuti rencana bisnis kaku",
+            "Effectuation: mulai dengan sumber daya yang ada (means), fokus pada apa yang bisa dikontrol, membangun kemitraan, dan memanfaatkan kejutan (leverage contingencies). Berbeda dengan causation: mulai dengan tujuan jelas, lalu cari sumber daya untuk mencapainya",
+            "Tidak ada perbedaan",
+            "Hanya untuk startup teknologi"
+        ],
+        a: 1,
+        exp: "Effectuation principles: 1) Bird-in-hand: mulai dengan who I am, what I know, whom I know (bukan target pasar), 2) Affordable loss: invest hanya yang sanggup hilang (bukan expected return), 3) Crazy quilt: bangun kemitraan dengan siapa saja bersedia, 4) Lemonade: manfaatkan kejutan tak terduga. Ini menjelaskan bagaimana banyak UKM Indonesia tumbuh organik dari keterampilan dan jaringan lokal, bukan dari business plan sempurna."
+    },
+    {
+        id: 141,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'cosmopolitanism' (Ulrich Beck) sebagai respons terhadap globalisasi. Manifestasi di kalangan muda perkotaan Indonesia:",
+        o: [
+            "Menutup diri dari budaya asing",
+            "Konsumsi budaya global (K-pop, Netflix), concern pada isu global (perubahan iklim, LGBTQ rights), identitas hybrid (Jawa tapi vegan, Muslim tapi pakai fesyen Korea), dan jaringan pertemanan lintas negara via media sosial",
+            "Hanya orang kaya yang kosmopolitan",
+            "Tidak ada kosmopolitanisme di Indonesia"
+        ],
+        a: 1,
+        exp: "Cosmopolitanism: kesadaran dan keterlibatan dengan dunia yang lebih luas. Di Indonesia: 1) Cultural: konsumsi produk global, perjalanan internasional, 2) Political: aktivisme lingkungan atau HAM yang terhubung dengan gerakan global, 3) Ethical: kepedulian pada penderitaan di tempat jauh (donasi untuk Palestina). Namun, sering bersifat 'selective cosmopolitanism' - terbuka pada aspek tertentu (makanan, musik) tapi tertutup pada aspek lain (agama, nilai keluarga)."
+    },
+    {
+        id: 142,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'environmental history' terhadap kolonialisme Belanda di Jawa abad 19 akan meneliti...",
+        img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Hanya politik dan perang",
+            "Perubahan lanskap akibat Cultuurstelsel: konversi hutan menjadi perkebunan kopi dan tebu, sistem irigasi untuk sawah, introduksi spesies asing, serta dampaknya terhadap ekologi lokal dan masyarakat petani",
+            "Hanya tentang gubernur jenderal",
+            "Tidak ada perubahan lingkungan"
+        ],
+        a: 1,
+        exp: "Sejarah lingkungan kolonial (seperti penelitian Peter Boomgaard): 1) Deforestasi besar-besaran untuk perkebunan ekspor, 2) Pembangunan waduk dan kanal yang mengubah hidrologi, 3) Introduksi tanaman asing (tembakau, kina) yang mengubah pola tanam, 4) Dampak pada satwa liar (harimau Jawa terdesak), 5) Munculnya hama baru. Ini menunjukkan bagaimana kolonialisme tidak hanya eksploitasi manusia tapi juga transformasi ekologi radikal dengan konsekuensi jangka panjang."
+    },
+    {
+        id: 143,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'food-water-energy nexus' untuk analisis pembangunan berkelanjutan di Indonesia. Contoh interdependensi kritis:",
+        o: [
+            "Semua sektor terpisah",
+            "Produksi padi butuh banyak air (irigasi) dan energi (pompa, pupuk). Energi PLTA bergantung pada ketersediaan air di waduk. Konversi hutan untuk sawit (food/energy) mengurangi fungsi catchment area, mempengaruhi pasokan air dan energi hidro",
+            "Hanya tentang pangan saja",
+            "Tidak ada keterkaitan"
+        ],
+        a: 1,
+        exp: "Nexus approach melihat keterkaitan sistemik. Contoh krisis: kekeringan → produksi padi turun (food security) → waduk surut → pembangkit listrik terganggu (energy security) → pompa air tak bisa operasi → pasokan air minum terganggu (water security). Solusi terintegrasi: efisiensi air irigasi (system of rice intensification), diversifikasi energi (surya, angin), dan tata ruang yang melindungi daerah tangkapan air."
+    },
+    {
+        id: 144,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi kesejahteraan, konsep 'capability approach' (Amartya Sen) menilai pembangunan berdasarkan...",
+        o: [
+            "Hanya pertumbuhan GDP",
+            "Kemampuan orang untuk mencapai kehidupan yang mereka nilai (functionings): sehat, berpendidikan, berpartisipasi dalam komunitas. Fokus pada kebebasan substantif (substantive freedoms) bukan hanya pendapatan",
+            "Hanya jumlah barang yang dikonsumsi",
+            "Kepuasan subjektif semata"
+        ],
+        a: 1,
+        exp: "Capability approach: pembangunan sebagai perluasan kebebasan manusia. Contoh: seseorang butuh bukan hanya uang untuk makanan, tetapi juga: 1) Kemampuan fisik (tidak sakit), 2) Akses informasi (tahu gizi seimbang), 3) Kondisi sosial (tidak diskriminasi gender dalam keluarga). Indeks Pembangunan Manusia (HDI) adalah proxy sederhana. Implikasi kebijakan: investasi kesehatan, pendidikan, pemberdayaan perempuan, dan demokrasi sama pentingnya dengan pertumbuhan ekonomi."
+    },
+    {
+        id: 145,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'risk society' (Ulrich Beck) dan 'manufactured uncertainties'. Contoh dalam konteks teknologi digital Indonesia:",
+        o: [
+            "Tidak ada risiko baru",
+            "Risiko buatan manusia: penyalahgunaan data pribadi oleh platform digital, deepfake untuk penipuan, ketergantungan pada sistem yang rentan cyber attack, dan ketidakpastian lapangan kerja akibat otomasi",
+            "Semua risiko adalah alamiah",
+            "Teknologi hanya membawa manfaat"
+        ],
+        a: 1,
+        exp: "Risk society: masyarakat menciptakan risiko baru melalui kemajuan teknologinya sendiri. Digital: 1) Privasi: data kita diperjualbelikan tanpa sepengetahuan, 2) Keamanan: sistem perbankan online diretas, 3) Sosial: hoax menyebar cepat, polarisasi, 4) Ekonomi: algoritma menentukan siapa dapat kerja, siapa tidak. Ini berbeda dengan risiko tradisional (banjir, gempa). Negara dan regulasi sering ketinggalan mengatasi risiko buatan ini."
+    },
+    {
+        id: 146,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'global history' terhadap sejarah rempah-rempah Nusantara akan menganalisis...",
+        o: [
+            "Hanya di Maluku saja",
+            "Jaringan perdagangan global yang menghubungkan Maluku dengan Tiongkok, India, Timur Tengah, dan Eropa; pertukaran bukan hanya barang tapi juga pengetahuan, penyakit, dan senjata; serta bagaimana permintaan global membentuk politik lokal",
+            "Hanya tentang Portugis dan Belanda",
+            "Rempah hanya untuk masakan"
+        ],
+        a: 1,
+        exp: "Global history rempah: 1) Cengkeh dan pala Maluku mencapai Romawi kuno via jaringan Asia, 2) Pencarian rempah dorong penjelajahan Eropa (Columbus, Magellan), 3) Perang antar kerajaan Eropa untuk kontrol rempah, 4) Dampak pada demografi (perdagangan budak ke perkebunan), 5) Perubahan ekologi (monokultur di pulau-pulau). Ini menunjukkan bagaimana komoditas lokal menjadi motor sejarah dunia."
+    },
+    {
+        id: 147,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'urban metabolism' untuk analisis keberlanjutan kota Jakarta. Komponen utama yang dianalisis:",
+        o: [
+            "Hanya jumlah penduduk",
+            "Aliran material dan energi: input (air, makanan, bahan bakar, barang) dan output (limbah padat, air limbah, emisi) serta bagaimana sistem perkotaan mengolahnya. Jakarta punya metabolism tidak efisien: input besar, output polutif",
+            "Hanya tata ruang kota",
+            "Tidak bisa dianalisis"
+        ],
+        a: 1,
+        exp: "Urban metabolism melihat kota sebagai organisme hidup. Jakarta: 1) Input: bergantung pada air dari luar kota (Jatiluhur), makanan dari Jawa Barat, BBM impor, 2) Throughput: sistem yang inefisien (kebocoran air 40%, kemacetan boros energi), 3) Output: sampah 7000 ton/hari (hanya 80% terangkut), limbah cair sebagian tidak diolah, emisi transportasi tinggi. Solusi: circular economy, waste-to-energy, transportasi publik massal."
+    },
+    {
+        id: 148,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi keuangan, konsep 'too big to fail' menjelaskan fenomena dimana institusi keuangan besar diselamatkan pemerintah karena...",
+        o: [
+            "Karena mereka efisien",
+            "Kebangkrutan mereka akan menimbulkan kontagion sistemik: kehilangan kepercayaan pada sistem perbankan, kredit macet merajalela, dan resesi ekonomi parah. Ini menciptakan moral hazard karena bank tahu akan diselamatkan",
+            "Karena semua bank kecil",
+            "Tidak pernah terjadi di Indonesia"
+        ],
+        a: 1,
+        exp: "Too big to fail (TBTF): bank sangat besar dan saling terhubung sehingga kolapsnya akan meruntuhkan sistem keuangan. Contoh krisis 1998: Bank Bali dan lainnya diselamatkan BLBI. Dampak: 1) Moral hazard (bank mengambil risiko berlebihan), 2) Distorsi kompetisi (bank kecil sulit bersaing), 3) Beban fiskal (pajak rakyat untuk bailout). Solusi: regulation (capital requirement tinggi), living wills (rencana likuidasi teratur), dan structural reform (memecah bank raksasa)."
+    },
+    {
+        id: 149,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'precariat' (Guy Standing) menggambarkan kelas sosial baru di ekonomi global. Ciri-ciri di Indonesia:",
+        o: [
+            "Pekerjaan stabil dan aman",
+            "Pekerjaan tidak tetap, tidak ada jaminan sosial, pendapatan fluktuatif, dan identitas profesional kabur (driver ojol sekaligus jualan online). Contoh: pekerja gig economy, buruh kontrak, lulusan overqualified yang kerja serabutan",
+            "Hanya petani tradisional",
+            "Tidak ada kelas seperti itu"
+        ],
+        a: 1,
+        exp: "Precariat = precarious + proletariat. Karakteristik: 1) Hubungan kerja tidak stabil (freelance, kontrak pendek), 2) Kurang hak kerja (cuti, pensiun), 3) Pendapatan tak menentu, 4) Tidak punya identitas pekerjaan jelas. Di Indonesia: driver ojol, content creator, pekerja seni, buruh bangunan harian. Mereka mengalami 'status anxiety' kronis dan sulit berorganisasi (karena terisolasi). Ini konsekuensi dari fleksibilisasi pasar tenaga kerja."
+    },
+    {
+        id: 150,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'post-colonial studies' dalam menganalisis monumen nasional Indonesia akan melihat...",
+        o: [
+            "Hanya arsitektur fisiknya",
+            "Bagaimana monumen (seperti Monas) menggunakan simbol-simbol pra-kolonial (lingga-yoni) untuk mengklaim otentisitas budaya, sekaligus mengadopsi bentuk modernis sebagai pernyataan kemajuan, mencerminkan dilema identitas pasca-kolonial",
+            "Hanya biaya pembangunannya",
+            "Tidak ada makna simbolik"
+        ],
+        a: 1,
+        exp: "Post-colonial analysis (Homi Bhabha, hybridity): Monas dirancang Soedarsono dan Silaban (1950s). 1) Lidah api emas: simbol semangat perjuangan, 2) Bentuk: meniru lingga (maskulin) dan yoni (feminin) Jawa kuno, tapi dengan material modern (marmer, emas), 3) Lokasi: di bekas lapangan Gambir (pusat kolonial), menjadi pusat baru. Ini menunjukkan 'mimikri' (meniru bentuk Barat tapi isi lokal) dan ambivalensi: ingin modern tapi tetap berakar tradisi."
+    },
+    {
+        id: 151,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'climate justice' dalam negosiasi internasional perubahan iklim. Posisi Indonesia sebagai negara berkembang:",
+        o: [
+            "Sama saja dengan negara maju",
+            "Menuntut 'common but differentiated responsibilities': negara maju harus memimpin pengurangan emisi dan membiayai adaptasi negara berkembang, karena mereka yang paling bertanggung jawab atas emisi historis",
+            "Indonesia harus mengurangi emisi lebih dulu",
+            "Tidak ada keadilan dalam iklim"
+        ],
+        a: 1,
+        exp: "Climate justice melihat perubahan iklim sebagai isu etika dan keadilan. Indonesia berargumen: 1) Negara maju telah memanfaatkan atmosfer sebagai 'sampah' emisi mereka selama industrialisasi, 2) Indonesia sebagai negara kepulauan rentan dampak (kenaikan muka air laut), 3) Indonesia memiliki hutan sebagai carbon sink global, berhak mendapat kompensasi (REDD+). Dalam COP, Indonesia bergabung dengan G77 untuk menegosiasikan bantuan finansial dan transfer teknologi."
+    },
+    {
+        id: 152,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi heterodoks, konsep 'circular economy' berbeda dengan ekonomi linier tradisional. Prinsip utama:",
+        o: [
+            "Take-make-dispose",
+            "Rancang untuk menghilangkan limbah dan polusi, menjaga produk dan material tetap digunakan, regenerasi sistem alam (prinsip Ellen MacArthur Foundation). Contoh: daur ulang plastik jadi bahan baku, servitization (jual jasa bukan produk)",
+            "Eksploitasi sumber daya maksimal",
+            "Hanya untuk negara kaya"
+        ],
+        a: 1,
+        exp: "Circular economy vs linear economy: 1) Linear: extract → produce → use → dispose. Circular: design out waste, keep materials in use, regenerate natural systems. Level: 1) Maintain/prolong (perbaikan, upgrade), 2) Reuse/redistribute, 3) Refurbish/remanufacture, 4) Recycle. Di Indonesia: potensi besar di sektor informal (pemulung), tapi butuh regulasi Extended Producer Responsibility (EPR) untuk membuat produsen bertanggung jawab atas sampah produknya."
+    },
+    {
+        id: 153,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'imagined communities' (Benedict Anderson) menjelaskan nasionalisme. Bagaimana media cetak berbahasa Melayu di awal abad 20 membentuk komunitas terbayang Indonesia?",
+        o: [
+            "Tidak ada pengaruh",
+            "Surat kabar seperti 'Bintang Hindia' dan 'Bintang Timur' dibaca oleh elite terpelajar di berbagai daerah, menciptakan kesadaran simultan tentang peristiwa dan isu bersama, serta menyebarkan ide tentang 'Indonesia' yang melampaui batas etnis dan pulau",
+            "Hanya untuk orang Jawa",
+            "Media tidak penting"
+        ],
+        a: 1,
+        exp: "Anderson: nation sebagai komunitas terbayang karena anggotanya tidak akan pernah kenal sebagian besar anggota lain. Media cetak: 1) Menciptakan kesadaran waktu homogen (reader di Medan dan Surabaya baca berita sama hari itu), 2) Membentuk bahasa Indonesia standar, 3) Menyebarkan simbol bersama (pahlawan, peristiwa), 4) Memungkinkan imajinasi tentang wilayah bernama 'Indonesia'. Ini sebelum negara Indonesia ada secara politis."
+    },
+    {
+        id: 154,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'history of science and technology' terhadap kolonialisme Belanda di Indonesia akan meneliti...",
+        o: [
+            "Hanya politik",
+            "Bagaimana ilmu pengetahuan (botani, geologi, etnografi) digunakan untuk menguasai dan mengeksploitasi koloni: pemetaan untuk pajak, klasifikasi tanaman untuk perkebunan, studi masyarakat untuk kontrol sosial",
+            "Hanya teknologi perang",
+            "Ilmu pengetahuan netral"
+        ],
+        a: 1,
+        exp: "Science and empire studies (seperti karya Lewis Pyenson): 1) Botanic Gardens di Bogor untuk penelitian tanaman perkebunan, 2) Geological Survey untuk eksplorasi tambang, 3) Ethnographic studies untuk memahami 'penduduk asli' agar mudah dikelola, 4) Medical knowledge untuk melindungi orang Eropa dari penyakit tropis. Ilmu pengetahuan kolonial bersifat instrumental untuk kontrol dan ekstraksi, meski juga menghasilkan pengetahuan yang berguna."
+    },
+    {
+        id: 155,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'spatial justice' dalam analisis akses terhadap ruang terbuka hijau di Jakarta. Ketidakadilan yang terjadi:",
+        img: "https://images.unsplash.com/photo-1417716146732-918825b83b4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Semua warga punya akses sama",
+            "RTH terkonsentrasi di wilayah elit (Jakarta Selatan), sementara permukiman padat di Jakarta Utara dan Timur minim RTH. Ini memperparah ketimpangan kesehatan dan kualitas hidup",
+            "Tidak ada ketidakadilan spasial",
+            "RTH tidak penting"
+        ],
+        a: 1,
+        exp: "Spatial justice (Edward Soja): distribusi sumber daya dan layanan yang tidak merata dalam ruang. Jakarta: 1) 60% RTH di Jaksel (Kebayoran, Pondok Indah), 2) Jakut dan Jaktim (padat penduduk) kurang dari 5% RTH, 3) Kawasan elite punya taman privat, masyarakat miskin hanya punya trotoar sempit. Dampak: heat island lebih parah di daerah miskin, anak kurang tempat bermain, kesehatan mental lebih buruk. Solusi: kebijakan redistributif RTH."
+    },
+    {
+        id: 156,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi evolusioner, konsep 'path dependence' menjelaskan mengapa teknologi atau institusi tertentu bertahan meski kurang optimal. Contoh di Indonesia:",
+        o: [
+            "Semua teknologi selalu optimal",
+            "Ketergantungan pada BBM bersubsidi: infrastruktur (SPBU, mesin kendaraan), kebiasaan konsumen, dan kelompok kepentingan (distributor BBM) membuat transisi ke energi terbarukan sulit meski lebih baik jangka panjang",
+            "Tidak ada path dependence",
+            "Selalu ada perubahan cepat"
+        ],
+        a: 1,
+        exp: "Path dependence: keputusan awal membentuk jalur yang sulit diubah (lock-in). Contoh: 1) QWERTY keyboard (dirancang memperlambat untuk mesin ketik manual) tetap dipakai di komputer, 2) BBM subsidi di Indonesia: mulai era Soeharto untuk stabilitas sosial, kini sulit dihapus karena: infrastktur terpasang, konsumen terbiasa, dan penolakan politis. Perlu 'critical juncture' (krisis harga minyak 2005, 2014) untuk memungkinkan perubahan kebijakan."
+    },
+    {
+        id: 157,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'social reproduction' (feminist economics) mengacu pada pekerjaan tidak dibayar yang menopang ekonomi. Contoh dalam keluarga Indonesia:",
+        o: [
+            "Hanya kerja berbayar yang penting",
+            "Pekerjaan domestik (memasak, membersihkan, mengasuh anak, merawat lansia) yang umumnya dilakukan perempuan tanpa upah, memungkinkan anggota lain bekerja di pasar dan ekonomi berjalan. Ini sering tidak dihitung dalam GDP",
+            "Tidak ada pekerjaan domestik",
+            "Semua pekerjaan domestik dibayar"
+        ],
+        a: 1,
+        exp: "Social reproduction: aktivitas yang memproduksi dan memelihara tenaga kerja. Di Indonesia: 1) Perempuan menghabiskan 4-7 jam/hari untuk kerja domestik tidak dibayar (vs laki-laki 1-3 jam), 2) Nilai ekonomi pekerjaan ini jika dibayar mencapai 20-40% GDP, 3) Ketika perempuan masuk pasar kerja (double burden), kualitas sosial reproduction bisa turun (anak kurang perhatian). Kebijakan: cuti parental, fasilitas penitipan anak, pengakuan dalam sistem pensiun."
+    },
+    {
+        id: 158,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'historical anthropology' terhadap ritual kerajaan Jawa akan menganalisis...",
+        o: [
+            "Hanya daftar raja",
+            "Ritual (seperti Grebeg Maulud) sebagai performative acts yang menegaskan kosmologi kekuasaan, hubungan antara raja dengan rakyat dan alam, serta bagaimana ritual beradaptasi dengan perubahan politik dari masa Hindu-Buddha hingga Islam dan kolonial",
+            "Hanya sebagai atraksi turis",
+            "Tidak ada makna politik"
+        ],
+        a: 1,
+        exp: "Historical anthropology (Clifford Geertz, 'Negara Theatre'): ritual sebagai 'teks' yang bisa dibaca. Grebeg Maulud di Yogyakarta: 1) Gunungan (hasil bumi) dibagikan: simbol raja sebagai pengatur kemakmuran, 2) Prosesi dari kraton ke masjid: sintesis Islam-Jawa, 3) Partisipasi massa: pengakuan legitimasi. Ritual ini bertahan dari era Mataram Islam hingga sekarang, menunjukkan kontinuitas simbolik meski konteks politik berubah drastis."
+    },
+    {
+        id: 159,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'land grabbing' dalam konteks investasi asing pertanian skala besar. Dampak sosio-ekologis di Papua:",
+        o: [
+            "Hanya membawa kemajuan",
+            "Akuisisi lahan luas oleh perusahaan sawit atau pangan: hilangnya hak ulayat masyarakat adat, deforestasi, fragmentasi habitat, dan perubahan sistem sosial dari subsistensi ke upahan dengan ketergantungan baru",
+            "Tidak ada dampak negatif",
+            "Semua masyarakat setuju"
+        ],
+        a: 1,
+        exp: "Land grabbing: akuisisi lahan skala besar (biasanya >1000 ha) oleh investor (domestik/asing). Di Papua: 1) Sering tanpa Free, Prior and Informed Consent (FPIC) masyarakat adat, 2) Konversi hutan primer ke monokultur, 3) Masyarakat jadi buruh dengan upah rendah di tanah sendiri, 4) Polusi dari pestisida dan pabrik kelapa sawit, 5) Hilangnya biodiversitas dan pengetahuan tradisional. Meski janji infrastruktur dan pekerjaan, sering tidak sebanding dengan kerugian jangka panjang."
+    },
+    {
+        id: 160,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi pembangunan, 'Lewis model' menjelaskan transisi dari ekonomi tradisional ke modern. Kelemahan model ini untuk konteks Indonesia:",
+        o: [
+            "Tidak ada kelemahan",
+            "Mengasumsikan unlimited supply of labor dari sektor tradisional (pertanian) ke sektor modern (industri). Namun di Indonesia: 1) Sektor informal perkotaan menyerap banyak migran, 2) Upah sektor modern tidak naik signifikan karena tekanan migrasi terus, 3) Sektor tradisional juga produktif (pertanian komersial)",
+            "Terlalu optimis",
+            "Hanya berlaku untuk Afrika"
+        ],
+        a: 1,
+        exp: "Model Lewis (1954): surplus labor dari pertanian subsisten (MPL=0) pindah ke industri dengan upah sedikit lebih tinggi, akumulasi modal di industri, hingga titik turning point (labor surplus habis, upah naik). Kritik untuk Indonesia: 1) Migran masuk sektor informal (bukan industri modern), 2) Upah stagnan karena arus migrasi terus, 3) Dualisme tetap ada (modern vs informal), 4) Mengabaikan pertanian komersial yang juga produktif. Indonesia mengalami 'premature deindustrialization' sebelum mencapai turning point."
+    },
+    {
+        id: 161,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'cultural capital' (Bourdieu) dalam sistem pendidikan Indonesia. Bagaimana hal ini mereproduksi ketimpangan?",
+        o: [
+            "Semua siswa punya kesempatan sama",
+            "Anak dari keluarga terdidik terbiasa dengan bahasa, cara berpikir, dan sikap yang dihargai sekolah (misal: berani bertanya, kosakata luas). Mereka tampak 'lebih pintar' padahal ini hasil sosialisasi keluarga, bukan kemampuan bawaan",
+            "Tidak ada cultural capital",
+            "Hanya uang yang penting"
+        ],
+        a: 1,
+        exp: "Cultural capital: pengetahuan, keterampilan, pendidikan, dan keuntungan lainnya yang dimiliki seseorang. Di sekolah Indonesia: 1) Bahasa Indonesia formal lebih dikuasai anak kota/terdidik, 2) Gaya interaksi dengan guru (eye contact, jawab pertanyaan) lebih dimiliki anak kelas menengah, 3) Akses ke buku, les, museum. Ini diubah menjadi 'prestasi' dan 'bakat', lalu menjadi modal ekonomi (pekerjaan baik). Sistem seolah meritokratis tapi sebenarnya melegitimasi reproduksi kelas."
+    },
+    {
+        id: 162,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'historical materialism' (Marxist history) terhadap Revolusi Industri di Jawa abad 19 akan menganalisis...",
+        o: [
+            "Hanya tokoh-tokohnya",
+            "Perubahan hubungan produksi: dari sistem feodal (petani membayar upeti pada raja) ke kapitalis kolonial (petani jadi buruh upahan di perkebunan), konflik kelas yang muncul, dan bagaimana surplus diekstraksi untuk akumulasi modal Belanda",
+            "Hanya tentang teknologi mesin",
+            "Tidak ada perubahan ekonomi"
+        ],
+        a: 1,
+        exp: "Historical materialism: sejarah sebagai sejarah perjuangan kelas. Di Jawa Cultuurstelsel: 1) Means of production: tanah dikuasai negara kolonial, 2) Relations of production: petani dipaksa tanam ekspor (kerja wajib), 3) Surplus value: hasil dijual Belanda, keuntungan ke kas Belanda, 4) Class struggle: perlawanan petani (misal di Cilegon 1888). Pendekatan ini melihat kolonialisme sebagai tahap dalam perkembangan kapitalisme global, dengan Jawa sebagai penyedia bahan mentah dan tenaga kerja murah."
+    },
+    {
+        id: 163,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'resilience thinking' dalam pengelolaan sistem sosial-ekologi. Prinsip untuk membangun ketahanan komunitas pesisir:",
+        img: "https://images.unsplash.com/photo-1589652043056-ba1a2c4830a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        o: [
+            "Hanya membangun infrastruktur keras",
+            "Meningkatkan diversity (mata pencaharian beragam), modularity (tidak tergantung satu sistem), connectivity (jaringan sosial kuat), dan kemampuan belajar serta adaptasi (learning feedbacks)",
+            "Fokus pada satu sektor saja",
+            "Menunggu bantuan pemerintah"
+        ],
+        a: 1,
+        exp: "Resilience principles (Brian Walker): 1) Diversity: tidak hanya nelayan, tapi juga budidaya, ekowisata, 2) Modularity: komunitas punya cadangan lokal (perahu, jaring) tidak bergantung penuh pada pasar luar, 3) Connectivity: kerja sama dengan desa tetangga, lembaga riset, 4) Feedback: sistem monitoring sederhana (ikan berkurang → ganti teknik tangkap), 5) Innovation: mencoba cara baru. Ini berbeda dari ketahanan (resistance) yang cenderung kaku."
+    },
+    {
+        id: 164,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi kelembagaan, konsep 'informal institutions' (norma, budaya, kepercayaan) mempengaruhi pembangunan ekonomi. Contoh di Indonesia:",
+        o: [
+            "Hukum formal saja yang penting",
+            "Norma gotong royong memfasilitasi kerja kolektif di desa. Namun, budaya 'asal bapak senang' dan hubungan patron-klien dapat menghambat meritokrasi dan akuntabilitas dalam birokrasi dan bisnis",
+            "Tidak ada institusi informal",
+            "Semua budaya positif"
+        ],
+        a: 1,
+        exp: "Institusi informal (North): aturan tak tertulis yang membentuk perilaku. Positif: 1) Gotong royong untuk infrastruktur desa, 2) Arisan sebagai sistem keuangan informal, 3) Kepercayaan dalam jaringan bisnis etnis tertentu. Negatif: 1) Budaya 'sungkan' menghambat kritik konstruktif, 2) Nepotisme dalam pengangkatan jabatan, 3) Mentalitas 'quick profit' daripada investasi jangka panjang. Pembangunan memerlukan alignment antara institusi formal dan informal."
+    },
+    {
+        id: 165,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'emotional labor' (Hochschild) dalam industri jasa Indonesia. Contoh dan implikasi kesehatan mental:",
+        o: [
+            "Tidak ada kerja emosional",
+            "Pramugari harus tersenyum ramah meski lelah, customer service harus sabar menghadapi keluhan. Ini memerlukan pengelolaan emosi (surface/deep acting) yang dapat menyebabkan emotional exhaustion dan burnout",
+            "Hanya kerja fisik yang melelahkan",
+            "Semua orang senang kerja jasa"
+        ],
+        a: 1,
+        exp: "Emotional labor: mengelola perasaan untuk menciptakan pengalaman emosional tertentu pada orang lain. Di Indonesia: 1) Pramugari Garuda (wajib tersenyum), 2) SPG di mal (ramah pada pelanggan), 3) Perawat (bersimpati pada pasien). Surface acting (pura-pura) lebih melelahkan daripada deep acting (benar-benar merasa). Dampak: emotional dissonance (konflik antara perasaan sebenarnya dan yang ditampilkan), stress kronis, depersonalisasi. Butuh regulasi kerja yang mengakui beban ini."
+    },
+    {
+        id: 166,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'comparative history' terhadap Revolusi Indonesia dan Vietnam. Persamaan dan perbedaan kunci:",
+        o: [
+            "Sama persis",
+            "Persamaan: melawan kolonialisme Eropa, menggunakan ideologi nasionalis dan komunis, peran gerilya. Perbedaan: Vietnam lebih terpolarisasi antara Utara (komunis) dan Selatan (kapitalis), perang lebih panjang dengan intervensi AS langsung, sementara Indonesia konflik lebih singkat dengan diplomasi signifikan",
+            "Tidak bisa dibandingkan",
+            "Hanya Indonesia yang berhasil"
+        ],
+        a: 1,
+        exp: "Comparative history (Marc Bloch): mencari pola melalui perbandingan. Revolusi Indonesia (1945-1949) vs Vietnam (1945-1975). Persamaan: 1) Kepemimpinan karismatik (Ho Chi Minh dan Soekarno), 2) Peran pemuda/student movements, 3) Strategi gerilya. Perbedaan: 1) Konteks Perang Dingin lebih kuat di Vietnam, 2) Peran militer lebih dominan di Vietnam, 3) Indonesia menggunakan diplomasi di PBB, Vietnam perang hingga kemenangan militer penuh. Hasil perbandingan membantu memahami mengapa jalur revolusi berbeda."
+    },
+    {
+        id: 167,
+        cat: "Geografi",
+        level: "SULIT",
+        q: "Konsep 'multiscalar governance' untuk pengelolaan DAS lintas provinsi seperti DAS Brantas. Tantangan utama:",
+        o: [
+            "Tidak ada tantangan",
+            "Koordinasi antar level pemerintahan (pusat, provinsi, kabupaten) dengan kepentingan berbeda, serta keterlibatan aktor non-negara (swasta, LSM, masyarakat) yang sering memiliki prioritas dan skala kerja berbeda",
+            "Hanya pemerintah pusat yang mengatur",
+            "Satu provinsi saja cukup"
+        ],
+        a: 1,
+        exp: "Multiscalar governance: pengelolaan masalah yang melintasi skala geografis dan administratif. DAS Brantas (Jawa Timur): 1) Skala lokal: masyarakat butuh air irigasi, 2) Skala kabupaten: pembangunan industri dan permukiman, 3) Skala provinsi: pengelolaan bendungan untuk listrik dan banjir, 4) Skala nasional: kebijakan ketahanan pangan. Tantangan: fragmentasi kewenangan, konflik kepentingan (pertanian vs industri), dan kesulitan mengintegrasikan pengetahuan lokal dengan perencanaan makro."
+    },
+    {
+        id: 168,
+        cat: "Ekonomi",
+        level: "SULIT",
+        q: "Dalam ekonomi sumber daya alam, 'Hotelling rule' menjelaskan tingkat ekstraksi optimal sumber daya tak terbarukan. Asumsi yang sering tidak terpenuhi di Indonesia:",
+        o: [
+            "Semua asumsi terpenuhi",
+            "Asumsi pasar kompetitif dan kepastian harga masa depan. Di Indonesia: 1) Sektor tambang dikuasai oligopoli, 2) Ketidakpastian regulasi (larangan ekspor, perubahan kontrak), 3) Tekanan untuk ekstraksi cepat demi pendapatan fiskal jangka pendek",
+            "Tidak ada sumber daya tak terbarukan",
+            "Hotelling rule selalu akurat"
+        ],
+        a: 1,
+        exp: "Hotelling rule: harga sumber daya harus naik dengan tingkat suku bunga (r) agar ekstraksi optimal intertemporal. Jika tidak, lebih baik dijual sekarang dan uangnya diinvestasikan. Realitas Indonesia: 1) Perusahaan tambang sering ekstrak cepat karena takut perubahan kebijakan, 2) Pemerintah butuh pendapatan sekarang untuk anggaran, 3) Harga komoditas fluktuatif tidak pasti, 4) Biaya eksternal lingkungan tidak diinternalisasi. Akibatnya, SDA habis cepat tanpa cukup tabungan untuk generasi depan."
+    },
+    {
+        id: 169,
+        cat: "Sosiologi",
+        level: "SULIT",
+        q: "Konsep 'network society' (Manuel Castells) dan 'space of flows'. Manifestasi di perkotaan Indonesia:",
+        o: [
+            "Masyarakat masih tradisional",
+            "Kawasan bisnis seperti Sudirman-Thamrin sebagai node dalam jaringan global (kantor multinational, hotel internasional), dihubungkan oleh infrastruktur digital dan transportasi cepat, sementara daerah miskin terputus dari arus utama ini",
+            "Tidak ada jaringan",
+            "Semua wilayah terhubung sama"
+        ],
+        a: 1,
+        exp: "Network society: struktur sosial berbasis jaringan, bukan tempat. Space of flows: arus informasi, modal, dan orang yang membentuk geografi baru. Jakarta: 1) CBD sebagai tempat pertukaran global, 2) Bandara Soekarno-Hatta sebagai hub, 3) Kabel fiber optik bawah laut, 4) Gated communities yang terhubung dengan jaringan global tapi terpisah dari sekitarnya. Ini menciptakan 'dualisasi spasial': yang terhubung vs yang terputus, bukan lagi pusat vs pinggiran tradisional."
+    },
+    {
+        id: 170,
+        cat: "Sejarah",
+        level: "SULIT",
+        q: "Pendekatan 'oral history' untuk meneliti pengalaman perempuan dalam konflik 1965-66. Nilai dan keterbatasannya:",
+        o: [
+            "Tidak ada nilai",
+            "Mengungkap narasi yang tidak tercatat dalam dokumen resmi (misal: peran perempuan menyembunyikan suami, trauma janda, strategi bertahan). Namun, memori bisa terdistorsi oleh waktu, trauma, dan narasi dominan yang beredar kemudian",
+            "Hanya dokumen tertulis yang valid",
+            "Semua ingatan akurat"
+        ],
+        a: 1,
+        exp: "Oral history (seperti proyek 'Telling Lives' oleh Hersri Setiawan dan lain-lain): 1) Memberi suara pada yang bisu (marginalized voices), 2) Menangkap dimensi emosional dan pengalaman sehari-hari, 3) Mengungkap agency perempuan dalam kondisi ekstrem. Keterbatasan: 1) Selective memory (yang diingat vs dilupakan), 2) Narrative smoothing (cerita dirapikan), 3) Pengaruh wawancara (rapport dengan pewawancara). Tetap, ini sumber penting untuk sejarah yang lebih inklusif."
+    }
+];
+        // STATE
+        let state = {
+            user: '',
+            questions: [],
+            answers: {},
+            ragu: {},
+            currentIdx: 0,
+            timeLeft: 0,
+            timerInterval: null,
+            chart: null
+        };
+
+        // DOCS MODAL ON LOAD
+        window.onload = () => {
+            const docsHtml = `
+                <div class="space-y-4">
+                    <p>Selamat datang di <b>OlymTest by Studekasa</b>. Berikut panduan penggunaan sistem:</p>
+                    <ul class="list-disc ml-5 space-y-2 text-xs">
+                        <li><b>Maksimal Soal:</b> Sistem mendukung hingga <b>100 soal</b> per sesi.</li>
+                        <li><b>Format JSON:</b> Jika ingin impor, pastikan struktur JSON berupa array objek dengan kunci: <i>cat, q, o (array isi 4), a (indeks 0-3), explanation</i>.</li>
+                        <li><b>Navigasi:</b> Gunakan panel kanan untuk melacak status soal (Hijau: Terisi, Kuning: Ragu, Abu: Kosong).</li>
+                        <li><b>Sistem Skor:</b> Skor akhir dihitung berdasarkan persentase jawaban benar.</li>
+                    </ul>
+                </div>
+            `;
+            showModal("Dokumentasi Sistem", docsHtml, [
+                { label: "SAYA MENGERTI", class: "btn-blue", action: hideModal }
+            ]);
+        };
+
+        // NAVIGATION
+        function showScreen(id) {
+            ['login', 'dashboard', 'sim', 'result', 'review'].forEach(s => {
+                document.getElementById(`screen-${s}`).classList.add('hidden');
+            });
+            document.getElementById(`screen-${id}`).classList.remove('hidden');
+        }
+
+        function handleLogin() {
+            const name = document.getElementById('username').value.trim();
+            if(!name) return;
+            state.user = name;
+            document.getElementById('greet-user').innerText = `Halo, ${name}!`;
+            showScreen('dashboard');
+        }
+
+        // FILE IMPORT
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (Array.isArray(data)) {
+                        state.questions = data.slice(0, 100); // Max 100
+                        startExam(true);
+                    } else {
+                        throw new Error("Format bukan Array");
+                    }
+                } catch (err) {
+                    alert("Gagal mengimpor file: Pastikan format JSON benar.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function startExam(isImported) {
+            if(!isImported) state.questions = [...defaultQuestions].sort(() => Math.random() - 0.5);
+            state.answers = {};
+            state.ragu = {};
+            state.currentIdx = 0;
+            state.timeLeft = state.questions.length * 90;
+
+            showScreen('sim');
+            renderQuestion();
+            startTimer();
+        }
+
+        // CORE RENDER
+        function renderQuestion() {
+            const q = state.questions[state.currentIdx];
+            document.getElementById('q-cat').innerText = q.cat;
+            document.getElementById('q-level').innerText = q.level || 'Umum';
+            document.getElementById('q-text').innerText = q.q;
+
+            const imgBox = document.getElementById('img-box');
+            if(q.img) {
+                document.getElementById('q-img').src = q.img;
+                imgBox.classList.remove('hidden');
+            } else {
+                imgBox.classList.add('hidden');
+            }
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            q.o.forEach((opt, idx) => {
+                const card = document.createElement('div');
+                card.className = `option-card p-5 rounded-2xl font-bold flex items-center gap-4 cursor-pointer ${state.answers[state.currentIdx] === idx ? 'selected' : 'bg-white'}`;
+                card.innerHTML = `<span class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center poppins border-b-2 border-slate-200 text-xs">${String.fromCharCode(65+idx)}</span> <span class="text-xs flex-1">${opt}</span>`;
+                card.onclick = () => selectOption(idx);
+                container.appendChild(card);
+            });
+
+            const btnRagu = document.getElementById('btn-ragu');
+            btnRagu.className = `px-6 py-4 rounded-2xl border-2 font-bold text-lg transition-all ${state.ragu[state.currentIdx] ? 'btn-yellow' : 'bg-white border-slate-200 text-slate-300'}`;
+            
+            document.getElementById('scroll-container').scrollTop = 0;
+            renderNavGrid();
+        }
+
+        function selectOption(idx) {
+            state.answers[state.currentIdx] = idx;
+            renderQuestion();
+            
+            // Auto Next
+            setTimeout(() => {
+                if(state.currentIdx < state.questions.length - 1) {
+                    state.currentIdx++;
+                    renderQuestion();
+                } else {
+                    openSidebar();
+                }
+            }, 250);
+        }
+
+        function toggleRagu() {
+            state.ragu[state.currentIdx] = !state.ragu[state.currentIdx];
+            renderQuestion();
+        }
+
+        function nextQ() { if(state.currentIdx < state.questions.length - 1) { state.currentIdx++; renderQuestion(); } }
+        function prevQ() { if(state.currentIdx > 0) { state.currentIdx--; renderQuestion(); } }
+
+        // SIDEBAR
+        function openSidebar() {
+            document.getElementById('nav-overlay').classList.remove('hidden');
+            document.getElementById('nav-sidebar').classList.add('open');
+            renderNavGrid();
+        }
+        function closeSidebar() {
+            document.getElementById('nav-overlay').classList.add('hidden');
+            document.getElementById('nav-sidebar').classList.remove('open');
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+            state.questions.forEach((_, idx) => {
+                const item = document.createElement('div');
+                let colorClass = 'bg-slate-100 border-slate-200 text-slate-300';
+                
+                if(state.answers[idx] !== undefined) colorClass = 'btn-green';
+                if(state.ragu[idx]) colorClass = 'btn-yellow';
+                if(state.currentIdx === idx) item.classList.add('active');
+
+                item.className = `nav-grid-item flex items-center justify-center font-bold text-xs cursor-pointer ${colorClass}`;
+                item.innerText = idx + 1;
+                item.onclick = () => {
+                    state.currentIdx = idx;
+                    renderQuestion();
+                    closeSidebar();
+                };
+                grid.appendChild(item);
+            });
+        }
+
+        // TIMER & CALCULATION
+        function startTimer() {
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                const m = Math.floor(state.timeLeft / 60);
+                const s = state.timeLeft % 60;
+                document.getElementById('timer-val').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if(state.timeLeft <= 0) processResult();
+            }, 1000);
+        }
+
+        function confirmFinish() {
+            showModal("Sudah Selesai?", "Data akan segera dianalisis oleh sistem.", [
+                { label: "YA, ANALISIS", class: "btn-green", action: processResult },
+                { label: "KEMBALI", class: "btn-gray", action: hideModal }
+            ]);
+        }
+
+        function processResult() {
+            clearInterval(state.timerInterval);
+            hideModal();
+            showScreen('result');
+
+            let correct = 0;
+            let catStats = {};
+
+            state.questions.forEach((q, i) => {
+                if(!catStats[q.cat]) catStats[q.cat] = { total: 0, hit: 0 };
+                catStats[q.cat].total++;
+                if(state.answers[i] === q.a) {
+                    correct++;
+                    catStats[q.cat].hit++;
+                }
+            });
+
+            const score = Math.round((correct / state.questions.length) * 100);
+            document.getElementById('res-score').innerText = score;
+            document.getElementById('res-acc').innerText = score + "%";
+
+            renderChart(catStats);
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function renderChart(stats) {
+            const labels = Object.keys(stats);
+            const data = labels.map(l => (stats[l].hit / stats[l].total) * 100);
+            const ctx = document.getElementById('spiderChart').getContext('2d');
+            if(state.chart) state.chart.destroy();
+            state.chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        fill: true,
+                        backgroundColor: 'rgba(28, 176, 246, 0.15)',
+                        borderColor: '#1cb0f6',
+                        pointBackgroundColor: '#1cb0f6',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function startReview() {
+            showScreen('review');
+            const list = document.getElementById('review-list');
+            list.innerHTML = '';
+
+            state.questions.forEach((q, i) => {
+                const isCorrect = state.answers[i] === q.a;
+                const card = document.createElement('div');
+                card.className = `p-6 rounded-[28px] shadow-sm ${isCorrect ? 'bg-green-50 border-l-4 border-green-400' : 'bg-red-50 border-l-4 border-red-400'}`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black uppercase text-slate-400">No. ${i + 1} • ${q.cat}</span>
+                        <span class="text-[9px] font-black uppercase ${isCorrect ? 'text-green-500' : 'text-red-500'}">
+                            ${isCorrect ? 'BENAR' : 'SALAH'}
+                        </span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm mb-4 leading-relaxed">${q.q}</h3>
+                    <div class="space-y-2 mb-4">
+                        <div class="p-3 rounded-xl bg-white text-[11px] font-bold border border-slate-100">
+                            Kamu: ${state.answers[i] !== undefined ? q.o[state.answers[i]] : 'Kosong'}
+                        </div>
+                        ${!isCorrect ? `<div class="p-3 rounded-xl bg-green-100/50 text-green-700 text-[11px] font-bold border border-green-200">Benar: ${q.o[q.a]}</div>` : ''}
+                    </div>
+                    <div class="pt-4 border-t border-slate-200/40">
+                        <p class="text-[11px] text-slate-500 italic leading-relaxed">${q.explanation}</p>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // UTILS
+        function showModal(title, desc, actions) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerHTML = desc;
+            const container = document.getElementById('modal-actions');
+            container.innerHTML = '';
+            actions.forEach(a => {
+                const b = document.createElement('button');
+                b.className = `duo-btn py-3 rounded-2xl font-black text-xs uppercase ${a.class}`;
+                b.innerText = a.label;
+                b.onclick = a.action;
+                container.appendChild(b);
+            });
+            document.getElementById('modal-global').classList.remove('hidden');
+        }
+        function hideModal() { document.getElementById('modal-global').classList.add('hidden'); }
+    </script>
+</body>
+</html>
+
