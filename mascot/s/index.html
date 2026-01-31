@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASCOT 2026 - Manduta Science Competition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        /* Moodle Style Header */
+        .moodle-header {
+            background-color: #0f2a4a; /* Navy Manduta */
+            color: white;
+            border-bottom: 3px solid #f39c12; /* Orange accent */
+        }
+
+        /* Card Style */
+        .moodle-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        /* Quiz Navigation Blocks */
+        .qn-button {
+            width: 35px;
+            height: 40px;
+            border: 1px solid #aaa;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+        }
+        .qn-button.answered {
+            background: #e7e7e7;
+        }
+        .qn-button.current {
+            border: 2px solid #0f2a4a;
+            font-weight: bold;
+        }
+        .qn-button.flagged {
+            background: #fff3cd;
+            border-color: #f39c12;
+        }
+
+        /* Options */
+        .moodle-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .moodle-option:hover {
+            background: #f8f9fa;
+        }
+        .moodle-option input {
+            margin-top: 4px;
+            margin-right: 12px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+        .btn-moodle {
+            background-color: #0f2a4a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .btn-moodle:hover { opacity: 0.9; }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #0f2a4a;
+            padding: 10px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="moodle-header p-3 sticky top-0 z-50 shadow-md">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-1 rounded">
+                    <span class="text-blue-900 font-black text-xl">M</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm md:text-lg leading-tight">MASCOT 2026</h1>
+                    <p class="text-[10px] opacity-80 uppercase tracking-tighter">Manduta Science Competition</p>
+                </div>
+            </div>
+            <div id="user-pill" class="hidden text-xs bg-white/10 px-3 py-1.5 rounded-full items-center gap-2 border border-white/20">
+                <span id="user-display">User</span>
+                <div class="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center text-[10px] font-bold">U</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 flex flex-col md:flex-row gap-6">
+        
+        <!-- Left Content (Quiz) -->
+        <div id="main-content" class="flex-1">
+            
+            <!-- Login Screen -->
+            <section id="screen-login" class="moodle-card p-10 mt-10 max-w-md mx-auto shadow-sm">
+                <h2 class="text-2xl font-bold mb-6 text-center text-slate-700">Login Peserta</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">NAMA LENGKAP</label>
+                        <input type="text" id="username" class="w-full border p-2 rounded focus:outline-blue-500" placeholder="Contoh: Ahmad Fauzi">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">NOMOR PESERTA</label>
+                        <input type="text" id="user-id" class="w-full border p-2 rounded focus:outline-blue-500" placeholder="M26-XXXX">
+                    </div>
+                    <button onclick="handleLogin()" class="w-full btn-moodle mt-4 py-3">MASUK KE SISTEM</button>
+                </div>
+                <div class="mt-8 pt-6 border-t text-[10px] text-slate-400 text-center uppercase tracking-widest">
+                    Pusat Data MASCOT 2026 • Manduta
+                </div>
+            </section>
+
+            <!-- Dashboard / Library -->
+            <section id="screen-dashboard" class="hidden space-y-6">
+                <div class="moodle-card p-6">
+                    <h2 class="text-xl font-bold mb-4 border-b pb-2">Kursus Tersedia</h2>
+                    
+                    <!-- Official Bank -->
+                    <div class="flex flex-col md:flex-row gap-6 items-start bg-slate-50 p-6 border rounded mb-6">
+                        <div class="w-full md:w-48 aspect-video bg-blue-900 rounded flex items-center justify-center text-white text-3xl font-bold shadow-inner">
+                            IPA
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-blue-900">Simulasi IPA Terpadu (Mandatory)</h3>
+                            <p class="text-sm text-slate-600 mt-2 mb-4">Latihan soal olimpiade sains tingkat nasional sebagai persiapan kompetisi MASCOT tahun 2026.</p>
+                            <button onclick="startExam(null)" class="btn-moodle">Attempt Quiz Now</button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 my-6">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bank Soal Lokal</span>
+                        <div class="h-px bg-slate-200 flex-1"></div>
+                        <button onclick="document.getElementById('json-input').click()" class="text-xs text-blue-600 font-bold hover:underline">+ Tambah Modul JSON</button>
+                    </div>
+
+                    <div id="custom-bank-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Custom items -->
+                    </div>
+                    
+                    <input type="file" id="json-input" class="hidden" accept=".json" onchange="handleFileImport(event)">
+                </div>
+            </section>
+
+            <!-- Quiz Screen -->
+            <section id="screen-sim" class="hidden flex flex-col md:flex-row gap-6">
+                <!-- Question Area -->
+                <div class="flex-1">
+                    <div class="moodle-card p-6 mb-4">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-slate-100 p-4 border rounded text-center min-w-[100px]">
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase">Soal</p>
+                                    <p id="q-num-display" class="text-xl font-bold">1</p>
+                                    <p class="text-[9px] text-slate-400 mt-1">Belum dijawab</p>
+                                </div>
+                                <div>
+                                    <h3 id="q-category" class="text-xs font-bold text-blue-700 uppercase">Biologi</h3>
+                                    <p class="text-xs text-slate-400">Poin: 1,00</p>
+                                </div>
+                            </div>
+                            <button onclick="toggleFlag()" id="btn-flag" class="text-xs text-slate-400 flex items-center gap-1 hover:text-orange-500 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                                Tandai soal
+                            </button>
+                        </div>
+                        
+                        <div id="q-content" class="text-sm leading-relaxed mb-8">
+                            <!-- Question text and image -->
+                            <div id="q-image-container" class="hidden mb-4 max-w-md">
+                                <img id="q-image" src="" class="border rounded p-1 max-w-full">
+                            </div>
+                            <div id="q-text" class="prose max-w-none"></div>
+                        </div>
+
+                        <div id="options-container" class="space-y-1">
+                            <!-- Options -->
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center bg-white p-4 border rounded shadow-sm">
+                        <button onclick="prevQ()" class="btn-moodle bg-slate-400">Previous Page</button>
+                        <button onclick="nextQ()" class="btn-moodle">Next Page</button>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar (Navigation) -->
+                <aside class="w-full md:w-64 space-y-4">
+                    <div class="moodle-card p-4">
+                        <h4 class="text-xs font-bold border-b pb-2 mb-4">Quiz Navigation</h4>
+                        <div id="nav-grid" class="flex flex-wrap gap-1">
+                            <!-- Grid items -->
+                        </div>
+                        <div class="mt-6">
+                            <button onclick="confirmFinish()" class="text-xs text-blue-600 font-bold hover:underline">Finish attempt ...</button>
+                        </div>
+                    </div>
+
+                    <div class="moodle-card p-4 text-center">
+                        <p class="text-xs font-bold text-slate-500 mb-1">Sisa Waktu</p>
+                        <div id="timer-display" class="text-2xl font-mono font-bold text-red-600">00:00:00</div>
+                    </div>
+                </aside>
+            </section>
+
+            <!-- Result Screen -->
+            <section id="screen-result" class="hidden space-y-6">
+                <div class="moodle-card p-8">
+                    <h2 class="text-xl font-bold mb-6 border-b pb-2">Summary of your previous attempts</h2>
+                    <table class="w-full text-sm text-left border">
+                        <thead class="bg-slate-50 border-b">
+                            <tr>
+                                <th class="p-3">State</th>
+                                <th class="p-3 text-center">Grade / 100.00</th>
+                                <th class="p-3 text-center">Review</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-3">
+                                    <p class="font-bold">Finished</p>
+                                    <p class="text-[10px] text-slate-400">Submitted <span id="res-date">today</span></p>
+                                </td>
+                                <td class="p-3 text-center font-bold text-lg" id="res-score">0.00</td>
+                                <td class="p-3 text-center">
+                                    <button onclick="startReview()" class="text-blue-600 hover:underline">Review</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="mt-8 grid md:grid-cols-2 gap-8 items-center">
+                        <div class="bg-slate-50 p-4 border rounded">
+                            <canvas id="spiderChart"></canvas>
+                        </div>
+                        <div class="space-y-4">
+                            <h3 class="font-bold">Analisis Performa</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">Grafik di samping menunjukkan penguasaan materi Anda berdasarkan kategori soal. Pastikan untuk meninjau kembali bagian yang masih rendah.</p>
+                            <button onclick="location.reload()" class="btn-moodle">Back to Course</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Review Screen -->
+            <section id="screen-review" class="hidden space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Review Attempt</h2>
+                    <button onclick="showScreen('result')" class="btn-moodle bg-slate-400">Back to Summary</button>
+                </div>
+                <div id="review-list" class="space-y-4"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal Global -->
+    <div id="modal-global" class="hidden fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center p-4">
+        <div class="bg-white rounded max-w-sm w-full shadow-xl">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h4 id="modal-title" class="font-bold text-sm">Konfirmasi</h4>
+                <button onclick="hideModal()" class="text-slate-400">✕</button>
+            </div>
+            <div id="modal-desc" class="p-4 text-sm text-slate-600"></div>
+            <div id="modal-actions" class="p-4 bg-slate-50 flex justify-end gap-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // AUDIO RESOURCES (MIXKIT)
+        const sounds = {
+            click: 'https://mixkit.imgix.net/static/sfx/2568/2568-preview.mp3',
+            next: 'https://mixkit.imgix.net/static/sfx/2571/2571-preview.mp3',
+            finish: 'https://mixkit.imgix.net/static/sfx/2019/2019-preview.mp3',
+            alert: 'https://mixkit.imgix.net/static/sfx/2570/2570-preview.mp3'
+        };
+
+        function playSound(type) {
+            const audio = new Audio(sounds[type]);
+            audio.volume = 0.3;
+            audio.play().catch(() => {});
+        }
+
+        // DEFAULT QUESTIONS
+        const defaultBank = [
+            { cat: "BIOLOGI", q: "Bagian sel yang berfungsi sebagai tempat sintesis protein adalah...", o: ["Mitokondria", "Ribosom", "Lisosom", "Badan Golgi"], a: 1, explanation: "Ribosom adalah organel sel yang bertanggung jawab untuk translasi mRNA menjadi protein." },
+            { cat: "FISIKA", q: "Sebuah benda bermassa 2 kg didorong dengan gaya 10 N. Berapa percepatannya?", o: ["2 m/s²", "5 m/s²", "20 m/s²", "12 m/s²"], a: 1, explanation: "Berdasarkan Hukum II Newton, a = F/m = 10/2 = 5 m/s²." },
+            { cat: "KIMIA", q: "Lambang kimia untuk unsur Perak adalah...", o: ["Au", "Ag", "Fe", "Cu"], a: 1, explanation: "Ag berasal dari bahasa Latin Argentum, yang berarti Perak." },
+            { cat: "BIOLOGI", q: "Penyusun utama dinding sel tumbuhan adalah...", o: ["Kitin", "Selulosa", "Peptidoglikan", "Lipid"], a: 1, explanation: "Selulosa merupakan polisakarida yang memberikan struktur kuat pada tumbuhan." }
+        ];
+
+        // STATE MANAGEMENT
+        let state = {
+            user: '',
+            userId: '',
+            questions: [],
+            answers: {},
+            flags: {},
+            currentIdx: 0,
+            timeLeft: 0,
+            timerInterval: null,
+            chart: null,
+            customBanks: JSON.parse(localStorage.getItem('mascot_banks_2026') || '[]')
+        };
+
+        // INITIALIZATION
+        function handleLogin() {
+            const name = document.getElementById('username').value.trim();
+            const id = document.getElementById('user-id').value.trim();
+            if(!name || !id) return playSound('alert');
+            
+            state.user = name;
+            state.userId = id;
+            
+            playSound('click');
+            document.getElementById('user-pill').classList.remove('hidden');
+            document.getElementById('user-display').innerText = name;
+            showScreen('dashboard');
+            renderCustomBanks();
+        }
+
+        // ROBUST JSON PARSER (Tolerant to surrounding text)
+        function robustJSONParse(str) {
+            try { return JSON.parse(str); }
+            catch (e) {
+                const match = str.match(/\[\s*{[\s\S]*}\s*\]/);
+                if (match) {
+                    try { return JSON.parse(match[0]); } catch(e2) { return null; }
+                }
+                return null;
+            }
+        }
+
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = robustJSONParse(ev.target.result);
+                if(data && Array.isArray(data)) {
+                    state.customBanks.push({
+                        name: file.name.replace('.json', ''),
+                        questions: data,
+                        id: Date.now()
+                    });
+                    localStorage.setItem('mascot_banks_2026', JSON.stringify(state.customBanks));
+                    playSound('click');
+                    renderCustomBanks();
+                } else {
+                    alert("Gagal membaca file. Pastikan terdapat format array [ { q, o, a, cat } ] di dalam file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderCustomBanks() {
+            const container = document.getElementById('custom-bank-list');
+            container.innerHTML = '';
+            
+            state.customBanks.forEach((bank, idx) => {
+                const item = document.createElement('div');
+                item.className = 'moodle-card p-4 flex justify-between items-center';
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-slate-100 rounded flex items-center justify-center text-slate-400">📄</div>
+                        <div>
+                            <h4 class="text-sm font-bold text-blue-900">${bank.name}</h4>
+                            <p class="text-[10px] text-slate-400 uppercase">${bank.questions.length} Soal</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="startExam(${idx})" class="text-blue-600 font-bold text-xs hover:underline">Attempt</button>
+                        <button onclick="deleteBank(${idx})" class="text-red-400 font-bold text-xs">✕</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function deleteBank(idx) {
+            state.customBanks.splice(idx, 1);
+            localStorage.setItem('mascot_banks_2026', JSON.stringify(state.customBanks));
+            renderCustomBanks();
+        }
+
+        // EXAM LOGIC
+        function startExam(customIdx) {
+            state.questions = customIdx === null ? [...defaultBank] : [...state.customBanks[customIdx].questions];
+            state.answers = {};
+            state.flags = {};
+            state.currentIdx = 0;
+            state.timeLeft = state.questions.length * 90; // 1.5 min per q
+
+            playSound('next');
+            showScreen('sim');
+            renderQuestion();
+            startTimer();
+            renderNavGrid();
+        }
+
+        function renderQuestion() {
+            const q = state.questions[state.currentIdx];
+            document.getElementById('q-num-display').innerText = state.currentIdx + 1;
+            document.getElementById('q-category').innerText = q.cat || 'GENERAL';
+            document.getElementById('q-text').innerText = q.q;
+
+            // Handle image
+            const imgCont = document.getElementById('q-image-container');
+            const imgEl = document.getElementById('q-image');
+            if(q.img) {
+                imgEl.src = q.img;
+                imgCont.classList.remove('hidden');
+            } else {
+                imgCont.classList.add('hidden');
+            }
+
+            // Render options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            q.o.forEach((opt, idx) => {
+                const isSelected = state.answers[state.currentIdx] === idx;
+                const div = document.createElement('div');
+                div.className = 'moodle-option';
+                div.innerHTML = `
+                    <input type="radio" name="q-opt" ${isSelected ? 'checked' : ''}>
+                    <label class="text-sm cursor-pointer">${opt}</label>
+                `;
+                div.onclick = () => selectOption(idx);
+                container.appendChild(div);
+            });
+
+            // Update Flag
+            const btnFlag = document.getElementById('btn-flag');
+            if(state.flags[state.currentIdx]) {
+                btnFlag.classList.add('text-orange-500');
+                btnFlag.innerText = 'Sudah ditandai';
+            } else {
+                btnFlag.classList.remove('text-orange-500');
+                btnFlag.innerText = 'Tandai soal';
+            }
+            
+            renderNavGrid();
+        }
+
+        function selectOption(idx) {
+            state.answers[state.currentIdx] = idx;
+            playSound('click');
+            renderQuestion();
+        }
+
+        function toggleFlag() {
+            state.flags[state.currentIdx] = !state.flags[state.currentIdx];
+            playSound('click');
+            renderQuestion();
+        }
+
+        function nextQ() { 
+            if(state.currentIdx < state.questions.length - 1) { 
+                state.currentIdx++; 
+                playSound('next'); 
+                renderQuestion(); 
+            } 
+        }
+        function prevQ() { 
+            if(state.currentIdx > 0) { 
+                state.currentIdx--; 
+                playSound('next'); 
+                renderQuestion(); 
+            } 
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+            state.questions.forEach((_, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'qn-button';
+                if(state.answers[idx] !== undefined) btn.classList.add('answered');
+                if(state.currentIdx === idx) btn.classList.add('current');
+                if(state.flags[idx]) btn.classList.add('flagged');
+                
+                btn.innerText = idx + 1;
+                btn.onclick = () => { state.currentIdx = idx; renderQuestion(); };
+                grid.appendChild(btn);
+            });
+        }
+
+        function startTimer() {
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                if(state.timeLeft <= 0) {
+                    processResult();
+                    return;
+                }
+                state.timeLeft--;
+                const h = Math.floor(state.timeLeft / 3600);
+                const m = Math.floor((state.timeLeft % 3600) / 60);
+                const s = state.timeLeft % 60;
+                document.getElementById('timer-display').innerText = 
+                    `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        function confirmFinish() {
+            const unanswered = state.questions.length - Object.keys(state.answers).length;
+            const msg = unanswered > 0 ? 
+                `Anda masih memiliki ${unanswered} soal yang belum dijawab. Yakin ingin mengakhiri sesi?` : 
+                "Apakah Anda yakin ingin mengumpulkan jawaban sekarang?";
+            
+            showModal("Finish Attempt", msg, [
+                { label: "Cancel", class: "bg-slate-200 text-slate-700", action: hideModal },
+                { label: "Submit all and finish", class: "btn-moodle", action: processResult }
+            ]);
+        }
+
+        function processResult() {
+            clearInterval(state.timerInterval);
+            hideModal();
+            playSound('finish');
+            showScreen('result');
+
+            let correct = 0;
+            let catStats = {};
+            state.questions.forEach((q, i) => {
+                const c = q.cat || 'UMUM';
+                if(!catStats[c]) catStats[c] = { total: 0, hit: 0 };
+                catStats[c].total++;
+                if(state.answers[i] === q.a) { correct++; catStats[c].hit++; }
+            });
+
+            const finalGrade = ((correct / state.questions.length) * 100).toFixed(2);
+            document.getElementById('res-score').innerText = finalGrade;
+            document.getElementById('res-date').innerText = new Date().toLocaleString('id-ID');
+            
+            renderChart(catStats);
+        }
+
+        function renderChart(stats) {
+            const labels = Object.keys(stats);
+            const data = labels.map(l => (stats[l].hit / stats[l].total) * 100);
+            const ctx = document.getElementById('spiderChart').getContext('2d');
+            if(state.chart) state.chart.destroy();
+            state.chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Penguasaan Materi (%)',
+                        data: data,
+                        backgroundColor: 'rgba(15, 42, 74, 0.2)',
+                        borderColor: '#0f2a4a',
+                        pointBackgroundColor: '#f39c12',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: { r: { suggestedMin: 0, suggestedMax: 100 } },
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function startReview() {
+            showScreen('review');
+            const container = document.getElementById('review-list');
+            container.innerHTML = '';
+            
+            state.questions.forEach((q, i) => {
+                const isCorrect = state.answers[i] === q.a;
+                const div = document.createElement('div');
+                div.className = 'moodle-card p-6';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Question ${i+1}</span>
+                        <span class="px-2 py-1 rounded text-[10px] font-bold ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${isCorrect ? 'Correct' : 'Incorrect'}
+                        </span>
+                    </div>
+                    <div class="text-sm mb-4">${q.q}</div>
+                    <div class="space-y-2 mb-4 text-xs">
+                        <div class="p-3 border rounded ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                            <b>Your answer:</b> ${state.answers[i] !== undefined ? q.o[state.answers[i]] : 'No answer'}
+                        </div>
+                        ${!isCorrect ? `<div class="p-3 border rounded bg-green-50 border-green-200"><b>Correct answer:</b> ${q.o[q.a]}</div>` : ''}
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded text-xs border border-blue-100">
+                        <p class="font-bold text-blue-900 mb-1">Feedback:</p>
+                        <p class="italic">${q.explanation || 'No explanation available.'}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // UTILITIES
+        function showScreen(id) {
+            ['login', 'dashboard', 'sim', 'result', 'review'].forEach(s => {
+                document.getElementById(`screen-${s}`).classList.add('hidden');
+            });
+            document.getElementById(`screen-${id}`).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function showModal(title, desc, actions) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            const container = document.getElementById('modal-actions');
+            container.innerHTML = '';
+            actions.forEach(a => {
+                const b = document.createElement('button');
+                b.className = `px-4 py-2 rounded text-xs font-bold ${a.class}`;
+                b.innerText = a.label;
+                b.onclick = a.action;
+                container.appendChild(b);
+            });
+            document.getElementById('modal-global').classList.remove('hidden');
+        }
+        function hideModal() { document.getElementById('modal-global').classList.add('hidden'); }
+
+    </script>
+</body>
+</html>
+
