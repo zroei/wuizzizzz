@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://mood.manduatulungagung.sch.id/pluginfile.php/1/core_admin/logo/0x200/1769743592/zyro-image.png">
+    <link rel="icon" href="https://mood.manduatulungagung.sch.id/pluginfile.php/1/core_admin/logo/0x200/1769743592/zyro-image.png">
+    <title>MASCOT 2026 - Manduta Science Competition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MathJax for LaTeX Rendering -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; color: #334155; }
+        .moodle-navy { background-color: #0f2a4a; }
+        .moodle-orange { border-bottom: 3px solid #f39c12; }
+        
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        /* Grid Nav Soal */
+        .nav-box {
+            width: 38px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #cbd5e1; border-radius: 4px 4px 0 0;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            background: #fff; transition: all 0.2s;
+        }
+        .nav-box.answered { background: #e2e8f0; border-color: #94a3b8; }
+        .nav-box.active { border: 2px solid #0f2a4a; color: #0f2a4a; }
+        .nav-box.flagged { background: #fef3c7; border-color: #f59e0b; position: relative; }
+        .nav-box.flagged::after { content: '⚑'; position: absolute; top: -10px; right: -2px; color: #f59e0b; font-size: 10px; }
+
+        /* Option Styling */
+        .opt-item {
+            display: flex; align-items: center; padding: 12px;
+            border: 1px solid #e2e8f0; border-radius: 6px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .opt-item:hover { background-color: #f8fafc; border-color: #0f2a4a; }
+        .opt-item.selected { background-color: #eff6ff; border-color: #3b82f6; }
+
+        .prose p { margin-bottom: 1rem; }
+        .prose b { font-weight: 700; }
+        
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+
+    <header class="moodle-navy moodle-orange p-4 sticky top-0 z-50 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-1 rounded-md">
+                    <img src="https://mood.manduatulungagung.sch.id/pluginfile.php/1/core_admin/logo/0x200/1769743592/zyro-image.png" alt="Logo" class="w-8 h-8">
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight">MASCOT 2026</h1>
+                    <p class="text-[10px] uppercase opacity-70">Manduta Science Competition</p>
+                </div>
+            </div>
+            <div id="user-info" class="hidden flex items-center gap-3 text-sm font-medium">
+                <span id="display-name">Guest</span>
+                <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center font-bold">U</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6">
+        
+        <!-- LOGIN SECTION -->
+        <section id="screen-login" class="max-w-md mx-auto mt-20 p-8 card">
+            <h2 class="text-2xl font-bold text-center mb-8">System Login</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Full Name</label>
+                    <input type="text" id="in-name" class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukkan nama anda">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">Participant ID</label>
+                    <input type="text" id="in-id" class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="M26-XXXX">
+                </div>
+                <button onclick="doLogin()" class="w-full bg-[#0f2a4a] text-white py-3 rounded-md font-bold hover:bg-[#1a3d66] transition shadow-md">LOGIN TO COMPETITION</button>
+            </div>
+            <p class="text-center text-[10px] text-slate-400 mt-8 uppercase tracking-widest">Digital Exam Support System • MAN 2 Tulungagung</p>
+        </section>
+
+        <!-- DASHBOARD -->
+        <section id="screen-dash" class="hidden">
+            <div class="card p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold">Available Modules</h2>
+                    <p class="text-sm text-slate-500">Pilih simulasi atau unggah bank soal kustom.</p>
+                </div>
+                <button onclick="document.getElementById('file-in').click()" class="bg-blue-600 text-white px-6 py-2 rounded-md font-bold text-sm hover:bg-blue-700 transition">+ Import JSON Module</button>
+            </div>
+            <input type="file" id="file-in" class="hidden" accept=".json" onchange="handleImport(event)">
+
+            <div id="bank-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards will be injected here -->
+            </div>
+        </section>
+
+        <!-- QUIZ INTERFACE -->
+        <section id="screen-quiz" class="hidden flex flex-col lg:flex-row gap-6">
+            <!-- Question Content -->
+            <div class="flex-1">
+                <div class="card p-6 mb-4">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex gap-4">
+                            <div class="bg-slate-50 border p-4 rounded text-center min-w-[100px]">
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase">Question</span>
+                                <span id="q-idx-display" class="text-2xl font-black">1</span>
+                            </div>
+                            <div>
+                                <h3 id="q-cat-display" class="text-xs font-bold text-blue-600 uppercase tracking-widest">MATERI</h3>
+                                <p class="text-xs text-slate-400 mt-1">Status: <span id="q-status">Not answered</span></p>
+                            </div>
+                        </div>
+                        <button onclick="toggleFlag()" id="btn-flag" class="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-orange-500 transition">
+                            <span id="flag-icon">⚑</span> <span id="flag-text">Flag Question</span>
+                        </button>
+                    </div>
+
+                    <div id="q-body" class="prose max-w-none text-lg leading-relaxed text-slate-800 mb-8">
+                        <!-- HTML Content injected here -->
+                    </div>
+
+                    <div id="opt-list" class="space-y-3">
+                        <!-- Options injected here -->
+                    </div>
+                </div>
+
+                <div class="flex justify-between p-4 card">
+                    <button onclick="navQ(-1)" class="bg-slate-200 text-slate-700 px-6 py-2 rounded font-bold text-sm hover:bg-slate-300">Previous</button>
+                    <button onclick="navQ(1)" class="bg-[#0f2a4a] text-white px-6 py-2 rounded font-bold text-sm hover:bg-[#1a3d66]">Next Page</button>
+                </div>
+            </div>
+
+            <!-- Quiz Info Sidebar -->
+            <aside class="w-full lg:w-80 space-y-6">
+                <div class="card p-5">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-4 border-b pb-2">Quiz Navigation</h4>
+                    <div id="grid-nav" class="flex flex-wrap gap-1.5">
+                        <!-- Nav boxes -->
+                    </div>
+                    <div class="mt-6 pt-4 border-t">
+                        <button onclick="requestFinish()" class="text-sm font-bold text-blue-600 hover:underline">Finish attempt ...</button>
+                    </div>
+                </div>
+
+                <div class="card p-5 text-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Time Remaining</span>
+                    <div id="timer" class="text-3xl font-mono font-bold text-red-600">00:00:00</div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- RESULTS -->
+        <section id="screen-result" class="hidden">
+            <div class="card p-8 max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 border-b pb-4">Quiz Result Summary</h2>
+                <div class="flex flex-col md:flex-row gap-10 items-center">
+                    <div class="text-center">
+                        <div class="w-40 h-40 rounded-full border-8 border-slate-100 flex items-center justify-center mb-4">
+                            <span id="final-score" class="text-4xl font-black text-[#0f2a4a]">0.00</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-500 uppercase">Grade out of 100.00</p>
+                    </div>
+                    <div class="flex-1">
+                        <canvas id="chart-res"></canvas>
+                    </div>
+                </div>
+                <div class="mt-10 pt-6 border-t flex justify-center gap-4">
+                    <button onclick="startReview()" class="bg-[#0f2a4a] text-white px-8 py-3 rounded font-bold hover:shadow-lg transition">REVIEW SOLUTIONS</button>
+                    <button onclick="location.reload()" class="bg-slate-200 text-slate-700 px-8 py-3 rounded font-bold">BACK TO HOME</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- REVIEW -->
+        <section id="screen-review" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold">Review Attempt</h2>
+                <button onclick="showScreen('dash')" class="bg-slate-200 px-4 py-2 rounded text-xs font-bold">Close Review</button>
+            </div>
+            <div id="review-container" class="space-y-6">
+                <!-- Review blocks -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-slate-900/60 z-[1000] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-lg shadow-2xl max-w-sm w-full">
+            <div class="p-4 border-b">
+                <h4 id="m-title" class="font-bold text-slate-800">Konfirmasi</h4>
+            </div>
+            <div id="m-body" class="p-5 text-sm text-slate-600 leading-relaxed"></div>
+            <div id="m-footer" class="p-4 bg-slate-50 flex justify-end gap-2 rounded-b-lg"></div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let app = {
+            user: null,
+            userId: null,
+            banks: JSON.parse(localStorage.getItem('mascot_v2_data') || '[]'),
+            activeQuiz: {
+                title: 'Simulasi Default',
+                questions: [],
+                answers: {},
+                flags: {},
+                current: 0,
+                timeLeft: 0,
+                timer: null
+            },
+            chart: null
+        };
+
+        const defaultData = [
+            {
+                cat: "MATEMATIKA",
+                q: "Hasil dari $32^{1/5} + 81^{1/4} - 125^{1/3}$ adalah... <br><br><b>Info:</b> Soal ini menguji pemahaman bentuk akar.",
+                o: ["0", "1", "2", "3"],
+                a: 0,
+                explanation: "Langkah-langkah:<br>1. $32^{1/5} = (2^5)^{1/5} = 2$<br>2. $81^{1/4} = (3^4)^{1/4} = 3$<br>3. $125^{1/3} = (5^3)^{1/3} = 5$<br>Maka $2 + 3 - 5 = 0$."
+            },
+            {
+                cat: "FISIKA",
+                q: "Sebuah pegas memiliki konstanta $k = 200$ N/m. Jika pegas ditarik sejauh 10 cm, energi potensial pegas adalah...",
+                o: ["1 Joule", "2 Joule", "5 Joule", "10 Joule"],
+                a: 0,
+                explanation: "$EP = \\frac{1}{2} k x^2 = \\frac{1}{2} \\cdot 200 \\cdot (0,1)^2 = 100 \\cdot 0,01 = 1$ Joule."
+            }
+        ];
+
+        // Initialization
+        window.onload = () => {
+            renderDashboard();
+        };
+
+        function doLogin() {
+            const n = document.getElementById('in-name').value;
+            const i = document.getElementById('in-id').value;
+            if(!n || !i) return alert('Mohon isi data login.');
+            
+            app.user = n;
+            app.userId = i;
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('display-name').innerText = n;
+            showScreen('dash');
+        }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                let raw = ev.target.result;
+                let parsed = null;
+                
+                try {
+                    parsed = JSON.parse(raw);
+                } catch(err) {
+                    // Robust parser for non-standard JSON
+                    const match = raw.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+                    if(match) {
+                        try { parsed = JSON.parse(match[0]); } catch(e2) {}
+                    }
+                }
+
+                if(parsed) {
+                    let questions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
+                    let config = parsed.config || {};
+                    
+                    app.banks.push({
+                        id: Date.now(),
+                        name: config.title || file.name.replace('.json', ''),
+                        questions: questions,
+                        duration: config.duration_minutes || 60
+                    });
+                    localStorage.setItem('mascot_v2_data', JSON.stringify(app.banks));
+                    renderDashboard();
+                } else {
+                    alert('Gagal mengurai file JSON. Pastikan format benar.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('bank-list');
+            container.innerHTML = '';
+
+            // Default Bank Card
+            const defCard = createBankCard('Official Simulation', defaultData.length, 60, null);
+            container.appendChild(defCard);
+
+            // Custom Banks
+            app.banks.forEach((b, idx) => {
+                container.appendChild(createBankCard(b.name, b.questions.length, b.duration, idx));
+            });
+        }
+
+        function createBankCard(name, count, dur, idx) {
+            const div = document.createElement('div');
+            div.className = 'card p-6 flex flex-col justify-between hover:border-blue-500 transition cursor-default';
+            div.innerHTML = `
+                <div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4 text-xl">📘</div>
+                    <h3 class="font-bold text-lg mb-1">${name}</h3>
+                    <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider">${count} Questions • ${dur} Min</p>
+                </div>
+                <div class="mt-6 flex gap-2">
+                    <button onclick="initQuiz(${idx})" class="flex-1 bg-[#0f2a4a] text-white py-2 rounded font-bold text-xs hover:opacity-90">START ATTEMPT</button>
+                    ${idx !== null ? `<button onclick="deleteBank(${idx})" class="px-3 py-2 bg-red-50 text-red-500 rounded hover:bg-red-100">✕</button>` : ''}
+                </div>
+            `;
+            return div;
+        }
+
+        function deleteBank(idx) {
+            app.banks.splice(idx, 1);
+            localStorage.setItem('mascot_v2_data', JSON.stringify(app.banks));
+            renderDashboard();
+        }
+
+        function initQuiz(idx) {
+            const data = idx === null ? { name: 'Official Simulation', questions: defaultData, duration: 60 } : app.banks[idx];
+            app.activeQuiz = {
+                title: data.name,
+                questions: data.questions,
+                answers: {},
+                flags: {},
+                current: 0,
+                timeLeft: data.duration * 60
+            };
+            
+            showScreen('quiz');
+            renderQuestion();
+            startTimer();
+            renderNavGrid();
+        }
+
+        function renderQuestion() {
+            const q = app.activeQuiz.questions[app.activeQuiz.current];
+            document.getElementById('q-idx-display').innerText = app.activeQuiz.current + 1;
+            document.getElementById('q-cat-display').innerText = q.cat || 'GENERAL';
+            
+            // HTML Transformation
+            document.getElementById('q-body').innerHTML = q.q;
+
+            // Options
+            const optList = document.getElementById('opt-list');
+            optList.innerHTML = '';
+            q.o.forEach((opt, i) => {
+                const isSel = app.activeQuiz.answers[app.activeQuiz.current] === i;
+                const item = document.createElement('div');
+                item.className = `opt-item ${isSel ? 'selected' : ''}`;
+                item.innerHTML = `
+                    <div class="w-6 h-6 border-2 rounded-full mr-3 flex items-center justify-center text-[10px] font-bold ${isSel ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'}">
+                        ${String.fromCharCode(65 + i)}
+                    </div>
+                    <div class="text-sm">${opt}</div>
+                `;
+                item.onclick = () => {
+                    app.activeQuiz.answers[app.activeQuiz.current] = i;
+                    renderQuestion();
+                    renderNavGrid();
+                };
+                optList.appendChild(item);
+            });
+
+            // Status & Flags
+            const answered = app.activeQuiz.answers[app.activeQuiz.current] !== undefined;
+            document.getElementById('q-status').innerText = answered ? 'Answered' : 'Not yet answered';
+            document.getElementById('q-status').className = answered ? 'text-green-600 font-bold' : 'text-slate-400';
+            
+            const isFlagged = app.activeQuiz.flags[app.activeQuiz.current];
+            document.getElementById('flag-text').innerText = isFlagged ? 'Remove Flag' : 'Flag Question';
+            document.getElementById('btn-flag').classList.toggle('text-orange-500', isFlagged);
+
+            // Re-render MathJax
+            if(window.MathJax) MathJax.typesetPromise();
+        }
+
+        function toggleFlag() {
+            app.activeQuiz.flags[app.activeQuiz.current] = !app.activeQuiz.flags[app.activeQuiz.current];
+            renderQuestion();
+            renderNavGrid();
+        }
+
+        function navQ(dir) {
+            const target = app.activeQuiz.current + dir;
+            if(target >= 0 && target < app.activeQuiz.questions.length) {
+                app.activeQuiz.current = target;
+                renderQuestion();
+                renderNavGrid();
+            }
+        }
+
+        function renderNavGrid() {
+            const grid = document.getElementById('grid-nav');
+            grid.innerHTML = '';
+            app.activeQuiz.questions.forEach((_, i) => {
+                const box = document.createElement('div');
+                box.className = 'nav-box';
+                if(app.activeQuiz.answers[i] !== undefined) box.classList.add('answered');
+                if(app.activeQuiz.current === i) box.classList.add('active');
+                if(app.activeQuiz.flags[i]) box.classList.add('flagged');
+                box.innerText = i + 1;
+                box.onclick = () => { app.activeQuiz.current = i; renderQuestion(); renderNavGrid(); };
+                grid.appendChild(box);
+            });
+        }
+
+        function startTimer() {
+            clearInterval(app.activeQuiz.timer);
+            app.activeQuiz.timer = setInterval(() => {
+                app.activeQuiz.timeLeft--;
+                if(app.activeQuiz.timeLeft <= 0) finishQuiz();
+                
+                const h = Math.floor(app.activeQuiz.timeLeft / 3600);
+                const m = Math.floor((app.activeQuiz.timeLeft % 3600) / 60);
+                const s = app.activeQuiz.timeLeft % 60;
+                document.getElementById('timer').innerText = 
+                    `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        function requestFinish() {
+            const ansCount = Object.keys(app.activeQuiz.answers).length;
+            const total = app.activeQuiz.questions.length;
+            showModal('Finish Attempt', `Anda telah menjawab ${ansCount} dari ${total} soal. Submit sekarang?`, [
+                { label: 'Return to attempt', class: 'bg-slate-200', action: hideModal },
+                { label: 'Submit all and finish', class: 'bg-blue-600 text-white', action: finishQuiz }
+            ]);
+        }
+
+        function finishQuiz() {
+            clearInterval(app.activeQuiz.timer);
+            hideModal();
+            showScreen('result');
+
+            let correct = 0;
+            let catData = {};
+            app.activeQuiz.questions.forEach((q, i) => {
+                const cat = q.cat || 'GENERAL';
+                if(!catData[cat]) catData[cat] = { hit: 0, total: 0 };
+                catData[cat].total++;
+                if(app.activeQuiz.answers[i] === q.a) {
+                    correct++;
+                    catData[cat].hit++;
+                }
+            });
+
+            const score = ((correct / app.activeQuiz.questions.length) * 100).toFixed(2);
+            document.getElementById('final-score').innerText = score;
+            
+            renderResultChart(catData);
+        }
+
+        function renderResultChart(stats) {
+            const ctx = document.getElementById('chart-res').getContext('2d');
+            const labels = Object.keys(stats);
+            const values = labels.map(l => (stats[l].hit / stats[l].total * 100).toFixed(0));
+
+            if(app.chart) app.chart.destroy();
+            app.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mastery %',
+                        data: values,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: { x: { min: 0, max: 100 } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function startReview() {
+            showScreen('review');
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+            
+            app.activeQuiz.questions.forEach((q, i) => {
+                const userAns = app.activeQuiz.answers[i];
+                const isCorrect = userAns === q.a;
+                const div = document.createElement('div');
+                div.className = 'card p-6';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <span class="text-xs font-bold text-slate-400">SOAL ${i + 1}</span>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-bold ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${isCorrect ? 'CORRECT' : 'INCORRECT'}
+                        </span>
+                    </div>
+                    <div class="prose max-w-none text-slate-800 mb-6">${q.q}</div>
+                    <div class="space-y-2 mb-6">
+                        <div class="p-3 border rounded text-sm ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                            <b>Your Answer:</b> ${userAns !== undefined ? q.o[userAns] : '<i class="text-slate-400">Not answered</i>'}
+                        </div>
+                        ${!isCorrect ? `<div class="p-3 border rounded text-sm bg-green-50 border-green-200"><b>Correct Answer:</b> ${q.o[q.a]}</div>` : ''}
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <h5 class="text-xs font-bold text-blue-900 mb-2 uppercase tracking-wide">Pembahasan:</h5>
+                        <div class="text-sm prose">${q.explanation || 'Tidak tersedia.'}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            if(window.MathJax) MathJax.typesetPromise();
+        }
+
+        // Utils
+        function showScreen(id) {
+            ['login', 'dash', 'quiz', 'result', 'review'].forEach(s => {
+                document.getElementById('screen-'+s).classList.add('hidden');
+            });
+            document.getElementById('screen-'+id).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function showModal(title, body, actions) {
+            document.getElementById('m-title').innerText = title;
+            document.getElementById('m-body').innerText = body;
+            const footer = document.getElementById('m-footer');
+            footer.innerHTML = '';
+            actions.forEach(a => {
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded text-xs font-bold ${a.class}`;
+                btn.innerText = a.label;
+                btn.onclick = a.action;
+                footer.appendChild(btn);
+            });
+            document.getElementById('modal').classList.remove('hidden');
+        }
+        function hideModal() { document.getElementById('modal').classList.add('hidden'); }
+
+    </script>
+</body>
+</html>
+
