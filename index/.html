@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Studikuis - Platform Pembelajaran Modern</title>
+    <meta property="og:image" content="https://iili.io/fU6OgoJ.png">
+    <link rel="icon" href="https://iili.io/fU6O8wg.png"><script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #059669;
+            --warning: #d97706;
+            --bg-body: #f1f5f9;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-body);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile Optimization: Edge-to-Edge */
+        @media (max-width: 640px) {
+            .container-mobile-full { padding-left: 0; padding-right: 0; }
+            .card-mobile-flat { border-radius: 0; border-left: none; border-right: none; }
+        }
+
+        /* Bento Menu Icon Animation */
+        .bento-icon {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
+            width: 20px; height: 20px;
+        }
+        .bento-dot { background: currentColor; border-radius: 1px; }
+
+        /* Modern Buttons */
+        .btn-action {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 12px 20px; border-radius: 12px; font-weight: 600;
+            transition: all 0.2s ease; gap: 8px;
+        }
+        .btn-action:active { transform: scale(0.96); }
+
+        /* Quiz Radio */
+        .quiz-option {
+            border: 2px solid #e2e8f0; border-radius: 16px;
+            padding: 16px; margin-bottom: 12px; cursor: pointer;
+            display: flex; align-items: center; transition: all 0.2s;
+            background: white;
+        }
+        .quiz-option.selected { border-color: var(--primary); background: #eff6ff; }
+        .option-idx {
+            width: 32px; height: 32px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: #f8fafc; border-radius: 8px; font-weight: 800;
+            margin-right: 16px; color: #64748b;
+        }
+        .selected .option-idx { background: var(--primary); color: white; }
+
+        /* Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Focus Mode Utility */
+        .focus-hide { transition: opacity 0.3s, transform 0.3s; }
+        body.is-focus .focus-hide { opacity: 0; pointer-events: none; transform: translateY(-20px); }
+        body.is-focus #main-container { padding-top: 10px; }
+    </style>
+</head>
+<body class="text-slate-900 overflow-x-hidden">
+
+    <!-- TOP TIMER & BENTO NAVIGATION -->
+    <header id="app-header" class="focus-hide sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 py-3">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <img src="https://iili.io/fU6O8wg.png" class="w-5 h-5" alt="Logo StudiKuis">
+                </div>
+                <span class="font-bold text-lg tracking-tight hidden sm:block">Studi <span class="text-blue-600">Kuis</span></span>
+            </div>
+
+            <!-- Quiz Timer (Only visible during quiz) -->
+            <div id="quiz-timer-container" class="hidden flex items-center gap-3 bg-slate-100 px-4 py-2 rounded-full">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Waktu</span>
+                <span id="timer-display" class="font-mono font-bold text-blue-700">00:00:00</span>
+            </div>
+
+            <!-- Action Group -->
+            <div class="flex items-center gap-2">
+                <button onclick="showNavOverlay()" id="btn-bento" class="hidden p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all" aria-label="Buka Navigasi Soal">
+                    <div class="bento-icon">
+                        <div class="bento-dot"></div><div class="bento-dot"></div>
+                        <div class="bento-dot"></div><div class="bento-dot"></div>
+                    </div>
+                </button>
+                <button onclick="toggleDoc()" class="p-2.5 text-slate-500 hover:text-blue-600" aria-label="Informasi Dokumentasi">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="sr-only">Bantuan</span>
+                </button>
+                <div id="user-avatar" class="hidden w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm">
+                    <span id="initials">U</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-container" class="max-w-5xl mx-auto px-0 sm:px-6 py-4 sm:py-8 transition-all duration-300">
+        
+        <!-- SCREEN: LOGIN -->
+        <section id="screen-login" class="px-6 py-12 animate-fade">
+            <div class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-black text-slate-800 mb-2">Login Peserta</h1>
+                    <p class="text-slate-400 font-medium">StudiKuis Learning Platform</p>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Nama Lengkap</label>
+                        <input type="text" id="in-name" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none transition-all" placeholder="Nama Anda">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Nomor Peserta</label>
+                        <input type="text" id="in-id" class="w-full px-5 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-600 focus:bg-white rounded-2xl outline-none transition-all" placeholder="M26-XXXX">
+                    </div>
+                    <button onclick="authLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg transition-all shadow-lg shadow-blue-100">Masuk Aplikasi</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: DASHBOARD -->
+        <section id="screen-dash" class="hidden px-6 animate-fade">
+            <div class="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-800">Daftar Tryout</h2>
+                    <p class="text-slate-500">Pilih modul untuk menguji kemampuan Anda.</p>
+                </div>
+                <div id="drop-zone" class="bg-white border-2 border-dashed border-slate-300 p-6 rounded-3xl text-center cursor-pointer hover:border-blue-400 transition-all" onclick="document.getElementById('file-input').click()">
+                    <span class="text-sm font-bold text-slate-400" id="drop-text">Impor JSON <span class="text-blue-600">(Drag & Drop)</span></span>
+                    <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileSelect(event)">
+                </div>
+            </div>
+            <div id="bank-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Banks card here -->
+            </div>
+        </section>
+
+        <!-- SCREEN: QUIZ -->
+        <section id="screen-quiz" class="hidden">
+            <div class="container-mobile-full">
+                <!-- Question Card -->
+                <div class="bg-white card-mobile-flat sm:rounded-3xl shadow-sm border-y sm:border border-slate-200 overflow-hidden">
+                    <!-- Progress bar -->
+                    <div class="h-1 w-full bg-slate-100">
+                        <div id="quiz-progress" class="h-full bg-blue-600 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+
+                    <div class="p-6 sm:p-10">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="flex items-center gap-4">
+                                <div id="q-idx-box" class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-black text-xl">1</div>
+                                <div>
+                                    <h4 id="q-category" class="text-[10px] font-black text-blue-500 uppercase tracking-widest">KATEGORI</h4>
+                                    <div class="flex items-center gap-1 mt-1">
+                                        <button onclick="adjustFont(-2)" class="p-1 px-2 bg-slate-50 text-slate-400 text-xs rounded hover:bg-slate-100" aria-label="Kecilkan Teks">A-</button>
+                                        <button onclick="adjustFont(2)" class="p-1 px-2 bg-slate-50 text-slate-400 text-xs rounded hover:bg-slate-100" aria-label="Besarkan Teks">A+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="toggleFocusMode()" class="p-3 text-slate-400 hover:text-blue-600" aria-label="Mode Fokus" id="focus-toggle">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                            </button>
+                        </div>
+
+                        <div id="q-content" class="text-lg sm:text-xl font-medium leading-relaxed text-slate-800 mb-10">
+                            <!-- Question text -->
+                        </div>
+
+                        <div id="q-options-container" class="space-y-3">
+                            <!-- Options here -->
+                        </div>
+                    </div>
+
+                    <!-- Question Navigation Footer -->
+                    <div class="bg-slate-50/50 border-t border-slate-200 p-4 sm:p-6 flex justify-between items-center">
+                        <button onclick="prevQ()" class="btn-action text-slate-500 hover:text-blue-600" aria-label="Soal Sebelumnya">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                            <span class="hidden sm:inline">Sebelumnya</span>
+                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                             <button id="flag-btn" onclick="toggleFlag()" class="p-3 rounded-xl border-2 border-slate-200 text-slate-400" aria-label="Tandai Ragu-ragu">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+                            </button>
+                        </div>
+
+                        <button onclick="nextQ()" class="btn-action bg-blue-600 text-white shadow-lg shadow-blue-100" aria-label="Soal Berikutnya">
+                            <span class="hidden sm:inline">Selanjutnya</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: RESULT -->
+        <section id="screen-result" class="hidden px-6 animate-fade text-center max-w-2xl mx-auto py-12">
+            <div class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100">
+                <h2 class="text-2xl font-black text-slate-800 mb-2">Hasil Kompetisi</h2>
+                <p class="text-slate-400 mb-10">Terima kasih telah berpartisipasi!</p>
+                
+                <div class="flex justify-center mb-10">
+                    <div class="relative w-40 h-40">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-100" />
+                            <circle id="score-ring" cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" stroke-dasharray="440" stroke-dashoffset="440" class="text-blue-600 transition-all duration-1000" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span id="final-score" class="text-5xl font-black text-slate-800">0</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Poin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-10">
+                    <div class="bg-slate-50 p-4 rounded-3xl">
+                        <p class="text-xs text-slate-400 font-bold mb-1">BENAR</p>
+                        <p id="stat-correct" class="text-xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-3xl">
+                        <p class="text-xs text-slate-400 font-bold mb-1">SALAH</p>
+                        <p id="stat-wrong" class="text-xl font-bold text-red-600">0</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button onclick="viewReview()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">Lihat Pembahasan</button>
+                    <button onclick="location.reload()" class="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">Kembali ke Home</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: REVIEW -->
+        <section id="screen-review" class="hidden px-4 sm:px-0 animate-fade pb-24">
+            <div class="flex items-center justify-between mb-8 sticky top-[72px] bg-white/80 backdrop-blur px-4 py-3 rounded-2xl z-20 border border-slate-100 shadow-sm">
+                <h2 class="text-xl font-black">Pembahasan</h2>
+                <button onclick="showScreen('dash')" class="text-xs font-bold text-blue-600">Tutup</button>
+            </div>
+            <div id="review-container" class="space-y-6">
+                <!-- Review cards -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FULLSCREEN BENTO NAVIGATION -->
+    <div id="nav-overlay" class="hidden fixed inset-0 z-[100] bg-white animate-fade flex flex-col p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h3 class="text-2xl font-black">Navigasi Soal</h3>
+            <button onclick="hideNavOverlay()" class="p-3 bg-slate-100 rounded-full" aria-label="Tutup Navigasi">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div id="bento-grid" class="grid grid-cols-5 sm:grid-cols-8 gap-3 max-w-2xl mx-auto w-full">
+            <!-- Numbers -->
+        </div>
+        <div class="mt-auto pt-12 pb-6 flex justify-center">
+            <button onclick="promptSubmit()" class="w-full max-w-md bg-red-50 text-red-600 py-5 rounded-[24px] font-black tracking-wide border-2 border-red-100 active:bg-red-100 transition-colors">SUBMIT JAWABAN SEKARANG</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM DIALOG / MODAL -->
+    <div id="modal-base" class="hidden fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6 animate-fade">
+        <div class="bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl overflow-hidden text-center">
+            <div id="modal-icon" class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <!-- Icon injected -->
+            </div>
+            <h4 id="modal-title" class="text-xl font-black text-slate-800 mb-2">Konfirmasi</h4>
+            <p id="modal-body" class="text-slate-500 font-medium leading-relaxed mb-8">Pesan konfirmasi disini.</p>
+            <div id="modal-actions" class="flex gap-3">
+                <!-- Buttons injected -->
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCUMENTATION OVERLAY -->
+    <div id="doc-modal" class="hidden fixed inset-0 z-[210] bg-slate-900/60 backdrop-blur flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-lg rounded-[32px] p-8 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b">
+                <h3 class="text-xl font-black">Panduan Platform</h3>
+                <button onclick="toggleDoc()" class="text-slate-400 hover:text-slate-900">✕</button>
+            </div>
+            <div class="space-y-6 text-slate-600 text-sm leading-relaxed">
+                <section>
+                    <h4 class="font-black text-slate-900 mb-2 uppercase text-[10px] tracking-widest text-blue-600">Impor Soal</h4>
+                    <p>Gunakan tombol di dashboard untuk mengunggah file .json. Format file harus mengikuti skema standard Kuis yang berisi array <code>questions</code> dan objek <code>config</code>.</p>
+                </section>
+                <section>
+                    <h4 class="font-black text-slate-900 mb-2 uppercase text-[10px] tracking-widest text-blue-600">Navigasi Bento</h4>
+                    <p>Gunakan ikon empat kotak (Bento Menu) di pojok kanan atas untuk berpindah nomor secara cepat atau melakukan submit akhir.</p>
+                </section>
+                <section>
+                    <h4 class="font-black text-slate-900 mb-2 uppercase text-[10px] tracking-widest text-blue-600">Mode Fokus</h4>
+                    <p>Klik ikon kotak di pojok kanan soal untuk menyembunyikan elemen menu dan fokus hanya pada teks soal (sangat berguna di layar HP kecil).</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let app = {
+            user: localStorage.getItem('m26_u') || null,
+            userId: localStorage.getItem('m26_id') || null,
+            banks: JSON.parse(localStorage.getItem('m26_b') || '[]'),
+            currentQuiz: null,
+            fontSize: 18,
+            isFocus: false
+        };
+
+        const defaultBank = [
+    {
+      "cat": "FISIKA",
+      "q": "Dua buah muatan masing-masing $Q_1$ dan $Q_2$ terpisah sejauh $R$ dan memiliki gaya Coulomb sebesar $F$. Jika jarak kedua muatan diubah menjadi $2R$, maka gaya Coulomb-nya menjadi...",
+      "o": ["$1/4 F$", "$1/2 F$", "$2 F$", "$4 F$"],
+      "a": 0,
+      "explanation": "Gaya Coulomb berbanding terbalik dengan kuadrat jarak ($F \\propto 1/R^2$). Jika jarak dikali 2, maka gaya dikali $(1/2)^2 = 1/4$."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Penyilangan antara kacang ercis berbiji bulat kuning (BBKK) dengan biji keriput hijau (bbkk) menghasilkan keturunan F1 berbiji bulat kuning. Jika F1 disilangkan sesamanya, perbandingan fenotip F2 bulat kuning : bulat hijau : keriput kuning : keriput hijau adalah...",
+      "o": ["9 : 3 : 3 : 1", "3 : 1", "1 : 2 : 1", "12 : 3 : 1"],
+      "a": 0,
+      "explanation": "Ini adalah hukum II Mendel (Dihibrid dominan penuh). Persilangan heterozigot sempurna (BbKk x BbKk) selalu menghasilkan rasio fenotip 9:3:3:1."
+    },
+    {
+      "cat": "KIMIA",
+      "q": "Perhatikan data berikut: (1) Es mencair, (2) Besi berkarat, (3) Air menguap, (4) Singkong menjadi tapai. Yang termasuk perubahan kimia adalah...",
+      "o": ["(2) dan (4)", "(1) dan (3)", "(1) dan (2)", "(3) dan (4)"],
+      "a": 0,
+      "explanation": "Perubahan kimia menghasilkan zat baru. Karat besi (oksidasi) dan tapai (fermentasi) adalah proses kimia, sedangkan mencair dan menguap adalah perubahan wujud (fisika)."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Organel sel yang berfungsi sebagai tempat respirasi seluler untuk menghasilkan energi (ATP) adalah...",
+      "o": ["Mitokondria", "Ribosom", "Lisosom", "Badan Golgi"],
+      "a": 0,
+      "explanation": "Mitokondria adalah 'the powerhouse of the cell' karena menghasilkan energi melalui respirasi."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Sebuah benda diletakkan 10 cm di depan cermin cekung yang memiliki jari-jari kelengkupan 30 cm. Sifat bayangan yang terbentuk adalah...",
+      "o": ["Maya, tegak, diperbesar", "Nyata, terbalik, diperkecil", "Maya, tegak, diperkecil", "Nyata, terbalik, diperbesar"],
+      "a": 0,
+      "explanation": "$f = R/2 = 15$ cm. Benda di $s = 10$ cm berarti benda di Ruang I (antara cermin dan fokus). Bayangan di Ruang I selalu maya, tegak, dan diperbesar."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Urutan jalannya impuls pada gerak refleks yang benar adalah...",
+      "o": ["Reseptor - Saraf Sensorik - Sumsum Tulang Belakang - Saraf Motorik - Efektor", "Reseptor - Saraf Motorik - Otak - Saraf Sensorik - Efektor", "Reseptor - Saraf Sensorik - Otak - Saraf Motorik - Efektor", "Efektor - Saraf Motorik - Sumsum Tulang Belakang - Saraf Sensorik - Reseptor"],
+      "a": 0,
+      "explanation": "Gerak refleks melewati sumsum tulang belakang (busur refleks) tanpa diproses otak untuk mempercepat respon."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Berdasarkan Hukum Ohm, jika hambatan dalam suatu rangkaian tetap dan tegangan dinaikkan menjadi 3 kali lipat, maka kuat arus akan...",
+      "o": ["Menjadi 3 kali lipat", "Menjadi 1/3 kali lipat", "Tetap", "Menjadi 9 kali lipat"],
+      "a": 0,
+      "explanation": "$V = I \\cdot R$. Karena $V$ dan $I$ berbanding lurus, jika $V$ naik 3x, maka $I$ juga naik 3x."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Hormon yang berfungsi untuk memicu penebalan dinding rahim (endometrium) setelah ovulasi pada wanita adalah...",
+      "o": ["Progesteron", "Estrogen", "LH", "FSH"],
+      "a": 0,
+      "explanation": "Progesteron diproduksi oleh korpus luteum untuk mempersiapkan dinding rahim bagi kehamilan."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Sebuah transformator memiliki 100 lilitan primer dan 500 lilitan sekunder. Jika tegangan input 220 V, maka tegangan outputnya adalah...",
+      "o": ["1100 V", "44 V", "500 V", "110 V"],
+      "a": 0,
+      "explanation": "$Vp/Vs = Np/Ns \\Rightarrow 220/Vs = 100/500 \\Rightarrow 220/Vs = 1/5 \\Rightarrow Vs = 1100$ V."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Jaringan pada tumbuhan yang berfungsi untuk mengangkut hasil fotosintesis dari daun ke seluruh tubuh tumbuhan adalah...",
+      "o": ["Floem", "Xilem", "Epidermis", "Parenkim"],
+      "a": 0,
+      "explanation": "Floem (Fosfat/Foto) mengangkut hasil fotosintesis. Xilem mengangkut air dan mineral dari akar."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Energi kinetik sebuah benda bermassa 4 kg yang bergerak dengan kecepatan 10 m/s adalah...",
+      "o": ["200 Joule", "400 Joule", "40 Joule", "100 Joule"],
+      "a": 0,
+      "explanation": "$Ek = 1/2 \\cdot m \\cdot v^2 = 1/2 \\cdot 4 \\cdot 10^2 = 2 \\cdot 100 = 200$ J."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Penyakit yang disebabkan oleh bakteri *Treponema pallidum* adalah...",
+      "o": ["Sifilis", "Gonore", "AIDS", "Herpes genitalis"],
+      "a": 0,
+      "explanation": "Sifilis disebabkan oleh *Treponema pallidum*. Gonore oleh *Neisseria gonorrhoeae*."
+    },
+    {
+      "cat": "KIMIA",
+      "q": "Molekul air ($H_2O$) terdiri dari...",
+      "o": ["2 atom Hidrogen dan 1 atom Oksigen", "1 atom Hidrogen dan 2 atom Oksigen", "2 atom Helium dan 1 atom Oksigen", "2 atom Hidrogen dan 2 atom Oksigen"],
+      "a": 0,
+      "explanation": "Angka indeks menunjukkan jumlah atom di depannya."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Bagian ginjal yang berfungsi untuk proses filtrasi (penyaringan darah) adalah...",
+      "o": ["Glomerulus", "Tubulus Kontortus Proksimal", "Tubulus Kontortus Distal", "Lengkung Henle"],
+      "a": 0,
+      "explanation": "Filtrasi terjadi di Glomerulus menghasilkan urin primer."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Bunyi tidak dapat merambat melalui...",
+      "o": ["Ruang hampa udara", "Air", "Besi", "Udara"],
+      "a": 0,
+      "explanation": "Bunyi adalah gelombang mekanik yang memerlukan medium untuk merambat."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Enzim ptialin (amilase mulut) berfungsi untuk mengubah...",
+      "o": ["Amilum menjadi maltosa/glukosa", "Protein menjadi pepton", "Lemak menjadi asam lemak", "Pepton menjadi asam amino"],
+      "a": 0,
+      "explanation": "Ptialin bekerja di rongga mulut untuk memecah karbohidrat kompleks."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Fenomena alam akibat rotasi bumi adalah...",
+      "o": ["Gerak semu harian matahari", "Perbedaan lamanya siang dan malam", "Perubahan musim", "Gerak semu tahunan matahari"],
+      "a": 0,
+      "explanation": "Rotasi (berputar pada poros) menyebabkan gerak semu harian dan perbedaan waktu. Revolusi menyebabkan perubahan musim."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Simbiosis antara tanaman paku yang menempel pada pohon jati adalah contoh...",
+      "o": ["Komensalisme", "Mutualisme", "Parasitisme", "Amensalisme"],
+      "a": 0,
+      "explanation": "Tanaman paku mendapat tempat tinggal (untung), pohon jati tidak dirugikan maupun diuntungkan."
+    },
+    {
+      "cat": "FISIKA",
+      "q": "Alat yang bekerja berdasarkan prinsip Hukum Archimedes adalah...",
+      "o": ["Kapal selam", "Dongkrak hidrolik", "Rem cakram", "Termometer"],
+      "a": 0,
+      "explanation": "Kapal selam mengatur massa jenisnya untuk melayang, terapung, atau tenggelam sesuai hukum Archimedes."
+    },
+    {
+      "cat": "BIOLOGI",
+      "q": "Proses penguapan air melalui mulut daun (stomata) disebut...",
+      "o": ["Transpirasi", "Gutasi", "Evaporasi", "Kondensasi"],
+      "a": 0,
+      "explanation": "Transpirasi adalah penguapan air dari jaringan hidup tumbuhan."
+    }
+  ];
+
+
+        window.onload = () => {
+            if(app.user) {
+                applySession();
+                showScreen('dash');
+            }
+            renderBanks();
+        };
+
+        // --- AUTH ---
+        function authLogin() {
+            const n = document.getElementById('in-name').value;
+            const i = document.getElementById('in-id').value;
+            if(!n || !i) return alert('Lengkapi data login!');
+            
+            app.user = n;
+            app.userId = i;
+            localStorage.setItem('m26_u', n);
+            localStorage.setItem('m26_id', i);
+            applySession();
+            showScreen('dash');
+        }
+
+        function applySession() {
+            document.getElementById('user-avatar').classList.remove('hidden');
+            document.getElementById('initials').innerText = app.user.charAt(0).toUpperCase();
+        }
+
+        // --- DASHBOARD ---
+        function renderBanks() {
+            const grid = document.getElementById('bank-grid');
+            grid.innerHTML = '';
+
+            // Default
+            grid.appendChild(createCard('Official MASCOT Trial', defaultBank.length, 60, null));
+
+            // Custom
+            app.banks.forEach((b, idx) => {
+                grid.appendChild(createCard(b.title, b.questions.length, b.duration, idx));
+            });
+        }
+
+        function createCard(title, count, dur, idx) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col animate-fade';
+            card.innerHTML = `
+                <div class="flex-1 mb-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                        </div>
+                        <span class="text-[10px] font-black px-3 py-1 bg-slate-100 rounded-full text-slate-500 uppercase tracking-widest">${dur}m</span>
+                    </div>
+                    <h3 class="text-lg font-black text-slate-800 leading-tight mb-2">${title}</h3>
+                    <p class="text-sm font-medium text-slate-400">${count} Pertanyaan</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="startQuiz(${idx})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-bold transition-all">Mulai</button>
+                    ${idx !== null ? `
+                    <button onclick="confirmDelete(${idx})" class="p-3 text-red-400 hover:bg-red-50 rounded-2xl transition-colors" aria-label="Hapus Bank Soal">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>` : ''}
+                </div>
+            `;
+            return card;
+        }
+
+        // --- QUIZ ENGINE ---
+        function startQuiz(idx) {
+            const data = idx === null ? { title: 'Official MASCOT', questions: defaultBank, duration: 60 } : app.banks[idx];
+            app.currentQuiz = {
+                questions: data.questions,
+                answers: {},
+                flags: {},
+                cursor: 0,
+                timeLeft: data.duration * 60,
+                timer: null
+            };
+
+            showScreen('quiz');
+            document.getElementById('quiz-timer-container').classList.remove('hidden');
+            document.getElementById('btn-bento').classList.remove('hidden');
+            renderQ();
+            startTimer();
+        }
+
+        function renderQ() {
+            const q = app.currentQuiz.questions[app.currentQuiz.cursor];
+            document.getElementById('q-idx-box').innerText = app.currentQuiz.cursor + 1;
+            document.getElementById('q-category').innerText = q.cat || 'MODUL';
+            
+            const content = document.getElementById('q-content');
+            content.innerHTML = q.q;
+            content.style.fontSize = app.fontSize + 'px';
+
+            const opts = document.getElementById('q-options-container');
+            opts.innerHTML = '';
+            q.o.forEach((opt, i) => {
+                const isSelected = app.currentQuiz.answers[app.currentQuiz.cursor] === i;
+                const btn = document.createElement('div');
+                btn.className = `quiz-option ${isSelected ? 'selected' : ''}`;
+                btn.innerHTML = `
+                    <div class="option-idx">${String.fromCharCode(65+i)}</div>
+                    <div class="font-bold text-slate-700 text-sm sm:text-base">${opt}</div>
+                `;
+                btn.onclick = () => selectOpt(i);
+                opts.appendChild(btn);
+            });
+
+            // Update Flag UI
+            const isFlagged = app.currentQuiz.flags[app.currentQuiz.cursor];
+            const fBtn = document.getElementById('flag-btn');
+            fBtn.className = isFlagged ? 'p-3 rounded-xl bg-amber-500 text-white shadow-lg shadow-amber-100' : 'p-3 rounded-xl border-2 border-slate-200 text-slate-400';
+
+            // Progress Bar
+            const prog = ((app.currentQuiz.cursor + 1) / app.currentQuiz.questions.length) * 100;
+            document.getElementById('quiz-progress').style.width = prog + '%';
+
+            if(window.MathJax) MathJax.typesetPromise();
+        }
+
+        function selectOpt(i) {
+            app.currentQuiz.answers[app.currentQuiz.cursor] = i;
+            renderQ();
+        }
+
+        function toggleFlag() {
+            app.currentQuiz.flags[app.currentQuiz.cursor] = !app.currentQuiz.flags[app.currentQuiz.cursor];
+            renderQ();
+        }
+
+        function nextQ() {
+            if(app.currentQuiz.cursor < app.currentQuiz.questions.length - 1) {
+                app.currentQuiz.cursor++;
+                renderQ();
+            } else {
+                showNavOverlay();
+            }
+        }
+
+        function prevQ() {
+            if(app.currentQuiz.cursor > 0) {
+                app.currentQuiz.cursor--;
+                renderQ();
+            }
+        }
+
+        function startTimer() {
+            clearInterval(app.currentQuiz.timer);
+            app.currentQuiz.timer = setInterval(() => {
+                app.currentQuiz.timeLeft--;
+                if(app.currentQuiz.timeLeft <= 0) finalizeQuiz();
+                
+                const m = Math.floor(app.currentQuiz.timeLeft / 60);
+                const s = app.currentQuiz.timeLeft % 60;
+                document.getElementById('timer-display').innerText = 
+                    `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        // --- NAVIGATION ---
+        function showNavOverlay() {
+            const grid = document.getElementById('bento-grid');
+            grid.innerHTML = '';
+            app.currentQuiz.questions.forEach((_, i) => {
+                const b = document.createElement('button');
+                b.className = 'w-full aspect-square rounded-xl font-black text-sm transition-all flex items-center justify-center';
+                
+                const isAns = app.currentQuiz.answers[i] !== undefined;
+                const isFlag = app.currentQuiz.flags[i];
+                const isCur = app.currentQuiz.cursor === i;
+
+                if(isCur) b.classList.add('ring-4', 'ring-blue-100', 'bg-blue-600', 'text-white');
+                else if(isFlag) b.classList.add('bg-amber-400', 'text-white');
+                else if(isAns) b.classList.add('bg-slate-800', 'text-white');
+                else b.classList.add('bg-slate-100', 'text-slate-400');
+
+                b.innerText = i + 1;
+                b.onclick = () => {
+                    app.currentQuiz.cursor = i;
+                    renderQ();
+                    hideNavOverlay();
+                };
+                grid.appendChild(b);
+            });
+            document.getElementById('nav-overlay').classList.remove('hidden');
+        }
+
+        function hideNavOverlay() { document.getElementById('nav-overlay').classList.add('hidden'); }
+
+        // --- SUBMIT ---
+        function promptSubmit() {
+            const answered = Object.keys(app.currentQuiz.answers).length;
+            const total = app.currentQuiz.questions.length;
+            
+            showModal(
+                'Selesai Ujian?', 
+                `Anda telah menjawab ${answered} dari ${total} soal. Kirim sekarang?`,
+                [
+                    { label: 'Batal', class: 'flex-1 bg-slate-100 text-slate-500', action: hideModal },
+                    { label: 'Ya, Kirim', class: 'flex-1 bg-blue-600 text-white', action: finalizeQuiz }
+                ],
+                `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+            );
+        }
+
+        function finalizeQuiz() {
+            clearInterval(app.currentQuiz.timer);
+            hideModal();
+            hideNavOverlay();
+            if(app.isFocus) toggleFocusMode();
+            
+            let correct = 0;
+            app.currentQuiz.questions.forEach((q, i) => {
+                if(app.currentQuiz.answers[i] === q.a) correct++;
+            });
+
+            const score = Math.round((correct / app.currentQuiz.questions.length) * 100);
+            
+            showScreen('result');
+            document.getElementById('quiz-timer-container').classList.add('hidden');
+            document.getElementById('btn-bento').classList.add('hidden');
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('stat-correct').innerText = correct;
+            document.getElementById('stat-wrong').innerText = app.currentQuiz.questions.length - correct;
+
+            // Animate ring
+            const ring = document.getElementById('score-ring');
+            const offset = 440 - (440 * score / 100);
+            setTimeout(() => ring.style.strokeDashoffset = offset, 100);
+        }
+
+        function viewReview() {
+            showScreen('review');
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            app.currentQuiz.questions.forEach((q, i) => {
+                const uAns = app.currentQuiz.answers[i];
+                const isCorrect = uAns === q.a;
+                const div = document.createElement('div');
+                div.className = 'bg-white p-6 rounded-[28px] border border-slate-100 animate-fade';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-xs">${i+1}</span>
+                        <span class="text-[10px] font-black ${isCorrect ? 'text-green-500' : 'text-red-500'} uppercase tracking-widest">${isCorrect ? 'Benar' : 'Salah'}</span>
+                    </div>
+                    <div class="text-slate-800 font-medium mb-6">${q.q}</div>
+                    <div class="space-y-2 mb-6 text-sm">
+                        <div class="p-4 rounded-xl ${isCorrect ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'}">
+                             <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Jawaban Anda</p>
+                             <p class="font-bold">${uAns !== undefined ? q.o[uAns] : 'Kosong'}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-green-50 border border-green-100">
+                             <p class="text-[8px] font-bold text-slate-400 uppercase mb-1">Jawaban Benar</p>
+                             <p class="font-bold">${q.o[q.a]}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 bg-blue-50/50 rounded-2xl">
+                        <p class="text-[8px] font-bold text-blue-400 uppercase mb-2 italic">Pembahasan:</p>
+                        <div class="text-xs text-blue-800 leading-relaxed">${q.explanation || 'Pembahasan tidak tersedia.'}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            if(window.MathJax) MathJax.typesetPromise();
+        }
+
+        // --- UTILS ---
+        function showScreen(id) {
+            ['login', 'dash', 'quiz', 'result', 'review'].forEach(s => {
+                document.getElementById('screen-'+s).classList.add('hidden');
+            });
+            document.getElementById('screen-'+id).classList.remove('hidden');
+            window.scrollTo(0,0);
+        }
+
+        function showModal(title, body, actions, iconHtml) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerText = body;
+            document.getElementById('modal-icon').innerHTML = iconHtml || '';
+            const footer = document.getElementById('modal-actions');
+            footer.innerHTML = '';
+            actions.forEach(a => {
+                const b = document.createElement('button');
+                b.className = `px-6 py-4 rounded-2xl font-bold transition-all ${a.class}`;
+                b.innerText = a.label;
+                b.onclick = a.action;
+                footer.appendChild(b);
+            });
+            document.getElementById('modal-base').classList.remove('hidden');
+        }
+
+        function hideModal() { document.getElementById('modal-base').classList.add('hidden'); }
+
+        function toggleFocusMode() {
+            app.isFocus = !app.isFocus;
+            document.body.classList.toggle('is-focus', app.isFocus);
+            document.getElementById('focus-toggle').classList.toggle('text-blue-600', app.isFocus);
+        }
+
+        function adjustFont(v) {
+            app.fontSize = Math.max(14, Math.min(28, app.fontSize + v));
+            document.getElementById('q-content').style.fontSize = app.fontSize + 'px';
+        }
+
+        function toggleDoc() { document.getElementById('doc-modal').classList.toggle('hidden'); }
+
+        function confirmDelete(idx) {
+            showModal('Hapus Modul?', 'Data ini akan hilang secara permanen dari browser Anda.', [
+                { label: 'Batal', class: 'flex-1 bg-slate-100 text-slate-500', action: hideModal },
+                { label: 'Hapus', class: 'flex-1 bg-red-500 text-white', action: () => {
+                    app.banks.splice(idx, 1);
+                    localStorage.setItem('m26_b', JSON.stringify(app.banks));
+                    renderBanks();
+                    hideModal();
+                }}
+            ], `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`);
+        }
+
+        // --- FILE HANDLING ---
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if(file) processFile(file);
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    const questions = Array.isArray(json) ? json : json.questions;
+                    const config = json.config || {};
+                    app.banks.push({
+                        title: config.title || file.name.replace('.json', ''),
+                        duration: config.duration_minutes || 60,
+                        questions: questions
+                    });
+                    localStorage.setItem('m26_b', JSON.stringify(app.banks));
+                    renderBanks();
+                } catch(err) { alert('Gagal membaca file JSON!'); }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
+
