@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOIPS - Armada Penakluk OSN IPS</title>
+    <meta name="description" content="Platform terbuka untuk pejuang OSN IPS. Suplai materi terbaik untuk akses pendidikan gratis bagi semua pejuang OSN. ">
+    <meta name="keywords" content="olimips, woips, platform, ambis, belajar, pejuang osn, olimpiade sains nasional, IPS, ilmu pengetahuan sosial, materi OSN gratis, Studekasa">
+    <meta name="author" content="Studekasa">
+
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="googlebot" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://woips.studekasa.web.id/"> <meta property="og:title" content="WOIPS - Armada Penakluk OSN IPS">
+    <meta property="og:description" content="Akses materi OSN IPS terbaik secara gratis. Mari berjuang bersama Armada Penakluk!">
+    <meta property="og:image" content="https://iili.io/fmY2mN4.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="WOIPS - Armada Penakluk OSN IPS">
+    <meta name="twitter:description" content="Platform belajar OSN IPS gratis dan terlengkap oleh Studekasa.">
+    <meta name="twitter:image" content="https://iili.io/fmY2mN4.png">
+
+   <link rel="icon" type="image/png" href="https://iili.io/fmY2DHG.png">
+   <link rel="canonical" href="https://woips.studekasa.web.id/"> 
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #58CC02;
+            --primary-shadow: #46A302;
+            --blue: #1CB0F6;
+            --blue-shadow: #1899D6;
+            --yellow: #FFC800;
+            --yellow-shadow: #E5A400;
+            --red: #FF4B4B;
+            --purple: #CE82FF;
+            --purple-dark: #7F01FE;
+            --text-main: #3C3C3C;
+            --text-muted: #838383;
+            --border: #E5E5E5;
+            --bg-page: #FFFFFF;
+        }
+
+        * { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 90px;
+            font-size: 13px;
+            overflow-x: hidden;
+        }
+
+        /* --- 3D BUTTONS & UI --- */
+        .btn-3d {
+            border: none;
+            border-bottom: 4px solid var(--shadow);
+            border-radius: 12px;
+            background: var(--bg);
+            color: white;
+            font-weight: 800;
+            padding: 10px 16px;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            font-size: 11px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%;
+        }
+        .btn-3d:active { border-bottom-width: 0; transform: translateY(4px); }
+
+        /* --- HEADER --- */
+        .header {
+            position: sticky; top: 0; background: white; z-index: 1000;
+            padding: 12px 20px; display: flex;
+            align-items: center; justify-content: space-between;
+            border-bottom: 2px solid var(--border);
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand img { width: 34px; height: 34px; border-radius: 8px; }
+        .brand-text { display: flex; flex-direction: column; }
+        .brand-name { font-weight: 800; font-size: 16px; color: var(--purple-dark); line-height: 1; }
+        .brand-tagline { font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
+
+        /* --- ALERT SECTION --- */
+        #survey-alert {
+            background: #E8F7FF;
+            padding: 12px 20px;
+            margin: 10px 15px;
+            border-radius: 14px;
+            border: 1px dashed var(--blue);
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- CATEGORY SLIDER --- */
+        .cat-slider-container {
+            padding: 5px 15px;
+            overflow-x: auto;
+            display: flex;
+            gap: 8px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .cat-slider-container::-webkit-scrollbar { display: none; }
+        .cat-item {
+            padding: 8px 18px;
+            border-radius: 10px;
+            background: #F1F1F1;
+            font-weight: 700;
+            font-size: 11px;
+            white-space: nowrap;
+            color: var(--text-muted);
+            border-bottom: 3px solid #DDD;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .cat-item.active {
+            background: var(--blue);
+            color: white;
+            border-bottom-color: var(--blue-shadow);
+        }
+
+        /* --- SEARCH BAR --- */
+        .search-container {
+            padding: 10px 15px;
+            background: #F7F7F7;
+            margin: 5px 15px 15px;
+            border-radius: 12px;
+            display: flex; align-items: center; gap: 10px;
+            border: 2px solid transparent;
+        }
+        .search-container:focus-within { border-color: var(--blue); background: white; }
+        .search-container input { border: none; background: transparent; outline: none; width: 100%; font-weight: 600; font-size: 13px; }
+
+        /* --- LIST LAYOUT --- */
+        .file-list-container { padding: 5px 15px; min-height: 200px; }
+        .file-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 0; border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .file-icon-box {
+            width: 46px; height: 46px; border-radius: 12px;
+            background: #F8F9FA; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; flex-shrink: 0;
+            border-bottom: 3px solid #E5E5E5;
+        }
+        .file-info { flex-grow: 1; min-width: 0; }
+        .file-title { font-weight: 700; color: var(--text-main); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-meta { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-top: 3px; display: flex; gap: 5px; align-items: center;}
+        .progress-mini { height: 5px; background: #F1F1F1; border-radius: 5px; margin-top: 8px; width: 80px; overflow: hidden; }
+        .progress-bar-mini { height: 100%; background: var(--blue); border-radius: 5px; transition: 0.3s; }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 75px; background: white; border-top: 2px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 1001; padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-link {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: #BBB; font-weight: 800; font-size: 10px;
+            gap: 2px; flex: 1;
+        }
+        .nav-link i { font-size: 22px; }
+        .nav-link.active { color: var(--blue); }
+
+        /* --- SETTINGS PANEL GRID --- */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .setting-card {
+            background: #F8F9FA; border: 2px solid var(--border); border-bottom-width: 4px;
+            border-radius: 16px; padding: 15px; text-align: center; cursor: pointer;
+        }
+        .setting-card i { font-size: 24px; color: var(--blue); display: block; margin-bottom: 5px; }
+        .setting-card span { font-weight: 800; font-size: 11px; text-transform: uppercase; color: var(--text-main); }
+
+        /* --- FOOTER & TALLY --- */
+        .footer {
+            padding: 40px 20px; background: #F9F9F9; border-radius: 24px 24px 0 0;
+            text-align: center; margin-top: 40px;
+        }
+        .tally-section { margin: 20px 0; border-radius: 16px; overflow: hidden; background: white; padding: 10px; border: 1px solid var(--border); }
+        .social-links { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .social-icon {
+            width: 42px; height: 42px; border-radius: 12px; border: 2px solid #EEE;
+            display: flex; align-items: center; justify-content: center;
+            color: #555; font-size: 20px; text-decoration: none; transition: 0.2s;
+        }
+        .btn-join {
+         border: none;
+         border-bottom: 4px solid var(--shadow);
+         border-radius: 12px;
+         background: var(--bg);
+         color: #fff;
+         font-weight: 800;
+         padding: 12px 18px;
+         transition: all 0.15s ease;
+         text-transform: uppercase;
+         font-size: 13px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         gap: 8px;
+         cursor: pointer;
+         box-shadow: 0 4px 0 var(--shadow), 0 6px 12px rgba(0,0,0,0.25);
+     }
+
+      .btn-join:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 0 var(--shadow), 0 8px 16px rgba(0,0,0,0.3);
+      }
+
+     .btn-join:active {
+       border-bottom-width: 0;
+       transform: translateY(4px);
+       box-shadow: 0 2px 0 var(--shadow), 0 4px 8px rgba(0,0,0,0.2);
+      }
+
+        /* --- VIEWER --- */
+        #viewer-box { position: fixed; inset: 0; background: white; z-index: 2000; display: none; flex-direction: column; }
+        
+        /* Modal Transitions */
+        .modal.fade .modal-dialog { transform: translateY(20px); transition: transform 0.3s ease-out; }
+        .modal.show .modal-dialog { transform: translateY(0); }
+
+        /* Fullscreen Overlay for Survey */
+        #survey-overlay {
+            position: fixed; inset: 0; background: white; z-index: 3000; display: none;
+            padding: 20px; overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <img src="https://iili.io/fmY2DHG.png" alt="Olimips Logo" aria-label="Logo OLIMIPS">
+            <div class="brand-text">
+                <span class="brand-name">WOIPS</span>
+                <span class="brand-tagline">Wahana Penakluk OSN IPS</span>
+            </div>
+        </div>
+        <button class="btn p-0 border-0" onclick="showSettings()" title="Pengaturan & Menu" aria-label="Buka Pengaturan">
+            <div style="width: 40px; height: 40px; border: 2px solid var(--border); border-bottom: 4px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                <i class="bi bi-grid-fill"></i>
+            </div>
+        </button>
+    </header>
+
+    <!-- Survey Alert (Session Based) -->
+    <div id="survey-alert" onclick="openSurveyOverlay()" style="display: none;">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi- megaphone-fill text-primary"></i>
+            <span class="fw-800" style="font-size: 11px;">Kirim feedback pejuang OSN IPS yuk! 🔥</span>
+        </div>
+        <i class="bi bi-chevron-right fs-6"></i>
+    </div>
+
+    <!-- Category Slider -->
+    <div class="cat-slider-container mt-3" id="catSlider">
+        <div class="cat-item active" onclick="filterCategory('Semua', this)">Semua</div>
+        <div class="cat-item" onclick="filterCategory('Geografi', this)">Geografi</div>
+        <div class="cat-item" onclick="filterCategory('Ekonomi', this)">Ekonomi</div>
+        <div class="cat-item" onclick="filterCategory('Sejarah', this)">Sejarah</div>
+        <div class="cat-item" onclick="filterCategory('Sosiologi', this)">Sosiologi</div>
+        <div class="cat-item" onclick="filterCategory('Soal', this)">Latihan Soal</div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-container">
+        <i class="bi bi-search text-muted"></i>
+        <input type="text" id="searchInput" placeholder="Cari materi OSN IPS..." oninput="render()">
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <div class="px-3 d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-800 text-muted" style="font-size: 10px; letter-spacing: 0.5px;" id="list-label">PENJELAJAH MATERI</span>
+            <span class="fw-800 text-primary" style="font-size: 10px; cursor: pointer;" onclick="render()">RE-SYNC <i class="bi bi-arrow-clockwise"></i></span>
+        </div>
+
+        <div class="file-list-container" id="file-list">
+            <!-- Items injected by JS -->
+        </div>
+
+        <!-- Tally Feedback Section (Static) -->
+        <div class="px-3 mt-4" id="static-tally">
+            <div class="tally-section">
+                <iframe data-tally-src="https://tally.so/embed/0Q6VKN?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="250" frameborder="0" marginheight="0" marginwidth="0" title="Suara Pejuang OSN IPS 🔥"></iframe>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <img src="https://i.ibb.co.com/wxsJqny/studekasa-20260207-192631-0000.png" alt="Studekasa Logo" style="width: 130px;" aria-label="Studekasa Logo">
+            <p class="small text-muted mt-3" style="line-height: 1.6;"><b>WOIPS</b> adalah repositori terbuka untuk pejuang OSN IPS. Kami mengumpulkan materi terbaik untuk akses <b>pendidikan gratis bagi semua.</b> Ikuti kami di medsos untuk dapet update terbaru!</p>
+           
+            <div class="btn-join">
+            <a href="https://chat.whatsapp.com/Cwio4OaqTII9mFd4x2rG7g" target="_blank">
+        Join Komunitas! 
+            </a>
+            </div>
+
+            <div class="social-links">
+                <a href="https://instagram.com/studekasa" class="social-icon" title="Instagram Studekasa" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="https://tiktok.com/@studekasa" class="social-icon" title="TikTok Studekasa" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+                <a href="mailto:studekasa@outlook.com" class="social-icon" title="Email Kami" aria-label="Email"><i class="bi bi-envelope"></i></a>
+            </div>
+            
+            <div class="fw-bold" style="font-size: 10px; color: #CCC; letter-spacing: 1px;">DIBUAT UNTUK 🇮🇩 OLEH STUDEKASA © 2026</div>
+        </footer>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-link active" onclick="navigateHome(this)" aria-label="Menu Repositori">
+            <i class="bi bi-collection-play-fill"></i><span>MATERI</span>
+        </a>
+        <a href="#" class="nav-link" onclick="filterByStatus('doing', this)" aria-label="Menu Terbaru">
+            <i class="bi bi-clock-history"></i><span>TERBARU</span>
+        </a>
+        <a href="#" class="nav-link" onclick="filterBookmarked(this)" aria-label="Menu Bookmark">
+            <i class="bi bi-bookmark-heart-fill"></i><span>DITANDAI</span>
+        </a>
+    </nav>
+
+    <!-- Main Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered mx-3">
+            <div class="modal-content border-0" style="border-radius: 24px;">
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-800 m-0">PANEL NAVIGASI</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="setting-card" onclick="showAddModal()">
+                            <i class="bi bi-file-earmark-plus-fill" style="color: var(--primary);"></i>
+                            <span>Tambah Materi</span>
+                        </div>
+                        <div class="setting-card" onclick="sharePlatform()">
+                            <i class="bi bi-share-fill" style="color: var(--yellow);"></i>
+                            <span>Share App</span>
+                        </div>
+                        <div class="setting-card" onclick="exportData()">
+                            <i class="bi bi-cloud-download-fill"></i>
+                            <span>Ekspor Data</span>
+                        </div>
+                        <div class="setting-card" onclick="document.getElementById('importInp').click()">
+                            <i class="bi bi-cloud-upload-fill"></i>
+                            <span>Impor Data</span>
+                        </div>
+                        <div class="setting-card" style="grid-column: span 2;" onclick="showHelp()">
+                            <i class="bi bi-question-circle-fill" style="color: var(--purple);"></i>
+                            <span>Bantuan & Panduan</span>
+                        </div>
+                    </div>
+                    <input type="file" id="importInp" hidden onchange="importData(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Materi Form Modal -->
+    <div class="modal fade" id="materiModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered mx-3">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-body p-4">
+                    <h6 class="fw-800 mb-4" id="modalTitle">DETAIL MATERI</h6>
+                    <form id="materiForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label class="form-label fw-800 small text-muted">NAMA FILE / JUDUL</label>
+                            <input type="text" id="inpTitle" class="form-control" required placeholder="Contoh: Modul Geografi Tanah">
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-7">
+                                <label class="form-label fw-800 small text-muted">KATEGORI</label>
+                                <select id="inpCat" class="form-control fw-bold">
+                                    <option>Geografi</option>
+                                    <option>Ekonomi</option>
+                                    <option>Sejarah</option>
+                                    <option>Sosiologi</option>
+                                    <option>Soal</option>
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label fw-800 small text-muted">ICON / EMOJI</label>
+                                <input type="text" id="inpTag" class="form-control text-center" value="📄">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-800 small text-muted">ID GOOGLE DRIVE</label>
+                            <input type="text" id="inpUrl" class="form-control" required placeholder="Paste ID file Drive di sini">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-800 small text-muted">ESTIMASI TOTAL HALAMAN</label>
+                            <input type="number" id="inpTotal" class="form-control" value="10">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-3d" style="--bg: #BBB; --shadow: #888;" data-bs-dismiss="modal">BATAL</button>
+                            <button type="submit" class="btn-3d" style="--bg: var(--primary); --shadow: var(--primary-shadow);">SIMPAN DATA</button>
+                        </div>
+                        <div id="deleteBtnContainer" class="mt-3 text-center" style="display:none;">
+                            <button type="button" class="btn btn-link text-danger fw-bold small p-0 text-decoration-none" onclick="deleteCurrent()">Hapus File ini</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help & Guide Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered mx-3">
+            <div class="modal-content" style="border-radius: 20px;">
+                <div class="modal-body p-4">
+                    <h6 class="fw-800 text-primary mb-3">PANDUAN & BANTUAN</h6>
+                    <div style="font-size: 11px; color: #555; line-height: 1.7; background: #FFF9E6; padding: 15px; border-radius: 12px; border: 1px solid #FFE48E;">
+                        <p class="mb-2"><b>Cara Menambah Materi:</b><br>Klik ikon (+) di panel navigasi. Masukkan Nama, Kategori, dan <b>File ID</b> dari Google Drive. Pastikan file Drive sudah disetel "Siapa saja dengan link dapat melihat".</p>
+                        <p class="mb-2"><b>Mencatat Progres:</b><br>Saat membaca, isi nomor halaman terakhir di bagian bawah viewer lalu klik <b>SIMPAN</b>.</p>
+                        <p class="mb-2"><b>Informasi Penting!</b><br>OLIMIPS adalah <b>repositori terbuka</b> untuk OSN IPS. Materi diambil dari berbagai sumber publik di internet <b>untuk mendukung akses pendidikan gratis.</b> Semua materi tetap memiliki <b>Hak Cipta</b> dan peraturan penggunaan. Jika Anda pemilik hak cipta dan keberatan materi Anda ditampilkan, silakan hubungi tim kami melalui kontak dibawah.</p>
+                        <p class="mb-0"><b>Punya Pertanyaan?</b><br>Hubungi tim kami via Instagram <b>@studekasa</b> atau email ke <b>studekasa@outlook.com</b> bagi kendala teknis, saran atau kontribusi materi/file lainnya.</p>
+                    </div>
+                    <button class="btn-3d w-100 mt-4" style="--bg: var(--primary); --shadow: var(--primary-shadow);" data-bs-dismiss="modal">SAYA MENGERTI</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Survey Overlay -->
+    <div id="survey-overlay">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-800 m-0">KUESIONER PEJUANG OSN</h6>
+            <button class="btn-close" onclick="closeSurveyOverlay()"></button>
+        </div>
+        <iframe data-tally-src="https://tally.so/embed/0Q6VKN?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0" title="Suara Pejuang OSN IPS 🔥"></iframe>
+    </div>
+
+    <!-- Viewer -->
+    <div id="viewer-box">
+        <div class="p-3 border-bottom d-flex align-items-center gap-3">
+            <button class="btn p-0" onclick="closeViewer()"><i class="bi bi-chevron-left fs-4"></i></button>
+            <div class="v-title fw-800 flex-grow-1 text-truncate" id="v-title" style="font-size: 13px;">File Viewer</div>
+            <button class="btn-3d px-3 py-1" style="--bg: var(--primary); --shadow: var(--primary-shadow); width: auto;" onclick="saveProgress()">SIMPAN</button>
+        </div>
+        <div class="d-flex bg-light p-2 justify-content-center gap-3 border-bottom small fw-bold">
+            <span>Halaman: <input type="number" id="v-current" style="width:40px; border:none; text-align:center; background:white; border-radius:6px; font-weight: 800; border: 1px solid #ddd;"></span>
+            <span class="text-muted">/ <input type="number" id="v-total" style="width:40px; border:none; text-align:center; background:white; border-radius:6px; font-weight: 800; border: 1px solid #ddd;"></span>
+        </div>
+        <iframe id="v-frame" style="width:100%; flex-grow:1; border:none;"></iframe>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const THEMES = {
+            'Geografi': '#1CB0F6',
+            'Ekonomi': '#FF4B4B',
+            'Sejarah': '#CE82FF',
+            'Sosiologi': '#FFC800',
+            'Soal': '#58CC02'
+        };
+
+        let database = JSON.parse(localStorage.getItem('ol_compact_v1')) || [{"id":"1","title":"ASEAN dan Dinamika","cat":"Geografi","url":"1t1rIJ0trQIMhr8bzGzgdzm9p4YnS0JzJ","total":10,"tag":"🌍","current":1},{"id":"2","title":"Geografi Sosial #1","cat":"Geografi","url":"1stjmpfaliHmdp7i9hI5UhY7J7Y-MdgKT","total":69,"tag":"🌍","current":1},{"id":"3","title":"Geografi Fisik #2","cat":"Geografi","url":"1shrs0Z_hBcCifmBGHN2W_wvhieRA_CkA","total":66,"tag":"🌍","current":1},{"id":"4","title":"Geografi  SMA Kelas XI","cat":"Geografi","url":"1T9TInsRNFlPINQGhAHp7jrYY4tGKGhP8","total":248,"tag":"🌍","current":0},{"id":"5","title":"Geografi SMA Kelas XI","cat":"Geografi","url":"1Y_k8w3YGqrRpsYV1UsNVGQVs361Yv18R","total":340,"tag":"🌍","current":0},{"id":"6","title":"Geografi SMA Kelas X","cat":"Geografi","url":"1cHd2JE06yg4zms5S2Wz8rRPwdvJcvOZ5","total":162,"tag":"🌍","current":0},{"id":"7","title":"Geografi  SMA Kelas XII","cat":"Geografi","url":"1bf6nDoWf6qBQqjbb08I9M_oYcG8Xj2dt","total":154,"tag":"🌍","current":0},{"id":"8","title":"Fundamental Kelas X","cat":"Geografi","url":"1wRZUV38AyGpZRVAp0jnC1xraBk0T8CdH","total":50,"tag":"🌍","current":0},{"id":"9","title":"Pengantar Ekonomi Mikro","cat":"Ekonomi","url":"1sgATMt0jUJS84wja-oGZ0gGKeFOEJw4-","total":130,"tag":"📊","current":0},{"id":"10","title":"Modul Ekonomi Mikro","cat":"Ekonomi","url":"1uN45XhmORbwcoDPVMmS4XHMwqXzZm8uE","total":25,"tag":"📊","current":0},{"id":"11","title":"Pengantar Ekonomi Makro","cat":"Ekonomi","url":"1uKO7kQ4ywj28F-JHl9SYZyCJXL_Rh5_5","total":32,"tag":"📊","current":0},{"id":"12","title":"Modul Ekonomi Makro","cat":"Ekonomi","url":"1tG1JyrHYo9URriNdhCoxoqBKAsekkl6k","total":30,"tag":"📊","current":0},{"id":"13","title":"Pendapatan Nasional (Makro)","cat":"Ekonomi","url":"1tKze3haQJKFp045Ph0Khdscr3CCcPMRx","total":36,"tag":"📊","current":0},{"id":"14","title":"Diktat Lengkap Teori Ekonomi","cat":"Ekonomi","url":"1brhpNGFTlejL-GnxQLnOmCFAiX5VkwUt","total":90,"tag":"📊","current":0},{"id":"15","cat":"Ekonomi","tag":"📊","title":"Slide Presentasi Ekonomi Lengkap","url":"1ilQLX9uWqdUXhc77yudWA9OYZ4W2RY8k","current":50,"total":287},{"id":"16","title":"Buku Paket Ekonomi SMA Kelas XI","cat":"Ekonomi","url":"1SvdHnMSCTg8gkXuiYFdcHV6uR761aJuW","total":45,"tag":"📊","current":0},{"id":"17","title":"Buku Paket Ekonomi SMA Kelas X","cat":"Ekonomi","url":"1TQoGCNc93pU3lMS6KIbN75UeqY8G_ZrJ","total":16,"tag":"📊","current":0},{"id":"18","title":"Pengantar Ilmu Sejarah","cat":"Sejarah","url":"1uBHgAkpe9q90r3MEd4HTaBKhTSCUBhjn","total":21,"tag":"🏛️","current":0},{"id":"19","title":"Kehidupan Masa Pra-Aksara","cat":"Sejarah","url":"1tn2hXk4CE4nH9M3SYmUBdoz6IVDgXC0C","total":31,"tag":"🏛️","current":0},{"id":"20","title":"Manusia Purba di Indonesia","cat":"Sejarah","url":"1tQuOUX3ovW_7Cqk-TBsOgq7oRumZsQ3Y","total":22,"tag":"🏛️","current":0},{"id":"21","title":"Kehidupan Awal Masyarakat Indonesia","cat":"Sejarah","url":"1tNLIy5yeCCD2Z5cZYPZp-zjwswVmFnro","total":31,"tag":"🏛️","current":0},{"id":"22","title":"Perkembangan Kerajaan Hindu-Buddha","cat":"Sejarah","url":"1tJpGLb6PSkG6strHwaOOh7OQeKRzidsQ","total":32,"tag":"🏛️","current":0},{"id":"23","title":"Perkembangan Kerajaan Islam","cat":"Sejarah","url":"1tDx8D6MD8VjyHksWiX3yCtu8Zn_2nM4U","total":20,"tag":"🏛️","current":0},{"id":"24","title":"Kolonialisme dan Imperialisme Eropa","cat":"Sejarah","url":"1t0yGyzWXodot-zgCSt6Rjxzhv7rQQqef","total":19,"tag":"🏛️","current":0},{"id":"25","title":"Masa Pendudukan Jepang","cat":"Sejarah","url":"1u5vnUwm48H5pz4MUdrl85LUFbyD6rKQ3","total":7,"tag":"🏛️","current":0},{"id":"26","cat":"Sejarah","tag":"🏛️","title":"Pergerakan Nasional Indonesia","url":"1u3sDe8uOtEKS0cK21uA-uVP7PzJE2Jh1","current":0,"total":14},{"id":"27","title":"Proklamasi dan Masa Kemerdekaan","cat":"Sejarah","url":"1tqsi8hsAMOmt9JLbvyim4AgU2NMsVpDF","total":12,"tag":"🏛️","current":0},{"id":"28","title":"Mempertahankan Kemerdekaan NKRI","cat":"Sejarah","url":"1txx1RJVkGTOBxDgyjq6WCVCSmmZs3VLH","total":11,"tag":"🏛️","current":0},{"id":"29","title":"Masa Orde Lama","cat":"Sejarah","url":"1txIbGtn2E4ZhNlpimuI-MW9BBgJtTDik","total":15,"tag":"🏛️","current":0},{"id":"30","title":"Slide Presentasi Sejarah Part 1","cat":"Sejarah","url":"1CUQXQfCv4uYgms1ZeNUh3iKMz3FXaCY0","total":82,"tag":"🏛️","current":0},{"id":"31","title":"Slide Presentasi Sejarah Part 2","cat":"Sejarah","url":"1Uv3Ip4tKg3JzI96GH6VJbfTOLcwrzGIm","total":72,"tag":"🏛️","current":0},{"id":"32","title":"Pengantar Ilmu Sosiologi","cat":"Sosiologi","url":"1sw-oeoWP5LrEt2AfmaB2kw2GcRuvraGQ","total":212,"tag":"👥","current":0},{"id":"33","title":"Dinamika dan Perubahan Sosial","cat":"Sosiologi","url":"1syb6rbhaG1k10XJDYZJCNbq5NxTohRRl","total":12,"tag":"👥","current":0},{"id":"34","title":"Buku Sosiologi SMA Kelas XII","cat":"Sosiologi","url":"1TB72wB4q99u7O-Sma-yz87sxuhfA_Vsl","total":248,"tag":"👥","current":0},{"id":"35","title":"Buku Sosiologi SMA Kelas X","cat":"Sosiologi","url":"1T4KxGdWWgBghIZocXdgk6bJzbug4wFNk","total":106,"tag":"👥","current":0},{"id":"36","title":"Petunjuk OSN Tahun 2026","cat":"","url":"1JQ0ZjNKYN1drg7gVFauv8MihqGwR-tzZ","total":81,"tag":"📑","current":0},{"id":"37","title":"Soal OSN-K (Kompetisi) 2023","cat":"","url":"1hNx7XzjjYacLKc-yCo5tCo8j5Jh5HxaA","total":43,"tag":"✏️","current":0}];
+
+        let bookmarks = JSON.parse(localStorage.getItem('ol_compact_bookmarks')) || [];
+        let currentViewingId = null;
+        let activeFilter = 'Semua';
+
+        const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
+        const materiModal = new bootstrap.Modal(document.getElementById('materiModal'));
+        const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
+
+        function render(data = database) {
+            const list = document.getElementById('file-list');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = data;
+            
+            // Filter by Category
+            if(activeFilter !== 'Semua') {
+                filtered = filtered.filter(m => m.cat === activeFilter);
+            }
+
+            // Filter by Search
+            if(search) {
+                filtered = filtered.filter(m => m.title.toLowerCase().includes(search));
+            }
+
+            if(filtered.length === 0) {
+                list.innerHTML = `<div class="p-5 text-center text-muted"><i class="bi bi-folder-x fs-1 opacity-25"></i><div class="small fw-bold mt-2">Belum ada file di kategori ini.</div></div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map(m => {
+                const isBookmarked = bookmarks.includes(m.id);
+                const perc = Math.round((m.current / (m.total || 1)) * 100);
+                const color = THEMES[m.cat] || '#888';
+
+                return `
+                    <div class="file-item" onclick="openViewer('${m.id}')" aria-label="Buka materi ${m.title}">
+                        <div class="file-icon-box" style="color: ${color}; border-bottom-color: ${color}44">
+                            ${m.tag || '📄'}
+                        </div>
+                        <div class="file-info">
+                            <div class="file-title">${m.title}</div>
+                            <div class="file-meta">
+                                <span style="color: ${color}">${m.cat.toUpperCase()}</span> 
+                                <span class="opacity-25">•</span> 
+                                <span>${m.total} HAL</span>
+                            </div>
+                            <div class="progress-mini">
+                                <div class="progress-bar-mini" style="width: ${perc}%; background: ${color}"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi ${isBookmarked ? 'bi-bookmark-heart-fill text-primary' : 'bi-bookmark-heart'} fs-5" 
+                               onclick="event.stopPropagation(); toggleBookmark('${m.id}')" title="Bookmark"></i>
+                            <i class="bi bi-three-dots-vertical fs-5 text-muted" 
+                               onclick="event.stopPropagation(); showEdit('${m.id}')" title="Edit Data"></i>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Category Filtering
+        function filterCategory(cat, el) {
+            activeFilter = cat;
+            document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            render();
+        }
+
+        function showSettings() { settingsModal.show(); }
+
+        function showAddModal() {
+            settingsModal.hide();
+            document.getElementById('modalTitle').innerText = 'TAMBAH FILE BARU';
+            document.getElementById('editId').value = '';
+            document.getElementById('materiForm').reset();
+            document.getElementById('deleteBtnContainer').style.display = 'none';
+            materiModal.show();
+        }
+
+        function showEdit(id) {
+            const m = database.find(x => x.id === id);
+            document.getElementById('modalTitle').innerText = 'EDIT DATA FILE';
+            document.getElementById('editId').value = m.id;
+            document.getElementById('inpTitle').value = m.title;
+            document.getElementById('inpCat').value = m.cat;
+            document.getElementById('inpUrl').value = m.url;
+            document.getElementById('inpTotal').value = m.total;
+            document.getElementById('inpTag').value = m.tag;
+            document.getElementById('deleteBtnContainer').style.display = 'block';
+            materiModal.show();
+        }
+
+        document.getElementById('materiForm').onsubmit = (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const payload = {
+                id: id || Date.now().toString(),
+                title: document.getElementById('inpTitle').value,
+                cat: document.getElementById('inpCat').value,
+                url: document.getElementById('inpUrl').value,
+                total: parseInt(document.getElementById('inpTotal').value) || 1,
+                tag: document.getElementById('inpTag').value,
+                current: id ? database.find(x => x.id === id).current : 0
+            };
+
+            if(id) database = database.map(x => x.id === id ? payload : x);
+            else database.unshift(payload);
+
+            saveAndRender();
+            materiModal.hide();
+        };
+
+        function deleteCurrent() {
+            const id = document.getElementById('editId').value;
+            if(confirm('Hapus materi ini? Progres baca Anda akan hilang.')) {
+                database = database.filter(x => x.id !== id);
+                bookmarks = bookmarks.filter(b => b !== id);
+                saveAndRender();
+                materiModal.hide();
+            }
+        }
+
+        function openViewer(id) {
+            const m = database.find(x => x.id === id);
+            currentViewingId = id;
+            document.getElementById('v-title').innerText = m.title;
+            document.getElementById('v-current').value = m.current;
+            document.getElementById('v-total').value = m.total;
+            
+            let url = m.url;
+            if(!url.includes('http')) {
+                // Assuming it's a Drive ID
+                url = `https://drive.google.com/file/d/${url}/preview`;
+            }
+            
+            document.getElementById('v-frame').src = url;
+            document.getElementById('viewer-box').style.display = 'flex';
+        }
+
+        function closeViewer() {
+            document.getElementById('viewer-box').style.display = 'none';
+            document.getElementById('v-frame').src = '';
+        }
+
+        function saveProgress() {
+            const idx = database.findIndex(x => x.id === currentViewingId);
+            if(idx !== -1) {
+                database[idx].current = parseInt(document.getElementById('v-current').value) || 0;
+                database[idx].total = parseInt(document.getElementById('v-total').value) || 1;
+                saveAndRender();
+                closeViewer();
+            }
+        }
+
+        function toggleBookmark(id) {
+            if(bookmarks.includes(id)) bookmarks = bookmarks.filter(b => b !== id);
+            else bookmarks.push(id);
+            localStorage.setItem('ol_compact_bookmarks', JSON.stringify(bookmarks));
+            render();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('ol_compact_v1', JSON.stringify(database));
+            render();
+        }
+
+        // Help Modal
+        function showHelp() {
+            settingsModal.hide();
+            helpModal.show();
+        }
+
+        // Sharing
+        function sharePlatform() {
+            const text = "Aku nemuin platform bagus buat belajar OSN IPS, ayo belajar bareng aku disini: https://olimips.zone.id/";
+            if (navigator.share) {
+                navigator.share({ title: 'OLIMIPS', text: text, url: 'https://olimips.zone.id/' });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Teks promosi berhasil disalin! Silakan bagikan ke temanmu.');
+            }
+        }
+
+        // Survey Management
+        function initSurvey() {
+            const hasSurveyed = localStorage.getItem('ol_survey_done');
+            if(!hasSurveyed) {
+                document.getElementById('survey-alert').style.display = 'flex';
+            } else {
+                document.getElementById('static-tally').style.display = 'none';
+            }
+        }
+
+        function openSurveyOverlay() {
+            document.getElementById('survey-overlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            localStorage.setItem('ol_survey_done', 'true');
+            document.getElementById('survey-alert').style.display = 'none';
+            document.getElementById('static-tally').style.display = 'none';
+        }
+
+        function closeSurveyOverlay() {
+            document.getElementById('survey-overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Navigation Actions
+        function navigateHome(el) { 
+            setActiveNav(el); 
+            activeFilter = 'Semua';
+            document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+            document.querySelector('.cat-item').classList.add('active');
+            document.getElementById('list-label').innerText = 'FILE REPOSITORI'; 
+            render(); 
+        }
+
+        function filterByStatus(s, el) { 
+            setActiveNav(el); 
+            document.getElementById('list-label').innerText = 'BARU SAJA DIBACA'; 
+            render(database.filter(m => m.current > 0)); 
+        }
+
+        function filterBookmarked(el) { 
+            setActiveNav(el); 
+            document.getElementById('list-label').innerText = 'FILE FAVORIT'; 
+            render(database.filter(m => bookmarks.includes(m.id))); 
+        }
+
+        function setActiveNav(el) { 
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active')); 
+            el.classList.add('active'); 
+        }
+
+        // Data Ops
+        function exportData() {
+            const blob = new Blob([JSON.stringify(database)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = "olimips_database_backup.json"; a.click();
+        }
+
+        function importData(inp) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(Array.isArray(data)) {
+                        database = data;
+                        saveAndRender();
+                        alert('Database berhasil diperbarui!');
+                        settingsModal.hide();
+                    }
+                } catch(err) { alert('Format file tidak didukung.'); }
+            };
+            if(inp.files[0]) reader.readAsText(inp.files[0]);
+        }
+
+        // Init App
+        window.onload = () => {
+            render();
+            initSurvey();
+        };
+
+        // Tally Widget Script
+        var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}
+    </script>
+</body>
+</html>
+
