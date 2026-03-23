@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoTesKu! - Portal Tes Kemampuanku</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'},startup:{typeset:true}};
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=Fredoka:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Nunito',sans-serif;background:#f0f4ff;overflow-x:hidden}
+.font-display{font-family:'Fredoka',sans-serif}
+.btn-3d{position:relative;border:none;border-radius:16px;font-weight:700;cursor:pointer;transition:all .1s;transform:translateY(0);font-family:'Nunito',sans-serif}
+.btn-3d:active{transform:translateY(4px)!important}
+.btn-3d-green{background:#58cc02;box-shadow:0 5px 0 #46a302;color:#fff}
+.btn-3d-green:hover{background:#61d804;filter:brightness(1.05)}
+.btn-3d-green:active{box-shadow:0 1px 0 #46a302}
+.btn-3d-blue{background:#1cb0f6;box-shadow:0 5px 0 #1899d6;color:#fff}
+.btn-3d-blue:hover{background:#29b8fc;filter:brightness(1.05)}
+.btn-3d-blue:active{box-shadow:0 1px 0 #1899d6}
+.btn-3d-red{background:#ff4b4b;box-shadow:0 5px 0 #d63a3a;color:#fff}
+.btn-3d-red:hover{background:#ff5e5e;filter:brightness(1.05)}
+.btn-3d-red:active{box-shadow:0 1px 0 #d63a3a}
+.btn-3d-yellow{background:#ffc800;box-shadow:0 5px 0 #d4a600;color:#3c3c00}
+.btn-3d-yellow:hover{background:#ffd21a;filter:brightness(1.05)}
+.btn-3d-yellow:active{box-shadow:0 1px 0 #d4a600}
+.btn-3d-purple{background:#ce82ff;box-shadow:0 5px 0 #a964d6;color:#fff}
+.btn-3d-purple:hover{background:#d68fff;filter:brightness(1.05)}
+.btn-3d-purple:active{box-shadow:0 1px 0 #a964d6}
+.btn-3d-white{background:#fff;box-shadow:0 4px 0 #ddd;color:#4b4b4b}
+.btn-3d-white:hover{background:#f7f7f7}
+.btn-3d-white:active{box-shadow:0 1px 0 #ddd}
+.btn-3d-gray{background:#e5e5e5;box-shadow:0 4px 0 #c8c8c8;color:#777}
+.btn-3d-gray:hover{background:#ececec}
+.btn-3d-gray:active{box-shadow:0 1px 0 #c8c8c8}
+.card-3d{background:#fff;border-radius:20px;box-shadow:0 4px 0 #e0e0e0,0 2px 12px rgba(0,0,0,.06);border:2px solid #e8e8e8;overflow:hidden}
+.stat-card{border-radius:20px;padding:20px;text-align:center;border:2px solid transparent}
+.bento-num{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;cursor:pointer;transition:all .15s;border:2.5px solid transparent}
+.bento-unanswered{background:#e5e5e5;color:#888;border-color:#d0d0d0}
+.bento-answered{background:#58cc02;color:#fff;border-color:#46a302}
+.bento-flagged{background:#ffc800;color:#3c3c00;border-color:#d4a600}
+.bento-current{outline:3px solid #1cb0f6;outline-offset:2px}
+.option-card{border:2.5px solid #e5e5e5;border-radius:16px;padding:14px 18px;cursor:pointer;transition:all .15s;background:#fff;display:flex;align-items:flex-start;gap:12px}
+.option-card:hover{border-color:#1cb0f6;background:#f0f9ff}
+.option-card.selected{border-color:#1cb0f6;background:#dbeafe;box-shadow:0 0 0 1px #1cb0f6}
+.option-card.correct-answer{border-color:#58cc02;background:#dcfce7}
+.option-card.wrong-answer{border-color:#ff4b4b;background:#fef2f2}
+.tf-btn{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:all .15s;border:3px solid transparent}
+.tf-true{background:#dcfce7;border-color:#a3e6a3;color:#16a34a}
+.tf-true.selected{background:#58cc02;border-color:#46a302;color:#fff;box-shadow:0 3px 0 #46a302}
+.tf-false{background:#fef2f2;border-color:#fca5a5;color:#ef4444}
+.tf-false.selected{background:#ff4b4b;border-color:#d63a3a;color:#fff;box-shadow:0 3px 0 #d63a3a}
+.confetti-piece{position:fixed;width:10px;height:10px;top:-10px;z-index:9999;animation:confettiFall linear forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100%) rotate(720deg);opacity:0}}
+.lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;display:flex;align-items:center;justify-content:center;cursor:zoom-out;opacity:0;transition:opacity .2s}
+.lightbox-overlay.active{opacity:1}
+.lightbox-overlay img{max-width:92%;max-height:92%;border-radius:12px;object-fit:contain}
+.slide-in{animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.breadcrumb-sep::after{content:'›';margin:0 8px;color:#aaa;font-weight:700}
+.filter-chip{padding:6px 16px;border-radius:99px;font-weight:700;font-size:13px;cursor:pointer;transition:all .15s;border:2px solid #e5e5e5;background:#fff;color:#777}
+.filter-chip.active{background:#1cb0f6;color:#fff;border-color:#1899d6}
+input[type=range]{-webkit-appearance:none;height:6px;border-radius:99px;background:#ddd;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#1cb0f6;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 28px;border-radius:16px;font-weight:700;z-index:9999;animation:toastIn .3s ease-out;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:900;display:flex;align-items:center;justify-content:center}
+.shake{animation:shake .4s}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
+.progress-ring{transition:stroke-dashoffset .35s;transform:rotate(-90deg);transform-origin:50% 50%}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:99px}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full overflow-auto w-full" style="min-height:100%"><!-- LOGIN PAGE -->
+   <div id="page-login" class="w-full flex items-center justify-center p-4" style="min-height:100%;background:linear-gradient(135deg,#e0ecff 0%,#f0f4ff 40%,#fff7e0 100%)">
+    <div class="w-full max-w-md">
+     <div class="text-center mb-6 slide-in"><img src="https://i.ibb.co/7t79RSNs/logo-potesku-200x200.webp" alt="PoTesKu Logo" class="mx-auto mb-4" style="width:120px;height:120px;border-radius:28px;box-shadow:0 6px 0 #d0d0d0,0 4px 20px rgba(0,0,0,.1)" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#58cc02,#1cb0f6)';this.alt='PoTesKu!'">
+      <h1 class="font-display text-3xl font-bold text-gray-800">PoTesKu!</h1>
+      <p class="text-gray-500 font-semibold text-sm mt-1">Portal Tes Kemampuanku — Edisi TKA 2026</p>
+     </div>
+     <div class="card-3d p-6 slide-in">
+      <div class="mb-4"><label class="block text-sm font-bold text-gray-600 mb-1.5">👤 Username</label> <input id="login-user" type="text" placeholder="Masukkan nama lengkap..." class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none font-semibold text-gray-700 transition" autocomplete="off">
+      </div>
+      <div class="mb-4"><label class="block text-sm font-bold text-gray-600 mb-1.5">🔑 Password</label> <input id="login-pass" type="password" placeholder="Masukkan password..." class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none font-semibold text-gray-700 transition">
+      </div>
+      <div class="mb-4 p-3 bg-yellow-50 border-2 border-yellow-200 rounded-2xl"><label class="block text-sm font-bold text-gray-600 mb-1.5">🤖 Verifikasi: <span id="captcha-q" class="text-blue-600 font-display"></span></label> <input id="captcha-ans" type="number" placeholder="Jawaban..." class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-yellow-400 focus:outline-none font-semibold text-gray-700 transition">
+      </div>
+      <div id="login-error" class="text-red-500 text-sm font-bold text-center mb-3 hidden"></div><button onclick="doLogin()" class="btn-3d btn-3d-green w-full py-3.5 text-lg">Masuk 🚀</button>
+     </div>
+     <p class="text-center text-xs text-gray-400 mt-6 font-semibold">© 2026 PoTesKu! — StudeKasa. All rights reserved.</p>
+    </div>
+   </div><!-- NAVBAR -->
+   <nav id="navbar" class="hidden sticky top-0 z-50 bg-white border-b-2 border-gray-100" style="box-shadow:0 2px 8px rgba(0,0,0,.04)">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+     <div class="flex items-center gap-3"><img src="https://i.ibb.co/7t79RSNs/logo-potesku-200x200.webp" alt="Logo" style="width:32px;height:32px;border-radius:10px" loading="lazy" onerror="this.style.background='#58cc02';this.alt='P'"> <span class="font-display font-bold text-gray-800" id="nav-title">PoTesKu!</span>
+     </div>
+     <div id="nav-dash-controls" class="flex items-center gap-2"><span id="nav-username" class="text-sm font-bold text-gray-600 hidden sm:inline"></span>
+      <div class="relative"><button onclick="toggleNavMenu()" class="btn-3d btn-3d-white px-3 py-1.5 text-sm flex items-center gap-1"><i data-lucide="menu" style="width:18px;height:18px"></i></button>
+       <div id="nav-menu" class="hidden absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border-2 border-gray-100 overflow-hidden z-50"><button onclick="showDocs()" class="w-full text-left px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2"><i data-lucide="book-open" style="width:16px;height:16px"></i> Dokumentasi</button> <button onclick="shareApp()" class="w-full text-left px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2"><i data-lucide="share-2" style="width:16px;height:16px"></i> Share</button>
+        <hr class="border-gray-100"><button onclick="doLogout()" class="w-full text-left px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 flex items-center gap-2"><i data-lucide="log-out" style="width:16px;height:16px"></i> Log Out</button>
+       </div>
+      </div>
+     </div>
+     <div id="nav-exam-controls" class="hidden items-center gap-3"><span id="nav-exam-user" class="text-sm font-bold text-gray-600 hidden sm:inline"></span>
+      <div id="nav-timer" class="flex items-center gap-1.5 bg-blue-50 px-3 py-1.5 rounded-xl border-2 border-blue-200"><i data-lucide="clock" style="width:16px;height:16px;color:#1cb0f6"></i> <span id="timer-display" class="font-display font-bold text-blue-600 text-sm">00:00</span>
+      </div><button onclick="toggleBentoPanel()" class="btn-3d btn-3d-blue px-3 py-1.5 text-sm flex items-center gap-1"><i data-lucide="layout-grid" style="width:18px;height:18px"></i></button>
+     </div>
+    </div>
+   </nav><!-- DASHBOARD -->
+   <div id="page-dashboard" class="hidden w-full">
+    <div class="max-w-5xl mx-auto px-4 py-6"><!-- Stats -->
+     <div class="grid grid-cols-3 gap-3 mb-6 slide-in">
+      <div class="stat-card bg-green-50 border-green-200" style="border-width:2px">
+       <div class="text-2xl font-display font-bold text-green-600" id="stat-avg">
+        0
+       </div>
+       <div class="text-xs font-bold text-green-500 mt-1">
+        Skor Rata²
+       </div>
+      </div>
+      <div class="stat-card bg-blue-50 border-blue-200" style="border-width:2px">
+       <div class="text-2xl font-display font-bold text-blue-600" id="stat-count">
+        0
+       </div>
+       <div class="text-xs font-bold text-blue-500 mt-1">
+        Ujian
+       </div>
+      </div>
+      <div class="stat-card bg-purple-50 border-purple-200" style="border-width:2px">
+       <div class="text-2xl font-display font-bold text-purple-600" id="stat-time">
+        0m
+       </div>
+       <div class="text-xs font-bold text-purple-500 mt-1">
+        Total Waktu
+       </div>
+      </div>
+     </div><!-- Paket Soal -->
+     <h2 class="font-display font-bold text-xl text-gray-800 mb-3 flex items-center gap-2">📦 Paket Soal TKA</h2>
+     <div class="grid gap-3 mb-6" id="packet-list"></div><!-- Import -->
+     <div class="card-3d p-5 mb-6">
+      <h3 class="font-display font-bold text-gray-700 mb-2 flex items-center gap-2"><i data-lucide="upload" style="width:20px;height:20px;color:#ce82ff"></i> Impor Paket JSON</h3>
+      <p class="text-sm text-gray-500 mb-3">Unggah file JSON soal kustom Anda.</p><label class="btn-3d btn-3d-purple px-5 py-2.5 text-sm inline-flex items-center gap-2 cursor-pointer"> <i data-lucide="file-plus" style="width:18px;height:18px"></i> Pilih File <input type="file" accept=".json" onchange="importJSON(event)" class="hidden"> </label>
+     </div><!-- Riwayat -->
+     <h2 class="font-display font-bold text-xl text-gray-800 mb-3 flex items-center gap-2">📊 Riwayat Pengerjaan</h2>
+     <div id="history-list" class="space-y-2 mb-6"></div>
+    </div>
+   </div><!-- EXAM MODAL (fullscreen) -->
+   <div id="page-exam" class="hidden w-full" style="min-height:100%;background:#f0f4ff"><!-- Bento Side Panel -->
+    <div id="bento-panel" class="hidden fixed right-0 top-14 bottom-0 w-72 bg-white z-40 border-l-2 border-gray-100 overflow-y-auto p-4" style="box-shadow:-4px 0 16px rgba(0,0,0,.06)">
+     <div class="flex items-center justify-between mb-3"><span class="font-display font-bold text-gray-700">Navigasi Soal</span> <button onclick="toggleBentoPanel()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" style="width:20px;height:20px"></i></button>
+     </div>
+     <div id="bento-grid" class="grid grid-cols-5 gap-2 mb-4"></div>
+     <div class="space-y-1.5 text-xs font-bold">
+      <div class="flex items-center gap-2">
+       <span class="w-4 h-4 rounded bg-green-500 inline-block"></span> Dijawab
+      </div>
+      <div class="flex items-center gap-2">
+       <span class="w-4 h-4 rounded bg-yellow-400 inline-block"></span> Ragu-ragu
+      </div>
+      <div class="flex items-center gap-2">
+       <span class="w-4 h-4 rounded bg-gray-300 inline-block"></span> Belum
+      </div>
+     </div><button onclick="confirmSubmit()" class="btn-3d btn-3d-red w-full py-3 mt-4 text-sm">Selesai &amp; Kumpulkan</button>
+    </div><!-- Exam Content -->
+    <div class="max-w-3xl mx-auto px-4 py-4 pb-24"><!-- Font Resizer -->
+     <div class="flex items-center gap-3 mb-3 bg-white rounded-2xl p-3 border-2 border-gray-100"><span class="text-xs font-bold text-gray-500">A</span> <input type="range" id="font-slider" min="14" max="24" value="16" oninput="changeFontSize(this.value)" class="flex-1"> <span class="text-lg font-bold text-gray-500">A</span> <button id="flag-btn" onclick="toggleFlag()" class="btn-3d btn-3d-yellow px-3 py-1.5 text-sm ml-2">🚩</button>
+     </div><!-- Question Card -->
+     <div id="question-card" class="card-3d p-5 mb-4">
+      <div id="q-header" class="flex items-center justify-between mb-3"><span id="q-number" class="font-display font-bold text-blue-600"></span> <span id="q-category" class="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-500 rounded-full"></span>
+      </div>
+      <div id="q-text" class="text-gray-700 font-semibold leading-relaxed mb-4" style="font-size:16px"></div>
+      <div id="q-image" class="mb-4 hidden">
+       <img class="rounded-2xl max-w-full cursor-zoom-in border-2 border-gray-100" onclick="openLightbox(this.src)" loading="lazy" onerror="this.parentElement.classList.add('hidden')">
+      </div>
+      <div id="q-options"></div>
+     </div><!-- Nav Buttons -->
+     <div class="flex gap-3"><button id="prev-btn" onclick="prevQ()" class="btn-3d btn-3d-white flex-1 py-3 text-sm flex items-center justify-center gap-1"><i data-lucide="chevron-left" style="width:18px;height:18px"></i> Sebelumnya</button> <button id="next-btn" onclick="nextQ()" class="btn-3d btn-3d-blue flex-1 py-3 text-sm flex items-center justify-center gap-1">Selanjutnya <i data-lucide="chevron-right" style="width:18px;height:18px"></i></button>
+     </div>
+    </div><!-- Submit Confirm Overlay -->
+    <div id="submit-overlay" class="hidden modal-mask">
+     <div class="card-3d p-6 max-w-sm w-full mx-4 text-center slide-in">
+      <div class="text-4xl mb-3">
+       📝
+      </div>
+      <h3 class="font-display font-bold text-xl text-gray-800 mb-2">Kumpulkan Ujian?</h3>
+      <p class="text-sm text-gray-500 mb-1" id="submit-info"></p>
+      <p class="text-xs text-gray-400 mb-4">Jawaban tidak bisa diubah setelah dikumpulkan.</p>
+      <div class="flex gap-3"><button onclick="closeSubmitOverlay()" class="btn-3d btn-3d-white flex-1 py-2.5 text-sm">Batal</button> <button onclick="finishExam()" class="btn-3d btn-3d-green flex-1 py-2.5 text-sm">Kumpulkan!</button>
+      </div>
+     </div>
+    </div>
+   </div><!-- RESULTS PAGE -->
+   <div id="page-results" class="hidden w-full" style="min-height:100%;background:linear-gradient(180deg,#f0f4ff,#e8f5e9)">
+    <div class="max-w-3xl mx-auto px-4 py-6">
+     <div id="results-content" class="slide-in">
+      <div class="text-center mb-6">
+       <div class="text-6xl mb-3" id="result-emoji">
+        🎉
+       </div>
+       <h2 class="font-display font-bold text-3xl text-gray-800" id="result-title">Hasil Ujian</h2>
+       <p class="text-gray-500 font-semibold mt-1" id="result-packet-name"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-6">
+       <div class="stat-card bg-white border-2 border-green-200">
+        <div class="text-3xl font-display font-bold text-green-600" id="res-score">
+         0
+        </div>
+        <div class="text-xs font-bold text-green-500 mt-1">
+         Skor
+        </div>
+       </div>
+       <div class="stat-card bg-white border-2 border-blue-200">
+        <div class="text-3xl font-display font-bold text-blue-600" id="res-correct">
+         0/0
+        </div>
+        <div class="text-xs font-bold text-blue-500 mt-1">
+         Benar
+        </div>
+       </div>
+       <div class="stat-card bg-white border-2 border-purple-200">
+        <div class="text-3xl font-display font-bold text-purple-600" id="res-time">
+         0m
+        </div>
+        <div class="text-xs font-bold text-purple-500 mt-1">
+         Waktu
+        </div>
+       </div>
+       <div class="stat-card bg-white border-2 border-yellow-200">
+        <div class="text-3xl font-display font-bold text-yellow-600" id="res-pct">
+         0%
+        </div>
+        <div class="text-xs font-bold text-yellow-500 mt-1">
+         Persentase
+        </div>
+       </div>
+      </div><!-- Radar Chart -->
+      <div class="card-3d p-5 mb-6">
+       <h3 class="font-display font-bold text-gray-700 mb-3 text-center">Radar Kemampuan</h3>
+       <div style="max-height:300px;position:relative">
+        <canvas id="radar-chart"></canvas>
+       </div>
+      </div>
+      <div class="flex gap-3"><button onclick="showReview()" class="btn-3d btn-3d-blue flex-1 py-3 text-sm">📖 Pembahasan</button> <button onclick="backToDashboard()" class="btn-3d btn-3d-green flex-1 py-3 text-sm">🏠 Dashboard</button>
+      </div>
+     </div>
+    </div>
+   </div><!-- REVIEW PAGE -->
+   <div id="page-review" class="hidden w-full" style="min-height:100%;background:#f0f4ff">
+    <div class="max-w-3xl mx-auto px-4 py-6">
+     <div class="flex items-center gap-2 mb-4"><button onclick="backToResults()" class="btn-3d btn-3d-white px-3 py-2 text-sm flex items-center gap-1"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Kembali</button>
+      <div class="flex items-center text-sm font-bold text-gray-500"><span class="cursor-pointer hover:text-blue-500" onclick="backToResults()">Hasil</span> <span class="breadcrumb-sep"></span> <span class="text-gray-800">Pembahasan</span>
+      </div>
+     </div>
+     <div class="flex gap-2 mb-4 flex-wrap"><button onclick="filterReview('all')" class="filter-chip active" data-filter="all">Semua</button> <button onclick="filterReview('correct')" class="filter-chip" data-filter="correct">✅ Benar</button> <button onclick="filterReview('wrong')" class="filter-chip" data-filter="wrong">❌ Salah</button>
+     </div>
+     <div id="review-list" class="space-y-4"></div>
+    </div>
+   </div><!-- TOKEN MODAL -->
+   <div id="token-modal" class="hidden modal-mask">
+    <div class="card-3d p-6 max-w-sm w-full mx-4 slide-in">
+     <h3 class="font-display font-bold text-lg text-gray-800 mb-1">🔐 Masukkan Token</h3>
+     <p class="text-sm text-gray-500 mb-3" id="token-hint"></p><input id="token-input" type="text" placeholder="Token..." class="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none font-semibold text-gray-700 uppercase mb-2">
+     <div id="token-error" class="text-red-500 text-xs font-bold mb-2 hidden"></div>
+     <div class="flex gap-3"><button onclick="closeTokenModal()" class="btn-3d btn-3d-white flex-1 py-2.5 text-sm">Batal</button> <button onclick="submitToken()" class="btn-3d btn-3d-green flex-1 py-2.5 text-sm">Mulai!</button>
+     </div>
+    </div>
+   </div><!-- DOCS MODAL -->
+   <div id="docs-modal" class="hidden modal-mask">
+    <div class="card-3d max-w-2xl w-full mx-4 max-h-[85%] overflow-hidden flex flex-col slide-in" style="max-height:85%">
+     <div class="p-5 border-b-2 border-gray-100 flex items-center justify-between">
+      <h3 class="font-display font-bold text-lg text-gray-800">📚 Dokumentasi Format JSON</h3><button onclick="closeDocs()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" style="width:22px;height:22px"></i></button>
+     </div>
+     <div class="p-5 overflow-y-auto text-sm text-gray-600 leading-relaxed space-y-4" style="flex:1">
+      <div>
+       <h4 class="font-bold text-gray-800 mb-1">📋 Struktur Header</h4>
+       <pre class="bg-gray-50 rounded-xl p-3 text-xs overflow-x-auto border">{
+  "title": "Nama Paket Soal",
+  "time": 60,
+  "token": "TOKEN123",
+  "icon": "📐",
+  "color": "blue",
+  "questions": [...]
+}</pre>
+       <p class="mt-1"><b>time</b>: waktu dalam menit. <b>token</b>: password paket. <b>color</b>: blue/green/purple/red/yellow.</p>
+      </div>
+      <div>
+       <h4 class="font-bold text-gray-800 mb-1">📝 Tipe: Pilihan Ganda (MC)</h4>
+       <pre class="bg-gray-50 rounded-xl p-3 text-xs overflow-x-auto border">{
+  "type": "MC",
+  "category": "Aljabar",
+  "text": "Berapakah $\\frac{-b \\pm \\sqrt{D}}{2a}$ jika...",
+  "image": "https://...(opsional)",
+  "options": ["Opsi A","Opsi B","Opsi C","Opsi D","Opsi E"],
+  "answer": 0,
+  "explanation": "Penjelasan jawaban."
+}</pre>
+       <p class="mt-1"><b>answer</b>: index opsi (0=A, 1=B, dst). Gunakan <code>$...$</code> untuk LaTeX inline.</p>
+      </div>
+      <div>
+       <h4 class="font-bold text-gray-800 mb-1">☑️ Tipe: Pilihan Ganda Kompleks (CMC)</h4>
+       <pre class="bg-gray-50 rounded-xl p-3 text-xs overflow-x-auto border">{
+  "type": "CMC",
+  "category": "Geometri",
+  "text": "Pilih semua yang benar...",
+  "options": ["Opsi 1","Opsi 2","Opsi 3","Opsi 4"],
+  "answer": [0, 2],
+  "explanation": "Opsi 1 dan 3 benar karena..."
+}</pre>
+       <p class="mt-1"><b>answer</b>: array index yang benar (min. 2).</p>
+      </div>
+      <div>
+       <h4 class="font-bold text-gray-800 mb-1">✅❌ Tipe: True/False (TF)</h4>
+       <pre class="bg-gray-50 rounded-xl p-3 text-xs overflow-x-auto border">{
+  "type": "TF",
+  "category": "Logika",
+  "text": "Tentukan benar/salah:",
+  "statements": [
+    {"text": "Pernyataan 1", "answer": true},
+    {"text": "Pernyataan 2", "answer": false}
+  ],
+  "explanation": "Penjelasan..."
+}</pre>
+       <p class="mt-1">Skor TF: benar semua=1, sebagian=0.5, salah semua=0.</p>
+      </div>
+      <div>
+       <h4 class="font-bold text-gray-800 mb-1">🧮 Penulisan LaTeX</h4>
+       <p>Inline: <code>$x^2 + y^2 = r^2$</code></p>
+       <p>Display: <code>$$\\int_0^1 x^2 dx = \\frac{1}{3}$$</code></p>
+       <p>Fraksi: <code>$\\frac{a}{b}$</code> | Akar: <code>$\\sqrt{x}$</code> | Pangkat: <code>$x^{n}$</code></p>
+      </div>
+     </div>
+    </div>
+   </div><!-- LIGHTBOX -->
+   <div id="lightbox" class="lightbox-overlay hidden" onclick="closeLightbox()"><img id="lightbox-img" src="" alt="Zoom">
+   </div><!-- TOAST -->
+   <div id="toast" class="toast hidden"></div>
+  </div>
+  <script>
+// ===== STATE =====
+let S={
+  user:'',nickname:'',loggedIn:false,
+  currentPage:'login',
+  packets:[],
+  exam:null, // {packet, questions, answers, flags, currentQ, timer, startTime, intervalId}
+  results:null,
+  history:JSON.parse(localStorage.getItem('potesku_history')||'[]'),
+  reviewFilter:'all'
+};
+let captchaAnswer=0;
+let pendingPacketIdx=-1;
+let radarChart=null;
+
+// ===== DEFAULT PACKETS =====
+const DEFAULT_PACKETS=[
+{
+  title:"Paket 1: Matematika TKA",time:30,token:"SAWIT",icon:"📐",color:"blue",
+  questions:[
+    {type:"MC",category:"Aljabar",text:"Diketahui persamaan kuadrat $x^2 - 5x + 6 = 0$. Tentukan jumlah akar-akarnya menggunakan rumus $x_{1}+x_{2} = \\frac{-b}{a}$.",options:["3","4","5","6","7"],answer:2,explanation:"Dengan rumus Vieta: $x_1+x_2 = -(-5)/1 = 5$."},
+    {type:"MC",category:"Geometri",text:"Luas lingkaran dengan jari-jari $r=7$ cm adalah... (gunakan $\\pi = \\frac{22}{7}$)",options:["$44$ cm²","$132$ cm²","$154$ cm²","$176$ cm²","$198$ cm²"],answer:2,explanation:"$L = \\pi r^2 = \\frac{22}{7} \\times 49 = 154$ cm²."},
+    {type:"CMC",category:"Aljabar",text:"Manakah yang merupakan faktor dari $x^2 - 9$?",options:["$(x-3)$","$(x+3)$","$(x-9)$","$(x+9)$"],answer:[0,1],explanation:"$x^2-9 = (x-3)(x+3)$, jadi faktornya $(x-3)$ dan $(x+3)$."},
+    {type:"TF",category:"Logika",text:"Tentukan benar atau salah pernyataan berikut:",statements:[{text:"$\\sqrt{144} = 12$",answer:true},{text:"$2^5 = 64$",answer:false},{text:"$\\log_{10} 100 = 2$",answer:true}],explanation:"$\\sqrt{144}=12$ ✅, $2^5=32$ bukan 64 ❌, $\\log_{10}100=2$ ✅."},
+    {type:"MC",category:"Kalkulus",text:"Turunan dari $f(x) = 3x^3 - 2x + 1$ adalah:",options:["$9x^2 - 2$","$9x^2 + 2$","$6x^2 - 2$","$3x^2 - 2$","$9x - 2$"],answer:0,explanation:"$f'(x) = 9x^2 - 2$."}
+  ]
+},
+{
+  title:"Paket 2: Bahasa Indonesia TKA",time:25,token:"PADI",icon:"📖",color:"green",
+  questions:[
+    {type:"MC",category:"Literasi",text:"Kata baku dari 'aktifitas' adalah...",options:["aktifitas","aktivitas","aktipitas","aktifitas","aqtivitas"],answer:1,explanation:"Kata baku yang benar adalah **aktivitas** (bukan aktifitas)."},
+    {type:"MC",category:"Tata Bahasa",text:"Kalimat efektif adalah kalimat yang...",options:["Panjang dan bertele-tele","Menggunakan kata asing","Mudah dipahami pembaca","Mengandung makna ganda","Tidak memiliki subjek"],answer:2,explanation:"Kalimat efektif harus mudah dipahami, tidak ambigu, dan hemat kata."},
+    {type:"CMC",category:"Literasi",text:"Pilih yang termasuk konjungsi kausalitas:",options:["karena","tetapi","sehingga","oleh sebab itu"],answer:[0,3],explanation:"'Karena' dan 'oleh sebab itu' menunjukkan hubungan sebab-akibat (kausalitas)."},
+    {type:"TF",category:"Tata Bahasa",text:"Tentukan benar/salah:",statements:[{text:"'Mereka pergi ke sekolah' adalah kalimat aktif.",answer:true},{text:"'Di mana kamu tinggal?' menggunakan kata tanya 'dimana'.",answer:false}],explanation:"Kalimat pertama aktif ✅. Penulisan yang benar 'di mana' (pisah), bukan 'dimana' ❌."},
+    {type:"MC",category:"Sastra",text:"Majas 'Dia secepat kilat' termasuk majas...",options:["Metafora","Hiperbola","Simile","Personifikasi","Litotes"],answer:2,explanation:"Simile menggunakan kata pembanding 'secepat' (seperti, bagai, laksana, bak, dll)."}
+  ]
+},
+{
+  title:"Paket 3: Campuran TKA",time:35,token:"KELAPA",icon:"🎯",color:"purple",
+  questions:[
+    {type:"MC",category:"Aljabar",text:"Jika $f(x) = 2x + 3$, maka $f(4) = $...",options:["8","10","11","14","7"],answer:2,explanation:"$f(4) = 2(4)+3 = 8+3 = 11$."},
+    {type:"MC",category:"Literasi",text:"Sinonim dari kata 'elaborasi' adalah...",options:["Ringkasan","Penguraian","Kesimpulan","Penghapusan","Pengurangan"],answer:1,explanation:"Elaborasi berarti penguraian atau penjelasan lebih detail."},
+    {type:"CMC",category:"Logika",text:"Manakah yang merupakan bilangan prima?",options:["2","9","13","15"],answer:[0,2],explanation:"2 dan 13 adalah bilangan prima (hanya habis dibagi 1 dan dirinya sendiri)."},
+    {type:"TF",category:"Geometri",text:"Pernyataan tentang bangun datar:",statements:[{text:"Segitiga sama sisi memiliki 3 sudut yang sama besar ($60°$).",answer:true},{text:"Keliling persegi = $4 \\times sisi$.",answer:true},{text:"Luas trapesium = alas × tinggi.",answer:false}],explanation:"Segitiga sama sisi: 3 sudut 60° ✅. Keliling persegi = 4s ✅. Luas trapesium = ½(a+b)×t ❌."},
+    {type:"MC",category:"Kalkulus",text:"$\\int 2x \\, dx = $...",options:["$x^2 + C$","$2x^2 + C$","$x + C$","$\\frac{x^2}{2} + C$","$2x + C$"],answer:0,explanation:"$\\int 2x \\, dx = x^2 + C$."}
+  ]
+}
+];
+
+// ===== INIT =====
+function init(){
+  S.packets=[...DEFAULT_PACKETS];
+  generateCaptcha();
+  renderPage();
+  loadHistory();
+  updateStats();
+}
+
+function generateCaptcha(){
+  const a=Math.floor(Math.random()*10)+1,b=Math.floor(Math.random()*10)+1;
+  const ops=['+','-','×'];
+  const op=ops[Math.floor(Math.random()*ops.length)];
+  let ans;
+  if(op==='+')ans=a+b;else if(op==='-')ans=a-b;else ans=a*b;
+  captchaAnswer=ans;
+  const el=document.getElementById('captcha-q');
+  if(el)el.textContent=`${a} ${op} ${b} = ?`;
+}
+
+// ===== LOGIN =====
+function doLogin(){
+  const user=document.getElementById('login-user').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const cap=parseInt(document.getElementById('captcha-ans').value);
+  const err=document.getElementById('login-error');
+  if(!user){showLoginError('Username tidak boleh kosong!');return}
+  if(pass!=='AMBISTKA'){showLoginError('Password salah!');return}
+  if(cap!==captchaAnswer){showLoginError('Verifikasi salah! Coba lagi.');generateCaptcha();document.getElementById('captcha-ans').value='';return}
+  S.user=user;S.nickname=user.split(' ')[0];S.loggedIn=true;S.currentPage='dashboard';
+  renderPage();
+}
+function showLoginError(msg){
+  const el=document.getElementById('login-error');
+  el.textContent=msg;el.classList.remove('hidden');el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'),500);
+}
+function doLogout(){
+  S.loggedIn=false;S.user='';S.nickname='';S.currentPage='login';
+  document.getElementById('login-user').value='';document.getElementById('login-pass').value='';
+  document.getElementById('captcha-ans').value='';document.getElementById('login-error').classList.add('hidden');
+  generateCaptcha();renderPage();closeNavMenu();
+}
+
+// ===== PAGE RENDERING =====
+function renderPage(){
+  const pages=['login','dashboard','exam','results','review'];
+  pages.forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    if(el)el.classList.toggle('hidden',S.currentPage!==p);
+  });
+  const nav=document.getElementById('navbar');
+  if(S.currentPage==='login'){nav.classList.add('hidden')}
+  else{nav.classList.remove('hidden')}
+  const dashCtrl=document.getElementById('nav-dash-controls');
+  const examCtrl=document.getElementById('nav-exam-controls');
+  if(S.currentPage==='exam'){
+    dashCtrl.classList.add('hidden');examCtrl.classList.remove('hidden');examCtrl.style.display='flex';
+    document.getElementById('nav-exam-user').textContent=S.nickname;
+  }else{
+    dashCtrl.classList.remove('hidden');dashCtrl.style.display='flex';examCtrl.classList.add('hidden');
+    document.getElementById('nav-username').textContent='Halo, '+S.nickname+'!';
+  }
+  if(S.currentPage==='dashboard')renderDashboard();
+  lucide.createIcons();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(){
+  updateStats();renderPackets();renderHistory();
+}
+function updateStats(){
+  const h=S.history;
+  const avg=h.length?Math.round(h.reduce((a,b)=>a+b.score,0)/h.length):0;
+  const totalMin=h.length?Math.round(h.reduce((a,b)=>a+b.duration,0)/60):0;
+  document.getElementById('stat-avg').textContent=avg;
+  document.getElementById('stat-count').textContent=h.length;
+  document.getElementById('stat-time').textContent=totalMin+'m';
+}
+function renderPackets(){
+  const el=document.getElementById('packet-list');
+  const colors={blue:'#1cb0f6',green:'#58cc02',purple:'#ce82ff',red:'#ff4b4b',yellow:'#ffc800'};
+  const bgColors={blue:'bg-blue-50 border-blue-200',green:'bg-green-50 border-green-200',purple:'bg-purple-50 border-purple-200',red:'bg-red-50 border-red-200',yellow:'bg-yellow-50 border-yellow-200'};
+  el.innerHTML=S.packets.map((p,i)=>`
+    <div class="card-3d p-4 flex items-center gap-4 slide-in" style="animation-delay:${i*60}ms">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ${bgColors[p.color]||'bg-gray-50 border-gray-200'}" style="border-width:2px">${p.icon||'📋'}</div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-display font-bold text-gray-800 text-sm truncate">${p.title}</h3>
+        <p class="text-xs text-gray-500 font-semibold">${p.questions.length} soal · ${p.time} menit</p>
+      </div>
+      <button onclick="openTokenModal(${i})" class="btn-3d btn-3d-${p.color==='blue'?'blue':p.color==='green'?'green':p.color==='purple'?'purple':'blue'} px-4 py-2 text-sm flex-shrink-0">Mulai</button>
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  if(!S.history.length){el.innerHTML='<div class="text-center text-gray-400 text-sm font-semibold py-8">Belum ada riwayat pengerjaan.</div>';return}
+  el.innerHTML=S.history.slice().reverse().slice(0,10).map(h=>{
+    const pct=Math.round(h.score);const dt=new Date(h.date);
+    const clr=pct>=80?'green':pct>=60?'blue':pct>=40?'yellow':'red';
+    return `<div class="card-3d p-3 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 bg-${clr}-50 border-2 border-${clr}-200">${h.icon||'📋'}</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold text-gray-700 truncate">${h.title}</p>
+        <p class="text-xs text-gray-400 font-semibold">${dt.toLocaleDateString('id')} · ${Math.round(h.duration/60)}m</p>
+      </div>
+      <div class="font-display font-bold text-${clr}-600 text-lg">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+function loadHistory(){S.history=JSON.parse(localStorage.getItem('potesku_history')||'[]')}
+function saveHistory(){localStorage.setItem('potesku_history',JSON.stringify(S.history))}
+
+// ===== TOKEN =====
+function openTokenModal(idx){
+  pendingPacketIdx=idx;
+  document.getElementById('token-hint').textContent='Token untuk: '+S.packets[idx].title;
+  document.getElementById('token-input').value='';
+  document.getElementById('token-error').classList.add('hidden');
+  document.getElementById('token-modal').classList.remove('hidden');
+}
+function closeTokenModal(){document.getElementById('token-modal').classList.add('hidden')}
+function submitToken(){
+  const val=document.getElementById('token-input').value.trim().toUpperCase();
+  const pkt=S.packets[pendingPacketIdx];
+  if(val!==pkt.token.toUpperCase()){
+    document.getElementById('token-error').textContent='Token salah! Coba lagi.';
+    document.getElementById('token-error').classList.remove('hidden');
+    return;
+  }
+  closeTokenModal();startExam(pendingPacketIdx);
+}
+
+// ===== IMPORT JSON =====
+function importJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.title||!data.questions||!data.questions.length)throw new Error('Format tidak valid');
+      if(!data.token)data.token='CUSTOM';
+      if(!data.time)data.time=30;
+      if(!data.icon)data.icon='📄';
+      if(!data.color)data.color='blue';
+      S.packets.push(data);renderPackets();
+      showToast('✅ Paket "'+data.title+'" berhasil diimpor!','bg-green-500 text-white');
+    }catch(err){showToast('❌ Gagal impor: '+err.message,'bg-red-500 text-white')}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+
+// ===== EXAM ENGINE =====
+function startExam(idx){
+  const pkt=S.packets[idx];
+  const answers=pkt.questions.map(q=>{
+    if(q.type==='TF')return q.statements.map(()=>null);
+    if(q.type==='CMC')return [];
+    return null;
+  });
+  S.exam={packet:pkt,questions:pkt.questions,answers:answers,flags:new Array(pkt.questions.length).fill(false),currentQ:0,timer:pkt.time*60,startTime:Date.now(),intervalId:null};
+  S.currentPage='exam';renderPage();renderQuestion();startTimer();
+}
+function startTimer(){
+  updateTimerDisplay();
+  S.exam.intervalId=setInterval(()=>{
+    S.exam.timer--;updateTimerDisplay();
+    if(S.exam.timer<=0){clearInterval(S.exam.intervalId);finishExam()}
+  },1000);
+}
+function updateTimerDisplay(){
+  const m=Math.floor(Math.max(0,S.exam.timer)/60);
+  const s=Math.max(0,S.exam.timer)%60;
+  const el=document.getElementById('timer-display');
+  el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  if(S.exam.timer<=60)el.classList.add('text-red-500');else el.classList.remove('text-red-500');
+}
+function renderQuestion(){
+  if(!S.exam)return;
+  const q=S.exam.questions[S.exam.currentQ];
+  const idx=S.exam.currentQ;
+  const fontSize=document.getElementById('font-slider').value+'px';
+  document.getElementById('q-number').textContent='Soal '+(idx+1)+' / '+S.exam.questions.length;
+  document.getElementById('q-category').textContent=q.category||'Umum';
+  document.getElementById('q-text').innerHTML=q.text;
+  document.getElementById('q-text').style.fontSize=fontSize;
+  // Image
+  const imgWrap=document.getElementById('q-image');
+  if(q.image){imgWrap.classList.remove('hidden');imgWrap.querySelector('img').src=q.image}
+  else{imgWrap.classList.add('hidden')}
+  // Flag btn
+  document.getElementById('flag-btn').textContent=S.exam.flags[idx]?'🔖':'🚩';
+  // Options
+  const optDiv=document.getElementById('q-options');
+  if(q.type==='MC')renderMCOptions(optDiv,q,idx,fontSize);
+  else if(q.type==='CMC')renderCMCOptions(optDiv,q,idx,fontSize);
+  else if(q.type==='TF')renderTFOptions(optDiv,q,idx,fontSize);
+  // Prev/Next
+  document.getElementById('prev-btn').classList.toggle('invisible',idx===0);
+  const nb=document.getElementById('next-btn');
+  if(idx===S.exam.questions.length-1){nb.innerHTML='Selesai <i data-lucide="check" style="width:18px;height:18px"></i>';nb.onclick=()=>confirmSubmit()}
+  else{nb.innerHTML='Selanjutnya <i data-lucide="chevron-right" style="width:18px;height:18px"></i>';nb.onclick=()=>nextQ()}
+  renderBento();
+  lucide.createIcons();
+  // MathJax
+  if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetPromise().catch(()=>{})}
+}
+function renderMCOptions(el,q,idx,fontSize){
+  const labels='ABCDE';
+  el.innerHTML=q.options.map((o,i)=>`
+    <div class="option-card mb-2 ${S.exam.answers[idx]===i?'selected':''}" onclick="selectMC(${idx},${i})" style="font-size:${fontSize}">
+      <span class="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 ${S.exam.answers[idx]===i?'bg-blue-500 text-white':'bg-gray-100 text-gray-500'}">${labels[i]}</span>
+      <span class="flex-1">${o}</span>
+    </div>
+  `).join('');
+}
+function renderCMCOptions(el,q,idx,fontSize){
+  const checked=S.exam.answers[idx]||[];
+  el.innerHTML='<p class="text-xs font-bold text-gray-400 mb-2">Pilih semua jawaban yang benar (min. 2):</p>'+
+  q.options.map((o,i)=>`
+    <div class="option-card mb-2 ${checked.includes(i)?'selected':''}" onclick="toggleCMC(${idx},${i})" style="font-size:${fontSize}">
+      <span class="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 ${checked.includes(i)?'bg-blue-500 text-white':'bg-gray-100 text-gray-500'}">${checked.includes(i)?'☑':'☐'}</span>
+      <span class="flex-1">${o}</span>
+    </div>
+  `).join('');
+}
+function renderTFOptions(el,q,idx,fontSize){
+  const ans=S.exam.answers[idx]||q.statements.map(()=>null);
+  el.innerHTML=q.statements.map((st,i)=>`
+    <div class="flex items-center gap-3 mb-3 p-3 rounded-2xl border-2 border-gray-100 bg-white" style="font-size:${fontSize}">
+      <div class="flex-1 font-semibold text-gray-700">${st.text}</div>
+      <div class="flex gap-2">
+        <button class="tf-btn tf-true ${ans[i]===true?'selected':''}" onclick="setTF(${idx},${i},true)">✅</button>
+        <button class="tf-btn tf-false ${ans[i]===false?'selected':''}" onclick="setTF(${idx},${i},false)">❌</button>
+      </div>
+    </div>
+  `).join('');
+}
+function selectMC(qIdx,optIdx){S.exam.answers[qIdx]=optIdx;renderQuestion()}
+function toggleCMC(qIdx,optIdx){
+  let arr=S.exam.answers[qIdx]||[];
+  if(arr.includes(optIdx))arr=arr.filter(x=>x!==optIdx);else arr.push(optIdx);
+  S.exam.answers[qIdx]=arr;renderQuestion();
+}
+function setTF(qIdx,stIdx,val){
+  if(!Array.isArray(S.exam.answers[qIdx]))S.exam.answers[qIdx]=S.exam.questions[qIdx].statements.map(()=>null);
+  S.exam.answers[qIdx][stIdx]=val;renderQuestion();
+}
+function nextQ(){if(S.exam.currentQ<S.exam.questions.length-1){S.exam.currentQ++;renderQuestion()}}
+function prevQ(){if(S.exam.currentQ>0){S.exam.currentQ--;renderQuestion()}}
+function goToQ(i){S.exam.currentQ=i;renderQuestion();closeBentoPanel()}
+function toggleFlag(){S.exam.flags[S.exam.currentQ]=!S.exam.flags[S.exam.currentQ];renderQuestion()}
+function changeFontSize(v){
+  document.getElementById('q-text').style.fontSize=v+'px';
+  document.querySelectorAll('.option-card').forEach(el=>el.style.fontSize=v+'px');
+}
+
+// ===== BENTO =====
+function renderBento(){
+  const el=document.getElementById('bento-grid');
+  el.innerHTML=S.exam.questions.map((_,i)=>{
+    let cls='bento-unanswered';
+    const a=S.exam.answers[i];
+    const answered=(a!==null&&a!==undefined&&!(Array.isArray(a)&&(a.length===0||a.every(x=>x===null))));
+    if(S.exam.flags[i])cls='bento-flagged';else if(answered)cls='bento-answered';
+    if(i===S.exam.currentQ)cls+=' bento-current';
+    return `<div class="bento-num ${cls}" onclick="goToQ(${i})">${i+1}</div>`;
+  }).join('');
+}
+function toggleBentoPanel(){document.getElementById('bento-panel').classList.toggle('hidden')}
+function closeBentoPanel(){document.getElementById('bento-panel').classList.add('hidden')}
+
+// ===== SUBMIT =====
+function confirmSubmit(){
+  const unanswered=S.exam.answers.filter((a,i)=>{
+    const q=S.exam.questions[i];
+    if(q.type==='MC')return a===null;
+    if(q.type==='CMC')return !a||a.length===0;
+    if(q.type==='TF')return !a||a.some(x=>x===null);
+    return true;
+  }).length;
+  document.getElementById('submit-info').textContent=unanswered>0?`⚠️ Masih ada ${unanswered} soal belum dijawab.`:'Semua soal telah dijawab!';
+  document.getElementById('submit-overlay').classList.remove('hidden');
+}
+function closeSubmitOverlay(){document.getElementById('submit-overlay').classList.add('hidden')}
+function finishExam(){
+  closeSubmitOverlay();closeBentoPanel();
+  if(S.exam.intervalId)clearInterval(S.exam.intervalId);
+  const duration=Math.round((Date.now()-S.exam.startTime)/1000);
+  // Calculate scores
+  let totalScore=0;const maxScore=S.exam.questions.length;
+  const details=S.exam.questions.map((q,i)=>{
+    let score=0,userAns=S.exam.answers[i],correct=false;
+    if(q.type==='MC'){
+      correct=userAns===q.answer;score=correct?1:0;
+    }else if(q.type==='CMC'){
+      const ua=userAns||[];const ca=q.answer;
+      correct=ca.length===ua.length&&ca.every(x=>ua.includes(x));score=correct?1:0;
+    }else if(q.type==='TF'){
+      const ua=userAns||q.statements.map(()=>null);
+      let correctCount=0;
+      q.statements.forEach((st,j)=>{if(ua[j]===st.answer)correctCount++});
+      if(correctCount===q.statements.length){score=1;correct=true}
+      else if(correctCount>0){score=0.5;correct='partial'}
+      else{score=0;correct=false}
+    }
+    totalScore+=score;
+    return {question:q,userAnswer:userAns,score,correct,index:i};
+  });
+  const pctScore=maxScore>0?Math.round((totalScore/maxScore)*100):0;
+  S.results={packet:S.exam.packet,details,totalScore,maxScore,pctScore,duration,date:Date.now()};
+  // Save history
+  S.history.push({title:S.exam.packet.title,icon:S.exam.packet.icon,score:pctScore,duration,date:Date.now()});
+  saveHistory();
+  S.exam=null;S.currentPage='results';renderPage();renderResults();
+  setTimeout(()=>launchConfetti(),300);
+}
+
+// ===== RESULTS =====
+function renderResults(){
+  const r=S.results;
+  const correct=r.details.filter(d=>d.correct===true).length;
+  const partial=r.details.filter(d=>d.correct==='partial').length;
+  document.getElementById('result-emoji').textContent=r.pctScore>=80?'🏆':r.pctScore>=60?'🎉':r.pctScore>=40?'💪':'📚';
+  document.getElementById('result-title').textContent=r.pctScore>=80?'Luar Biasa!':r.pctScore>=60?'Bagus!':r.pctScore>=40?'Terus Berlatih!':'Jangan Menyerah!';
+  document.getElementById('result-packet-name').textContent=r.packet.title;
+  document.getElementById('res-score').textContent=r.totalScore+'/'+r.maxScore;
+  document.getElementById('res-correct').textContent=correct+(partial?'+'+partial:'')+'/'+r.maxScore;
+  document.getElementById('res-time').textContent=Math.round(r.duration/60)+'m';
+  document.getElementById('res-pct').textContent=r.pctScore+'%';
+  renderRadar();
+  if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise().catch(()=>{});
+}
+function renderRadar(){
+  const cats={};
+  S.results.details.forEach(d=>{
+    const c=d.question.category||'Umum';
+    if(!cats[c])cats[c]={total:0,score:0};
+    cats[c].total++;cats[c].score+=d.score;
+  });
+  const labels=Object.keys(cats);
+  const data=labels.map(l=>Math.round((cats[l].score/cats[l].total)*100));
+  const ctx=document.getElementById('radar-chart');
+  if(radarChart)radarChart.destroy();
+  radarChart=new Chart(ctx,{
+    type:'radar',
+    data:{labels,datasets:[{label:'Skor %',data,backgroundColor:'rgba(28,176,246,0.15)',borderColor:'#1cb0f6',borderWidth:3,pointBackgroundColor:'#1cb0f6',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:true,scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{family:'Nunito',weight:'bold',size:10}},grid:{color:'#e5e5e5'},angleLines:{color:'#e5e5e5'},pointLabels:{font:{family:'Nunito',weight:'bold',size:12},color:'#555'}}},plugins:{legend:{display:false}}}
+  });
+}
+
+// ===== REVIEW =====
+function showReview(){S.currentPage='review';renderPage();renderReviewList()}
+function backToResults(){S.currentPage='results';renderPage();renderResults()}
+function backToDashboard(){S.currentPage='dashboard';S.results=null;renderPage()}
+function filterReview(f){
+  S.reviewFilter=f;
+  document.querySelectorAll('.filter-chip').forEach(el=>{el.classList.toggle('active',el.dataset.filter===f)});
+  renderReviewList();
+}
+function renderReviewList(){
+  let items=S.results.details;
+  if(S.reviewFilter==='correct')items=items.filter(d=>d.correct===true);
+  else if(S.reviewFilter==='wrong')items=items.filter(d=>d.correct===false||d.correct==='partial');
+  const el=document.getElementById('review-list');
+  el.innerHTML=items.map(d=>{
+    const q=d.question;const idx=d.index;
+    const labels='ABCDE';
+    let statusBadge='',answerHtml='';
+    if(d.correct===true)statusBadge='<span class="text-xs font-bold px-2 py-0.5 bg-green-100 text-green-600 rounded-full">✅ Benar</span>';
+    else if(d.correct==='partial')statusBadge='<span class="text-xs font-bold px-2 py-0.5 bg-yellow-100 text-yellow-600 rounded-full">⚡ Sebagian (0.5)</span>';
+    else statusBadge='<span class="text-xs font-bold px-2 py-0.5 bg-red-100 text-red-600 rounded-full">❌ Salah</span>';
+    if(q.type==='MC'){
+      answerHtml=q.options.map((o,i)=>{
+        let cls='';
+        if(i===q.answer)cls='correct-answer';
+        else if(i===d.userAnswer&&i!==q.answer)cls='wrong-answer';
+        return `<div class="option-card mb-1.5 ${cls} cursor-default"><span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${i===q.answer?'bg-green-500 text-white':i===d.userAnswer?'bg-red-400 text-white':'bg-gray-100 text-gray-500'}">${labels[i]}</span><span class="flex-1 text-sm">${o}</span></div>`;
+      }).join('');
+    }else if(q.type==='CMC'){
+      const ua=d.userAnswer||[];const ca=q.answer;
+      answerHtml=q.options.map((o,i)=>{
+        let cls='';
+        if(ca.includes(i))cls='correct-answer';
+        else if(ua.includes(i)&&!ca.includes(i))cls='wrong-answer';
+        return `<div class="option-card mb-1.5 ${cls} cursor-default"><span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${ca.includes(i)?'bg-green-500 text-white':ua.includes(i)?'bg-red-400 text-white':'bg-gray-100 text-gray-500'}">${ca.includes(i)?'☑':'☐'}</span><span class="flex-1 text-sm">${o}</span></div>`;
+      }).join('');
+    }else if(q.type==='TF'){
+      const ua=d.userAnswer||[];
+      answerHtml=q.statements.map((st,i)=>{
+        const userV=ua[i];const correctV=st.answer;
+        const isCorrect=userV===correctV;
+        return `<div class="flex items-center gap-2 mb-2 p-2 rounded-xl ${isCorrect?'bg-green-50 border border-green-200':'bg-red-50 border border-red-200'}">
+          <span class="flex-1 text-sm font-semibold">${st.text}</span>
+          <span class="text-xs font-bold ${isCorrect?'text-green-600':'text-red-500'}">${userV===true?'✅':userV===false?'❌':'—'} ${isCorrect?'':'(→ '+(correctV?'✅':'❌')+')'}</span>
+        </div>`;
+      }).join('');
+    }
+    return `<div class="card-3d p-4 slide-in">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-display font-bold text-sm text-blue-600">Soal ${idx+1}</span>
+        ${statusBadge}
+      </div>
+      <p class="text-sm font-semibold text-gray-700 mb-3">${q.text}</p>
+      ${answerHtml}
+      <div class="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+        <p class="text-xs font-bold text-blue-600 mb-1">💡 Pembahasan:</p>
+        <p class="text-sm text-gray-600">${q.explanation||'Tidak ada pembahasan.'}</p>
+      </div>
+    </div>`;
+  }).join('');
+  if(!items.length)el.innerHTML='<div class="text-center text-gray-400 py-8 font-semibold">Tidak ada soal dengan filter ini.</div>';
+  if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise().catch(()=>{});
+  lucide.createIcons();
+}
+
+// ===== CONFETTI =====
+function launchConfetti(){
+  const colors=['#ff4b4b','#ffc800','#58cc02','#1cb0f6','#ce82ff','#ff9600'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.left=Math.random()*100+'%';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.borderRadius=Math.random()>.5?'50%':'2px';
+    el.style.width=(6+Math.random()*8)+'px';el.style.height=(6+Math.random()*8)+'px';
+    const dur=1.5+Math.random()*2;
+    el.style.animationDuration=dur+'s';el.style.animationDelay=Math.random()*0.8+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),(dur+1)*1000);
+  }
+}
+
+// ===== LIGHTBOX =====
+function openLightbox(src){
+  const lb=document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src=src;
+  lb.classList.remove('hidden');
+  setTimeout(()=>lb.classList.add('active'),10);
+}
+function closeLightbox(){
+  const lb=document.getElementById('lightbox');lb.classList.remove('active');
+  setTimeout(()=>lb.classList.add('hidden'),200);
+}
+
+// ===== NAV MENU =====
+function toggleNavMenu(){document.getElementById('nav-menu').classList.toggle('hidden')}
+function closeNavMenu(){document.getElementById('nav-menu').classList.add('hidden')}
+document.addEventListener('click',e=>{
+  const m=document.getElementById('nav-menu');
+  if(m&&!m.parentElement.contains(e.target))m.classList.add('hidden');
+});
+
+// ===== DOCS =====
+function showDocs(){document.getElementById('docs-modal').classList.remove('hidden');closeNavMenu()}
+function closeDocs(){document.getElementById('docs-modal').classList.add('hidden')}
+
+// ===== SHARE =====
+function shareApp(){showToast('🔗 Link dibagikan! (Copy URL browser Anda)','bg-blue-500 text-white');closeNavMenu()}
+
+// ===== TOAST =====
+function showToast(msg,cls){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast '+cls;el.classList.remove('hidden');
+  setTimeout(()=>el.classList.add('hidden'),3000);
+}
+
+// ===== ELEMENT SDK =====
+const defaultConfig={
+  app_title:'PoTesKu!',
+  background_color:'#f0f4ff',
+  surface_color:'#ffffff',
+  text_color:'#1f2937',
+  primary_action_color:'#58cc02',
+  secondary_action_color:'#1cb0f6',
+  font_family:'Nunito',
+  font_size:16
+};
+
+function applyConfig(config){
+  const bg=config.background_color||defaultConfig.background_color;
+  const surface=config.surface_color||defaultConfig.surface_color;
+  const text=config.text_color||defaultConfig.text_color;
+  const primary=config.primary_action_color||defaultConfig.primary_action_color;
+  const secondary=config.secondary_action_color||defaultConfig.secondary_action_color;
+  const font=config.font_family||defaultConfig.font_family;
+  const fs=config.font_size||defaultConfig.font_size;
+  const title=config.app_title||defaultConfig.app_title;
+
+  document.body.style.background=bg;
+  document.querySelectorAll('#page-login').forEach(el=>el.style.background=`linear-gradient(135deg,${bg},${bg}dd,${bg}88)`);
+  document.querySelectorAll('.card-3d').forEach(el=>el.style.background=surface);
+  document.body.style.color=text;
+  document.querySelectorAll('#nav-title').forEach(el=>el.textContent=title);
+  document.querySelectorAll('.font-display').forEach(el=>el.style.fontFamily=`${font}, Fredoka, sans-serif`);
+  document.body.style.fontFamily=`${font}, Nunito, sans-serif`;
+  document.body.style.fontSize=fs+'px';
+}
+
+if(window.elementSdk){
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange:async(config)=>{applyConfig(config)},
+    mapToCapabilities:(config)=>({
+      recolorables:[
+        {get:()=>config.background_color||defaultConfig.background_color,set:v=>{config.background_color=v;window.elementSdk.setConfig({background_color:v})}},
+        {get:()=>config.surface_color||defaultConfig.surface_color,set:v=>{config.surface_color=v;window.elementSdk.setConfig({surface_color:v})}},
+        {get:()=>config.text_color||defaultConfig.text_color,set:v=>{config.text_color=v;window.elementSdk.setConfig({text_color:v})}},
+        {get:()=>config.primary_action_color||defaultConfig.primary_action_color,set:v=>{config.primary_action_color=v;window.elementSdk.setConfig({primary_action_color:v})}},
+        {get:()=>config.secondary_action_color||defaultConfig.secondary_action_color,set:v=>{config.secondary_action_color=v;window.elementSdk.setConfig({secondary_action_color:v})}}
+      ],
+      borderables:[],
+      fontEditable:{get:()=>config.font_family||defaultConfig.font_family,set:v=>{config.font_family=v;window.elementSdk.setConfig({font_family:v})}},
+      fontSizeable:{get:()=>config.font_size||defaultConfig.font_size,set:v=>{config.font_size=v;window.elementSdk.setConfig({font_size:v})}}
+    }),
+    mapToEditPanelValues:(config)=>new Map([
+      ['app_title',config.app_title||defaultConfig.app_title]
+    ])
+  });
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown',e=>{
+  if(S.currentPage==='exam'&&S.exam){
+    if(e.key==='ArrowRight')nextQ();
+    else if(e.key==='ArrowLeft')prevQ();
+  }
+  if(e.key==='Escape'){closeLightbox();closeDocs();closeTokenModal();closeSubmitOverlay()}
+});
+
+// ===== ENTER KEY for login =====
+document.addEventListener('keydown',e=>{
+  if(S.currentPage==='login'&&e.key==='Enter')doLogin();
+  if(document.getElementById('token-modal')&&!document.getElementById('token-modal').classList.contains('hidden')&&e.key==='Enter')submitToken();
+});
+
+// ===== START =====
+init();
+lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e01f0c4b548514a',t:'MTc3NDE0ODM2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

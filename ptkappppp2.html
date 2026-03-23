@@ -1,0 +1,1737 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penakluk TKA: Madya</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
+  <style>
+:root {
+  --crimson: #800000;
+  --midnight: #191970;
+  --forest: #013220;
+  --gold: #D4AF37;
+  --parchment: #F5F0E8;
+  --dark-parchment: #E8E0D0;
+  --ink: #2C1810;
+  --card-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  height: 100%;
+  font-family: 'Montserrat', sans-serif;
+  background: var(--parchment);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+.app-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background: linear-gradient(180deg, #1a0a2e 0%, #0d1b3e 40%, #0a1628 100%);
+}
+.font-cinzel { font-family: 'Cinzel', serif; }
+.font-lora { font-family: 'Lora', serif; }
+.font-mont { font-family: 'Montserrat', sans-serif; }
+
+/* Header */
+.kingdom-header {
+  background: linear-gradient(135deg, var(--crimson) 0%, #4a0000 50%, var(--midnight) 100%);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 3px solid var(--gold);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.header-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  object-fit: cover;
+}
+.header-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  letter-spacing: 1px;
+}
+.header-subtitle {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.65rem;
+  font-style: italic;
+}
+.btn-secret {
+  background: transparent;
+  border: 1px solid rgba(212,175,55,0.3);
+  color: var(--gold);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-secret:hover { background: rgba(212,175,55,0.15); border-color: var(--gold); }
+.btn-sidebar-toggle {
+  background: transparent;
+  border: 1px solid rgba(212,175,55,0.3);
+  color: var(--gold);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-sidebar-toggle:hover { background: rgba(212,175,55,0.15); }
+
+/* Main content */
+.main-content {
+  flex: 1;
+  padding: 16px;
+  padding-bottom: 90px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+.page { display: none; animation: fadeSlide 0.4s ease; }
+.page.active { display: block; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Medieval Cards - Duolingo style */
+.m-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(212,175,55,0.15);
+  border-bottom: 4px solid var(--gold);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.m-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--crimson), var(--gold), var(--forest));
+}
+.m-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212,175,55,0.15);
+  border-color: rgba(212,175,55,0.35);
+}
+.m-card:active { transform: translateY(2px); }
+.m-card .card-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.m-card .card-cat {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+.m-card .card-desc {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.82rem;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.m-card .card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+.btn-action {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-action:hover { background: rgba(212,175,55,0.2); color: var(--gold); border-color: var(--gold); }
+.btn-action.danger:hover { background: rgba(128,0,0,0.3); color: #ff6b6b; border-color: #ff6b6b; }
+.btn-action.bookmark-active { color: var(--gold); background: rgba(212,175,55,0.15); }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.tag-math { background: rgba(128,0,0,0.25); color: #ff8a8a; border: 1px solid rgba(128,0,0,0.4); }
+.tag-ipa { background: rgba(1,50,32,0.3); color: #7dcea0; border: 1px solid rgba(1,50,32,0.5); }
+.tag-eko { background: rgba(212,175,55,0.2); color: var(--gold); border: 1px solid rgba(212,175,55,0.35); }
+.tag-bi { background: rgba(25,25,112,0.3); color: #8ea7e9; border: 1px solid rgba(25,25,112,0.5); }
+.tag-sej { background: rgba(139,69,19,0.3); color: #d4a76a; border: 1px solid rgba(139,69,19,0.5); }
+
+/* Search */
+.search-box {
+  position: relative;
+  margin-bottom: 16px;
+}
+.search-box input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 12px;
+  padding: 10px 14px 10px 40px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+.search-box input::placeholder { color: rgba(255,255,255,0.35); }
+.search-box input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.15); }
+.search-box .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.35);
+  font-size: 1rem;
+}
+
+/* Section headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+}
+.section-subtitle {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.72rem;
+  font-style: italic;
+}
+.btn-add {
+  background: linear-gradient(135deg, var(--crimson), #a00000);
+  border: none;
+  color: #fff;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.25s;
+  border-bottom: 3px solid rgba(0,0,0,0.3);
+}
+.btn-add:hover { transform: translateY(-1px); }
+.btn-add:active { transform: translateY(2px); border-bottom-width: 1px; }
+
+/* Video Reels */
+.reel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.reel-card {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(212,175,55,0.15);
+  border-bottom: 4px solid var(--crimson);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.reel-video-wrap {
+  width: 100%;
+  aspect-ratio: 9/16;
+  max-height: 480px;
+  background: #000;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reel-video-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.reel-placeholder {
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  cursor: pointer;
+}
+.reel-placeholder i { font-size: 3rem; }
+.reel-placeholder p { font-size: 0.75rem; margin-top: 8px; font-family: 'Lora', serif; }
+.reel-info {
+  padding: 12px 14px;
+}
+.reel-info .reel-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.reel-info .reel-desc {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+/* Roadmap / Todo */
+.mission-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(212,175,55,0.15);
+  border-left: 4px solid var(--forest);
+  border-bottom: 4px solid rgba(1,50,32,0.4);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.25s;
+}
+.mission-card:hover { border-left-color: var(--gold); }
+.mission-card.completed {
+  opacity: 0.55;
+  border-left-color: var(--gold);
+}
+.mission-card.completed .mission-title { text-decoration: line-through; }
+.mission-check {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(212,175,55,0.4);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: transparent;
+  background: transparent;
+}
+.mission-check:hover { border-color: var(--gold); }
+.mission-check.checked {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #1a0a2e;
+}
+.mission-title {
+  font-family: 'Cinzel', serif;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.mission-level {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.7rem;
+  font-style: italic;
+}
+
+/* Menara Pustaka */
+.pustaka-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(25,25,112,0.3);
+  border-bottom: 4px solid var(--midnight);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.pustaka-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pustaka-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+.pustaka-cat {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.7rem;
+  font-style: italic;
+}
+.progress-wrap {
+  padding: 0 16px 14px;
+}
+.progress-bar-bg {
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--midnight), var(--gold));
+  transition: width 0.5s ease;
+}
+.progress-label {
+  font-family: 'Montserrat', sans-serif;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.68rem;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Galeri Masonry */
+.masonry-grid {
+  columns: 2;
+  column-gap: 10px;
+}
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(212,175,55,0.12);
+  border-bottom: 4px solid rgba(139,69,19,0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.25s;
+}
+.masonry-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.masonry-img-wrap {
+  width: 100%;
+  min-height: 120px;
+  background: linear-gradient(135deg, rgba(128,0,0,0.15), rgba(25,25,112,0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.masonry-img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.masonry-placeholder {
+  text-align: center;
+  padding: 20px;
+  color: rgba(255,255,255,0.25);
+}
+.masonry-placeholder i { font-size: 2rem; }
+.masonry-placeholder p { font-size: 0.6rem; margin-top: 6px; font-family: 'Lora', serif; }
+.masonry-info {
+  padding: 10px 12px;
+}
+.masonry-info .masonry-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.masonry-info .masonry-desc {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.65rem;
+  margin-top: 3px;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10,5,25,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(212,175,55,0.2);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0 env(safe-area-inset-bottom, 8px);
+  z-index: 200;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.4);
+  transition: all 0.25s;
+  border-radius: 10px;
+  position: relative;
+  background: none;
+  border: none;
+}
+.nav-item:hover { color: rgba(255,255,255,0.7); }
+.nav-item.active {
+  color: var(--gold);
+}
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 0 0 4px 4px;
+}
+.nav-item:active { transform: translateY(2px); }
+.nav-item i { font-size: 1.25rem; }
+.nav-item span { font-size: 0.58rem; font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: 0.3px; }
+
+/* Modal */
+.modal-medieval .modal-content {
+  background: linear-gradient(160deg, #1a0a2e 0%, #0d1b3e 100%);
+  border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 2rem;
+  backdrop-filter: blur(20px);
+  color: #fff;
+}
+.modal-medieval .modal-header {
+  border-bottom: 1px solid rgba(212,175,55,0.15);
+  padding: 20px 24px;
+}
+.modal-medieval .modal-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-weight: 700;
+}
+.modal-medieval .btn-close { filter: invert(1); opacity: 0.5; }
+.modal-medieval .modal-body { padding: 20px 24px; }
+.modal-medieval .modal-footer { border-top: 1px solid rgba(212,175,55,0.15); padding: 16px 24px; }
+.m-input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  width: 100%;
+  transition: all 0.3s;
+}
+.m-input::placeholder { color: rgba(255,255,255,0.3); }
+.m-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 10px rgba(212,175,55,0.15); }
+.m-label {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.78rem;
+  margin-bottom: 5px;
+  display: block;
+}
+.m-select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  width: 100%;
+}
+.m-select option { background: #1a0a2e; color: #fff; }
+.btn-medieval {
+  background: linear-gradient(135deg, var(--crimson), #a00000);
+  border: none;
+  border-bottom: 3px solid rgba(0,0,0,0.3);
+  color: #fff;
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-medieval:hover { transform: translateY(-1px); }
+.btn-medieval:active { transform: translateY(2px); border-bottom-width: 1px; }
+.btn-medieval-outline {
+  background: transparent;
+  border: 1px solid rgba(212,175,55,0.3);
+  border-bottom: 3px solid rgba(212,175,55,0.15);
+  color: var(--gold);
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-medieval-outline:hover { background: rgba(212,175,55,0.1); }
+
+/* Sidebar */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+.sidebar-panel {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  width: 300px;
+  max-width: 85%;
+  height: 100%;
+  background: linear-gradient(180deg, #1a0a2e, #0d1b3e);
+  border-left: 1px solid rgba(212,175,55,0.2);
+  z-index: 301;
+  transition: right 0.35s ease;
+  overflow-y: auto;
+  padding: 20px;
+}
+.sidebar-panel.open { right: 0; }
+.sidebar-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212,175,55,0.15);
+}
+.sidebar-section {
+  margin-bottom: 20px;
+}
+.sidebar-section h4 {
+  font-family: 'Cinzel', serif;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.78rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: rgba(255,255,255,0.7);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+.sidebar-btn:hover { background: rgba(212,175,55,0.1); color: var(--gold); border-color: rgba(212,175,55,0.3); }
+.chart-wrap {
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+canvas#statsChart { width: 100% !important; height: 180px !important; }
+
+/* Knight badge */
+.knight-badge {
+  background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(128,0,0,0.15));
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.knight-badge .knight-level {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+.knight-badge .knight-xp {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.72rem;
+  font-style: italic;
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: 20px 16px 100px;
+  border-top: 1px solid rgba(212,175,55,0.1);
+  margin-top: 30px;
+}
+.app-footer p {
+  font-family: 'Lora', serif;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.68rem;
+  line-height: 1.6;
+}
+.app-footer a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.app-footer a:hover { color: #f0d060; text-decoration: underline; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255,255,255,0.3);
+}
+.empty-state i { font-size: 2.5rem; margin-bottom: 10px; }
+.empty-state p { font-family: 'Lora', serif; font-style: italic; font-size: 0.85rem; }
+
+/* Inline confirm */
+.inline-confirm {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.inline-confirm .confirm-text {
+  font-size: 0.7rem;
+  color: #ff6b6b;
+  font-family: 'Lora', serif;
+}
+.inline-confirm button {
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+.inline-confirm .btn-yes { background: rgba(128,0,0,0.5); color: #ff8a8a; }
+.inline-confirm .btn-no { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+
+/* SweetAlert custom */
+.swal2-popup.swal-medieval {
+  background: linear-gradient(160deg, #1a0a2e, #0d1b3e) !important;
+  border: 1px solid rgba(212,175,55,0.25) !important;
+  border-radius: 2rem !important;
+  color: #fff !important;
+}
+.swal-medieval .swal2-title { font-family: 'Cinzel', serif !important; color: var(--gold) !important; }
+.swal-medieval .swal2-html-container { font-family: 'Lora', serif !important; color: rgba(255,255,255,0.7) !important; }
+.swal-medieval .swal2-confirm { background: linear-gradient(135deg, var(--crimson), #a00000) !important; border-radius: 10px !important; }
+.swal-medieval .swal2-cancel { background: rgba(255,255,255,0.1) !important; border-radius: 10px !important; }
+
+@media (max-width: 400px) {
+  .header-title { font-size: 0.95rem; }
+  .masonry-grid { columns: 1; }
+  .nav-item span { font-size: 0.52rem; }
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-wrapper" id="appWrapper"><!-- Header -->
+   <header class="kingdom-header">
+    <div class="header-inner">
+     <div style="display:flex;align-items:center;gap:10px;"><button class="btn-sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu"> <i class="bi bi-list"></i> </button> <img src="https://i.ibb.co/HDGNQDYH/penakluktka.png" alt="Penakluk TKA" class="header-logo" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#800000,#191970)';this.style.display='flex';this.alt='Logo';">
+      <div>
+       <div class="header-title" id="headerTitle">
+        Penakluk TKA
+       </div>
+       <div class="header-subtitle">
+        Madya • Edisi Ksatria
+       </div>
+      </div>
+     </div><button class="btn-secret" onclick="showLogin()" aria-label="Login Ksatria" title="Login Ksatria"> <i class="bi bi-shield-lock"></i> </button>
+    </div>
+   </header><!-- Sidebar Overlay -->
+   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+   <aside class="sidebar-panel" id="sidebarPanel" role="complementary">
+    <div class="sidebar-title">
+     <i class="bi bi-castle"></i> Balairung Ksatria
+    </div>
+    <div class="knight-badge" id="knightBadge">
+     <div class="knight-level">
+      Prajurit Baru
+     </div>
+     <div class="knight-xp">
+      0 XP • Level 1
+     </div>
+    </div>
+    <div class="sidebar-section">
+     <h4>Statistik Kerajaan</h4>
+     <div class="chart-wrap">
+      <canvas id="statsChart"></canvas>
+     </div>
+    </div>
+    <div class="sidebar-section">
+     <h4>Aksi Kerajaan</h4><button class="sidebar-btn" onclick="exportData()"><i class="bi bi-download"></i> Ekspor Data (JSON)</button> <button class="sidebar-btn" onclick="triggerImport()"><i class="bi bi-upload"></i> Impor Data (JSON)</button> <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"> <button class="sidebar-btn" onclick="resetData()"><i class="bi bi-trash3"></i> Reset Semua Data</button> <a href="https://blog.studekasa.qzz.io" target="_blank" rel="noopener noreferrer" class="sidebar-btn"><i class="bi bi-newspaper"></i> Warta Kerajaan</a>
+    </div>
+   </aside><!-- Main Content -->
+   <main class="main-content" role="main"><!-- Page 1: TABIR VISI -->
+    <section class="page active" id="page-tabir">
+     <div class="section-header">
+      <div>
+       <div class="section-title">
+        <i class="bi bi-journal-bookmark"></i> Tabir Visi
+       </div>
+       <div class="section-subtitle">
+        Glosarium Istilah Kerajaan Ilmu
+       </div>
+      </div><button class="btn-add" onclick="openModal('tabir')"><i class="bi bi-plus-lg"></i> Tambah</button>
+     </div>
+     <div class="search-box"><i class="bi bi-search search-icon"></i> <input type="text" placeholder="Cari istilah kerajaan..." oninput="filterTabir(this.value)" id="tabirSearch">
+     </div>
+     <div id="tabirList"></div>
+    </section><!-- Page 2: CERMIN AJAIB -->
+    <section class="page" id="page-cermin">
+     <div class="section-header">
+      <div>
+       <div class="section-title">
+        <i class="bi bi-play-circle"></i> Cermin Ajaib
+       </div>
+       <div class="section-subtitle">
+        Video Pendek Edukasi Ksatria
+       </div>
+      </div><button class="btn-add" onclick="openModal('cermin')"><i class="bi bi-plus-lg"></i> Tambah</button>
+     </div>
+     <div class="reel-container" id="cerminList"></div>
+    </section><!-- Page 3: PETA EKSPEDISI -->
+    <section class="page" id="page-peta">
+     <div class="section-header">
+      <div>
+       <div class="section-title">
+        <i class="bi bi-signpost-2"></i> Peta Ekspedisi
+       </div>
+       <div class="section-subtitle">
+        Misi Penaklukan Ilmu Bertingkat
+       </div>
+      </div><button class="btn-add" onclick="openModal('peta')"><i class="bi bi-plus-lg"></i> Tambah</button>
+     </div>
+     <div id="petaList"></div>
+    </section><!-- Page 4: MENARA PUSTAKA -->
+    <section class="page" id="page-menara">
+     <div class="section-header">
+      <div>
+       <div class="section-title">
+        <i class="bi bi-book-half"></i> Menara Pustaka
+       </div>
+       <div class="section-subtitle">
+        Gudang Materi &amp; Naskah Kuno
+       </div>
+      </div><button class="btn-add" onclick="openModal('menara')"><i class="bi bi-plus-lg"></i> Tambah</button>
+     </div>
+     <div id="menaraList"></div>
+    </section><!-- Page 5: GALERI PRASASTI -->
+    <section class="page" id="page-prasasti">
+     <div class="section-header">
+      <div>
+       <div class="section-title">
+        <i class="bi bi-images"></i> Galeri Prasasti
+       </div>
+       <div class="section-subtitle">
+        Catatan Visual &amp; Infografis
+       </div>
+      </div><button class="btn-add" onclick="openModal('prasasti')"><i class="bi bi-plus-lg"></i> Tambah</button>
+     </div>
+     <div class="masonry-grid" id="prasastiList"></div>
+    </section>
+    <footer class="app-footer">
+     <p id="footerText">© 2026 Penakluk TKA by <a href="https://blog.studekasa.qzz.io" target="_blank" rel="noopener noreferrer">Studekasa Academy</a><br>
+      Kalahkan Monster Ujian dengan Ilmu!</p>
+    </footer>
+   </main><!-- Bottom Nav -->
+   <nav class="bottom-nav" role="navigation" aria-label="Navigasi Utama"><button class="nav-item active" data-page="tabir" onclick="switchPage('tabir')" aria-label="Tabir Visi"> <i class="bi bi-journal-bookmark"></i><span>Tabir</span> </button> <button class="nav-item" data-page="cermin" onclick="switchPage('cermin')" aria-label="Cermin Ajaib"> <i class="bi bi-play-circle"></i><span>Cermin</span> </button> <button class="nav-item" data-page="peta" onclick="switchPage('peta')" aria-label="Peta Ekspedisi"> <i class="bi bi-signpost-2"></i><span>Peta</span> </button> <button class="nav-item" data-page="menara" onclick="switchPage('menara')" aria-label="Menara Pustaka"> <i class="bi bi-book-half"></i><span>Menara</span> </button> <button class="nav-item" data-page="prasasti" onclick="switchPage('prasasti')" aria-label="Galeri Prasasti"> <i class="bi bi-images"></i><span>Prasasti</span> </button>
+   </nav>
+  </div><!-- CRUD Modal -->
+  <div class="modal fade modal-medieval" id="crudModal" tabindex="-1" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title" id="modalTitle">Tambah Item</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+     </div>
+     <div class="modal-body" id="modalBody"></div>
+     <div class="modal-footer"><button type="button" class="btn-medieval-outline" data-bs-dismiss="modal">Batal</button> <button type="button" class="btn-medieval" id="modalSaveBtn" onclick="saveItem()">Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+// ===== CONFIG & STATE =====
+const STORAGE_KEY = 'penakluk_tka_v1';
+let currentModal = { type: '', editId: null };
+let bsModal;
+let statsChart;
+
+const defaultConfig = {
+  app_title: 'Penakluk TKA',
+  footer_text: 'Kalahkan Monster Ujian dengan Ilmu!',
+  bg_color: '#0a1628',
+  gold_color: '#D4AF37',
+  text_color: '#ffffff',
+  crimson_color: '#800000',
+  nav_color: '#D4AF37',
+  font_family: 'Cinzel'
+};
+
+const tagMap = {
+  'Matematika': 'tag-math', 'IPA': 'tag-ipa', 'Ekonomi': 'tag-eko',
+  'Bahasa Indonesia': 'tag-bi', 'Sejarah': 'tag-sej', 'Bahasa Inggris': 'tag-bi',
+  'Fisika': 'tag-ipa', 'Kimia': 'tag-ipa', 'Biologi': 'tag-ipa'
+};
+
+function getDefaultData() {
+  return {
+    version: 2,
+    knight: { name: '', token: '', xp: 0, level: 1 },
+    tabir: [
+      { id: 't1', title: 'Aljabar', category: 'Matematika', desc: 'Cabang matematika yang mempelajari simbol dan aturan manipulasi simbol untuk menyelesaikan persamaan.', bookmarked: false },
+      { id: 't2', title: 'Fotosintesis', category: 'IPA', desc: 'Proses pembuatan makanan oleh tumbuhan hijau menggunakan cahaya matahari, air, dan karbon dioksida.', bookmarked: false },
+      { id: 't3', title: 'Konsumsi', category: 'Ekonomi', desc: 'Kegiatan menggunakan barang atau jasa untuk memenuhi kebutuhan hidup manusia secara langsung.', bookmarked: false }
+    ],
+    cermin: [
+      { id: 'c1', title: 'Trik Cepat Rumus Pythagoras', desc: 'Cara mudah mengingat dan menerapkan rumus segitiga siku-siku', url: 'https://www.youtube.com/embed/JWxqhCu91Gg', bookmarked: false },
+      { id: 'c2', title: 'Siklus Air dalam 60 Detik', desc: 'Penjelasan singkat proses hidrologi bumi', url: 'https://www.youtube.com/embed/al-do-HGuIk', bookmarked: false },
+      { id: 'c3', title: 'Hukum Permintaan & Penawaran', desc: 'Dasar ekonomi mikro yang wajib dipahami', url: 'https://www.youtube.com/embed/kIFBaaPJUO0', bookmarked: false }
+    ],
+    peta: [
+      { id: 'p1', title: 'Penaklukan Bilangan Bulat', level: 'Misi 1 • Dasar', completed: false },
+      { id: 'p2', title: 'Ekspedisi Persamaan Linear', level: 'Misi 2 • Menengah', completed: false },
+      { id: 'p3', title: 'Perang Besar Trigonometri', level: 'Misi 3 • Lanjut', completed: false }
+    ],
+    menara: [
+      { id: 'm1', title: 'Modul TKA Bahasa Indonesia', category: 'Bahasa Indonesia', url: '', progress: 35 },
+      { id: 'm2', title: 'Ringkasan Fisika Dasar', category: 'Fisika', url: '', progress: 60 },
+      { id: 'm3', title: 'Sejarah Indonesia Modern', category: 'Sejarah', url: '', progress: 10 }
+    ],
+    prasasti: [
+      { id: 'g1', title: 'Peta Konsep Sejarah Indonesia', desc: 'Infografis timeline kemerdekaan', imageUrl: '', bookmarked: false },
+      { id: 'g2', title: 'Rumus Fisika Lengkap', desc: 'Poster formula mekanika & gelombang', imageUrl: '', bookmarked: false },
+      { id: 'g3', title: 'Mind Map Bahasa Inggris', desc: 'Peta pikiran grammar tenses', imageUrl: '', bookmarked: false }
+    ]
+  };
+}
+
+// ===== DATA LAYER =====
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Migrate old versions
+    if (!parsed.version || parsed.version < 2) {
+      const def = getDefaultData();
+      parsed.version = 2;
+      if (!parsed.knight) parsed.knight = def.knight;
+      ['tabir','cermin','peta','menara','prasasti'].forEach(k => {
+        if (!parsed[k]) parsed[k] = def[k];
+      });
+      saveData(parsed);
+    }
+    return parsed;
+  } catch { return null; }
+}
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function getData() {
+  let data = loadData();
+  if (!data) { data = getDefaultData(); saveData(data); }
+  return data;
+}
+function genId(prefix) { return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ===== TOAST =====
+function toast(msg, icon = 'success') {
+  Swal.fire({
+    toast: true, position: 'top-end', icon, title: msg,
+    showConfirmButton: false, timer: 2000, timerProgressBar: true,
+    customClass: { popup: 'swal-medieval' },
+    didOpen: (t) => { t.style.fontSize = '0.82rem'; }
+  });
+}
+
+// ===== NAVIGATION =====
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+  // Lazy load cermin iframes when visible
+  if (page === 'cermin') lazyLoadReels();
+}
+
+// ===== SIDEBAR =====
+function toggleSidebar() {
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+  document.getElementById('sidebarPanel').classList.toggle('open');
+}
+
+// ===== LOGIN =====
+function showLogin() {
+  const data = getData();
+  Swal.fire({
+    title: '⚔️ Login Ksatria',
+    html: `
+      <div style="text-align:left">
+        <label class="m-label">Nama Ksatria</label>
+        <input id="swalName" class="m-input" placeholder="Masukkan nama..." value="${data.knight.name || ''}">
+        <label class="m-label" style="margin-top:12px">Token Kerajaan</label>
+        <input id="swalToken" class="m-input" placeholder="Token rahasia..." value="${data.knight.token || ''}">
+      </div>`,
+    confirmButtonText: 'Masuk ke Kerajaan',
+    showCancelButton: true,
+    cancelButtonText: 'Batal',
+    customClass: { popup: 'swal-medieval' },
+    preConfirm: () => ({
+      name: document.getElementById('swalName').value,
+      token: document.getElementById('swalToken').value
+    })
+  }).then(r => {
+    if (r.isConfirmed) {
+      data.knight.name = r.value.name;
+      data.knight.token = r.value.token;
+      saveData(data);
+      updateKnightBadge();
+      toast('Selamat datang, Ksatria ' + (r.value.name || 'Tanpa Nama') + '!');
+    }
+  });
+}
+
+// ===== KNIGHT BADGE =====
+function updateKnightBadge() {
+  const data = getData();
+  const xp = data.knight.xp || 0;
+  const level = Math.floor(xp / 50) + 1;
+  const titles = ['Prajurit Baru','Pengawal Desa','Ksatria Muda','Pahlawan Kerajaan','Panglima Ilmu','Maharaja Pengetahuan'];
+  const title = titles[Math.min(level - 1, titles.length - 1)];
+  data.knight.level = level;
+  saveData(data);
+  const badge = document.getElementById('knightBadge');
+  badge.querySelector('.knight-level').textContent = (data.knight.name || 'Ksatria') + ' • ' + title;
+  badge.querySelector('.knight-xp').textContent = xp + ' XP • Level ' + level;
+}
+function addXP(amount) {
+  const data = getData();
+  data.knight.xp = (data.knight.xp || 0) + amount;
+  saveData(data);
+  updateKnightBadge();
+}
+
+// ===== TABIR VISI (Glossary) =====
+function renderTabir(filter = '') {
+  const data = getData();
+  const list = document.getElementById('tabirList');
+  const items = data.tabir.filter(i =>
+    !filter || i.title.toLowerCase().includes(filter.toLowerCase()) || i.category.toLowerCase().includes(filter.toLowerCase()) || i.desc.toLowerCase().includes(filter.toLowerCase())
+  );
+  if (!items.length) {
+    list.innerHTML = '<div class="empty-state"><i class="bi bi-journal-x"></i><p>Belum ada istilah. Tambahkan yang pertama!</p></div>';
+    return;
+  }
+  // Selective update
+  const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+  const newIds = new Set(items.map(i => i.id));
+  existing.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+  items.forEach((item, idx) => {
+    const tagClass = tagMap[item.category] || 'tag-eko';
+    const html = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="card-title">${esc(item.title)}</div>
+          <span class="tag ${tagClass}">${esc(item.category)}</span>
+        </div>
+        <button class="btn-action ${item.bookmarked?'bookmark-active':''}" onclick="event.stopPropagation();toggleBookmark('tabir','${item.id}')" aria-label="Bookmark">
+          <i class="bi bi-${item.bookmarked?'bookmark-fill':'bookmark'}"></i>
+        </button>
+      </div>
+      <div class="card-desc">${esc(item.desc)}</div>
+      <div class="card-actions">
+        <button class="btn-action" onclick="event.stopPropagation();openModal('tabir','${item.id}')"><i class="bi bi-pencil"></i> Edit</button>
+        <button class="btn-action danger" onclick="event.stopPropagation();confirmDelete('tabir','${item.id}',this)"><i class="bi bi-trash3"></i> Hapus</button>
+      </div>`;
+    if (existing.has(item.id)) {
+      existing.get(item.id).innerHTML = html;
+    } else {
+      const div = document.createElement('div');
+      div.className = 'm-card';
+      div.dataset.id = item.id;
+      div.innerHTML = html;
+      list.appendChild(div);
+    }
+  });
+}
+function filterTabir(val) { renderTabir(val); }
+
+// ===== CERMIN AJAIB (Video Reels) =====
+function renderCermin() {
+  const data = getData();
+  const list = document.getElementById('cerminList');
+  if (!data.cermin.length) {
+    list.innerHTML = '<div class="empty-state"><i class="bi bi-camera-reels"></i><p>Belum ada video. Tambahkan yang pertama!</p></div>';
+    return;
+  }
+  const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+  const newIds = new Set(data.cermin.map(i => i.id));
+  existing.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+  data.cermin.forEach(item => {
+    const html = `
+      <div class="reel-video-wrap" data-src="${esc(item.url)}" data-loaded="false">
+        <div class="reel-placeholder" onclick="loadReel(this.parentElement)">
+          <i class="bi bi-play-circle-fill"></i>
+          <p>Ketuk untuk memutar</p>
+        </div>
+      </div>
+      <div class="reel-info" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="reel-title">${esc(item.title)}</div>
+          <div class="reel-desc">${esc(item.desc)}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn-action" onclick="openModal('cermin','${item.id}')" aria-label="Edit"><i class="bi bi-pencil"></i></button>
+          <button class="btn-action danger" onclick="confirmDelete('cermin','${item.id}',this)" aria-label="Hapus"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>`;
+    if (existing.has(item.id)) {
+      const el = existing.get(item.id);
+      // Preserve loaded iframes
+      const wrap = el.querySelector('.reel-video-wrap');
+      const wasLoaded = wrap && wrap.dataset.loaded === 'true';
+      if (!wasLoaded) el.innerHTML = html;
+      else {
+        el.querySelector('.reel-title').textContent = item.title;
+        el.querySelector('.reel-desc').textContent = item.desc;
+      }
+    } else {
+      const div = document.createElement('div');
+      div.className = 'reel-card';
+      div.dataset.id = item.id;
+      div.innerHTML = html;
+      list.appendChild(div);
+    }
+  });
+}
+function loadReel(wrap) {
+  const src = wrap.dataset.src;
+  if (!src) return;
+  wrap.innerHTML = `<iframe src="${src}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+  wrap.dataset.loaded = 'true';
+  addXP(2);
+}
+function lazyLoadReels() {
+  // Optional: auto-load visible reels via IntersectionObserver
+  const wraps = document.querySelectorAll('.reel-video-wrap[data-loaded="false"]');
+  if (!wraps.length) return;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        // Don't auto-load, just ensure placeholder is visible
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  wraps.forEach(w => obs.observe(w));
+}
+
+// ===== PETA EKSPEDISI (Roadmap Todo) =====
+function renderPeta() {
+  const data = getData();
+  const list = document.getElementById('petaList');
+  if (!data.peta.length) {
+    list.innerHTML = '<div class="empty-state"><i class="bi bi-signpost-split"></i><p>Belum ada misi. Buat ekspedisi pertamamu!</p></div>';
+    return;
+  }
+  const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+  const newIds = new Set(data.peta.map(i => i.id));
+  existing.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+  data.peta.forEach(item => {
+    const html = `
+      <button class="mission-check ${item.completed?'checked':''}" onclick="event.stopPropagation();toggleMission('${item.id}')" aria-label="Toggle misi">
+        <i class="bi bi-check-lg"></i>
+      </button>
+      <div style="flex:1">
+        <div class="mission-title">${esc(item.title)}</div>
+        <div class="mission-level">${esc(item.level)}</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn-action" onclick="event.stopPropagation();openModal('peta','${item.id}')" aria-label="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="btn-action danger" onclick="event.stopPropagation();confirmDelete('peta','${item.id}',this)" aria-label="Hapus"><i class="bi bi-trash3"></i></button>
+      </div>`;
+    if (existing.has(item.id)) {
+      const el = existing.get(item.id);
+      el.className = 'mission-card' + (item.completed ? ' completed' : '');
+      el.innerHTML = html;
+    } else {
+      const div = document.createElement('div');
+      div.className = 'mission-card' + (item.completed ? ' completed' : '');
+      div.dataset.id = item.id;
+      div.innerHTML = html;
+      list.appendChild(div);
+    }
+  });
+}
+function toggleMission(id) {
+  const data = getData();
+  const item = data.peta.find(i => i.id === id);
+  if (!item) return;
+  item.completed = !item.completed;
+  saveData(data);
+  renderPeta();
+  if (item.completed) {
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#D4AF37','#800000','#191970','#013220'] });
+    addXP(10);
+    toast('Misi selesai! +10 XP ⚔️');
+  }
+  updateStats();
+}
+
+// ===== MENARA PUSTAKA (Library) =====
+function renderMenara() {
+  const data = getData();
+  const list = document.getElementById('menaraList');
+  if (!data.menara.length) {
+    list.innerHTML = '<div class="empty-state"><i class="bi bi-bookshelf"></i><p>Perpustakaan kosong. Tambahkan materi!</p></div>';
+    return;
+  }
+  const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+  const newIds = new Set(data.menara.map(i => i.id));
+  existing.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+  data.menara.forEach(item => {
+    const tagClass = tagMap[item.category] || 'tag-eko';
+    const html = `
+      <div class="pustaka-header">
+        <div>
+          <div class="pustaka-title">${esc(item.title)}</div>
+          <div class="pustaka-cat"><span class="tag ${tagClass}">${esc(item.category)}</span></div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn-action" onclick="openModal('menara','${item.id}')" aria-label="Edit"><i class="bi bi-pencil"></i></button>
+          <button class="btn-action danger" onclick="confirmDelete('menara','${item.id}',this)" aria-label="Hapus"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${item.progress}%"></div></div>
+        <div class="progress-label">${item.progress}% dibaca</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn-action" onclick="updateProgress('${item.id}',-10)"><i class="bi bi-dash"></i></button>
+          <button class="btn-action" onclick="updateProgress('${item.id}',10)"><i class="bi bi-plus"></i></button>
+          ${item.url ? `<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" class="btn-action"><i class="bi bi-box-arrow-up-right"></i> Buka</a>` : ''}
+        </div>
+      </div>`;
+    if (existing.has(item.id)) {
+      existing.get(item.id).innerHTML = html;
+    } else {
+      const div = document.createElement('div');
+      div.className = 'pustaka-card';
+      div.dataset.id = item.id;
+      div.innerHTML = html;
+      list.appendChild(div);
+    }
+  });
+}
+function updateProgress(id, delta) {
+  const data = getData();
+  const item = data.menara.find(i => i.id === id);
+  if (!item) return;
+  item.progress = Math.max(0, Math.min(100, item.progress + delta));
+  saveData(data);
+  renderMenara();
+  if (item.progress === 100) {
+    confetti({ particleCount: 50, spread: 50, colors: ['#D4AF37','#191970'] });
+    addXP(15);
+    toast('Materi tuntas! +15 XP 📚');
+  }
+  updateStats();
+}
+
+// ===== GALERI PRASASTI (Masonry Gallery) =====
+function renderPrasasti() {
+  const data = getData();
+  const list = document.getElementById('prasastiList');
+  if (!data.prasasti.length) {
+    list.innerHTML = '<div class="empty-state" style="column-span:all"><i class="bi bi-image"></i><p>Galeri kosong. Tambahkan prasasti visual!</p></div>';
+    return;
+  }
+  const existing = new Map([...list.children].map(el => [el.dataset.id, el]));
+  const newIds = new Set(data.prasasti.map(i => i.id));
+  existing.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+
+  data.prasasti.forEach(item => {
+    const imgHtml = item.imageUrl
+      ? `<img src="${esc(item.imageUrl)}" alt="${esc(item.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=masonry-placeholder><i class=\\'bi bi-shield-exclamation\\'></i><p>Aset Tersembunyi</p></div>';">`
+      : `<div class="masonry-placeholder"><i class="bi bi-shield-exclamation"></i><p>Aset Tersembunyi</p></div>`;
+    const html = `
+      <div class="masonry-img-wrap">${imgHtml}</div>
+      <div class="masonry-info">
+        <div class="masonry-title">${esc(item.title)}</div>
+        <div class="masonry-desc">${esc(item.desc)}</div>
+        <div class="card-actions" style="margin-top:6px">
+          <button class="btn-action ${item.bookmarked?'bookmark-active':''}" onclick="event.stopPropagation();toggleBookmark('prasasti','${item.id}')">
+            <i class="bi bi-${item.bookmarked?'bookmark-fill':'bookmark'}"></i>
+          </button>
+          <button class="btn-action" onclick="event.stopPropagation();openModal('prasasti','${item.id}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn-action danger" onclick="event.stopPropagation();confirmDelete('prasasti','${item.id}',this)"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>`;
+    if (existing.has(item.id)) {
+      existing.get(item.id).innerHTML = html;
+    } else {
+      const div = document.createElement('div');
+      div.className = 'masonry-item';
+      div.dataset.id = item.id;
+      div.innerHTML = html;
+      list.appendChild(div);
+    }
+  });
+}
+
+// ===== BOOKMARK =====
+function toggleBookmark(type, id) {
+  const data = getData();
+  const item = data[type].find(i => i.id === id);
+  if (!item) return;
+  item.bookmarked = !item.bookmarked;
+  saveData(data);
+  renderAll();
+  toast(item.bookmarked ? 'Ditandai! ⭐' : 'Tanda dihapus', item.bookmarked ? 'success' : 'info');
+}
+
+// ===== INLINE DELETE CONFIRM =====
+function confirmDelete(type, id, btn) {
+  const parent = btn.parentElement;
+  const origHtml = parent.innerHTML;
+  parent.innerHTML = `
+    <div class="inline-confirm">
+      <span class="confirm-text">Hapus?</span>
+      <button class="btn-yes" onclick="event.stopPropagation();deleteItem('${type}','${id}')">Ya</button>
+      <button class="btn-no" onclick="event.stopPropagation();cancelDelete(this,'${type}')">Tidak</button>
+    </div>`;
+  // Store original to restore
+  parent.dataset.origHtml = origHtml;
+}
+function cancelDelete(btn, type) {
+  // Re-render to restore
+  renderByType(type);
+}
+
+// ===== CRUD =====
+function deleteItem(type, id) {
+  const data = getData();
+  data[type] = data[type].filter(i => i.id !== id);
+  saveData(data);
+  renderByType(type);
+  updateStats();
+  toast('Item dihapus dari kerajaan!', 'info');
+}
+
+function openModal(type, editId = null) {
+  currentModal = { type, editId };
+  const data = getData();
+  const item = editId ? data[type].find(i => i.id === editId) : null;
+  const title = editId ? 'Edit' : 'Tambah';
+  let body = '';
+
+  switch(type) {
+    case 'tabir':
+      document.getElementById('modalTitle').textContent = title + ' Istilah';
+      body = `
+        <div style="margin-bottom:12px"><label class="m-label" for="mTitle">Istilah</label><input class="m-input" id="mTitle" placeholder="Nama istilah..." value="${item ? esc(item.title) : ''}"></div>
+        <div style="margin-bottom:12px"><label class="m-label" for="mCat">Kategori</label>
+          <select class="m-input m-select" id="mCat">
+            ${['Matematika','IPA','Ekonomi','Bahasa Indonesia','Sejarah','Fisika','Kimia','Biologi','Bahasa Inggris'].map(c => `<option ${item && item.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="m-label" for="mDesc">Deskripsi</label><textarea class="m-input" id="mDesc" rows="3" placeholder="Penjelasan istilah...">${item ? esc(item.desc) : ''}</textarea></div>`;
+      break;
+    case 'cermin':
+      document.getElementById('modalTitle').textContent = title + ' Video';
+      body = `
+        <div style="margin-bottom:12px"><label class="m-label" for="mTitle">Judul Video</label><input class="m-input" id="mTitle" placeholder="Judul..." value="${item ? esc(item.title) : ''}"></div>
+        <div style="margin-bottom:12px"><label class="m-label" for="mDesc">Deskripsi</label><input class="m-input" id="mDesc" placeholder="Deskripsi singkat..." value="${item ? esc(item.desc) : ''}"></div>
+        <div><label class="m-label" for="mUrl">URL Embed (YouTube/TikTok)</label><input class="m-input" id="mUrl" placeholder="https://www.youtube.com/embed/..." value="${item ? esc(item.url) : ''}"></div>`;
+      break;
+    case 'peta':
+      document.getElementById('modalTitle').textContent = title + ' Misi';
+      body = `
+        <div style="margin-bottom:12px"><label class="m-label" for="mTitle">Nama Misi</label><input class="m-input" id="mTitle" placeholder="Penaklukan..." value="${item ? esc(item.title) : ''}"></div>
+        <div><label class="m-label" for="mLevel">Level / Keterangan</label><input class="m-input" id="mLevel" placeholder="Misi 1 • Dasar" value="${item ? esc(item.level) : ''}"></div>`;
+      break;
+    case 'menara':
+      document.getElementById('modalTitle').textContent = title + ' Materi';
+      body = `
+        <div style="margin-bottom:12px"><label class="m-label" for="mTitle">Judul Materi</label><input class="m-input" id="mTitle" placeholder="Modul..." value="${item ? esc(item.title) : ''}"></div>
+        <div style="margin-bottom:12px"><label class="m-label" for="mCat">Kategori</label>
+          <select class="m-input m-select" id="mCat">
+            ${['Matematika','IPA','Ekonomi','Bahasa Indonesia','Sejarah','Fisika','Kimia','Biologi','Bahasa Inggris'].map(c => `<option ${item && item.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="m-label" for="mUrl">URL Dokumen (opsional)</label><input class="m-input" id="mUrl" placeholder="https://drive.google.com/..." value="${item ? esc(item.url || '') : ''}"></div>`;
+      break;
+    case 'prasasti':
+      document.getElementById('modalTitle').textContent = title + ' Prasasti';
+      body = `
+        <div style="margin-bottom:12px"><label class="m-label" for="mTitle">Judul</label><input class="m-input" id="mTitle" placeholder="Poster..." value="${item ? esc(item.title) : ''}"></div>
+        <div style="margin-bottom:12px"><label class="m-label" for="mDesc">Deskripsi</label><input class="m-input" id="mDesc" placeholder="Keterangan..." value="${item ? esc(item.desc) : ''}"></div>
+        <div><label class="m-label" for="mUrl">URL Gambar (opsional)</label><input class="m-input" id="mUrl" placeholder="https://..." value="${item ? esc(item.imageUrl || '') : ''}"></div>`;
+      break;
+  }
+  document.getElementById('modalBody').innerHTML = body;
+  bsModal.show();
+}
+
+function saveItem() {
+  const { type, editId } = currentModal;
+  const data = getData();
+  const title = (document.getElementById('mTitle')?.value || '').trim();
+  if (!title) { toast('Nama tidak boleh kosong!', 'warning'); return; }
+
+  let item;
+  if (editId) {
+    item = data[type].find(i => i.id === editId);
+    if (!item) return;
+  }
+
+  switch(type) {
+    case 'tabir':
+      const tObj = {
+        id: editId || genId('t'),
+        title,
+        category: document.getElementById('mCat').value,
+        desc: document.getElementById('mDesc').value.trim(),
+        bookmarked: item ? item.bookmarked : false
+      };
+      if (editId) Object.assign(item, tObj);
+      else data.tabir.push(tObj);
+      break;
+    case 'cermin':
+      const cObj = {
+        id: editId || genId('c'),
+        title,
+        desc: document.getElementById('mDesc').value.trim(),
+        url: document.getElementById('mUrl').value.trim(),
+        bookmarked: item ? item.bookmarked : false
+      };
+      if (editId) Object.assign(item, cObj);
+      else data.cermin.push(cObj);
+      break;
+    case 'peta':
+      const pObj = {
+        id: editId || genId('p'),
+        title,
+        level: document.getElementById('mLevel').value.trim(),
+        completed: item ? item.completed : false
+      };
+      if (editId) Object.assign(item, pObj);
+      else data.peta.push(pObj);
+      break;
+    case 'menara':
+      const mObj = {
+        id: editId || genId('m'),
+        title,
+        category: document.getElementById('mCat').value,
+        url: document.getElementById('mUrl').value.trim(),
+        progress: item ? item.progress : 0
+      };
+      if (editId) Object.assign(item, mObj);
+      else data.menara.push(mObj);
+      break;
+    case 'prasasti':
+      const gObj = {
+        id: editId || genId('g'),
+        title,
+        desc: document.getElementById('mDesc').value.trim(),
+        imageUrl: document.getElementById('mUrl').value.trim(),
+        bookmarked: item ? item.bookmarked : false
+      };
+      if (editId) Object.assign(item, gObj);
+      else data.prasasti.push(gObj);
+      break;
+  }
+
+  saveData(data);
+  bsModal.hide();
+  renderByType(type);
+  updateStats();
+  addXP(5);
+  toast(editId ? 'Item diperbarui! ✏️' : 'Item baru ditambahkan! +5 XP ⚔️');
+}
+
+function renderByType(type) {
+  switch(type) {
+    case 'tabir': renderTabir(document.getElementById('tabirSearch')?.value || ''); break;
+    case 'cermin': renderCermin(); break;
+    case 'peta': renderPeta(); break;
+    case 'menara': renderMenara(); break;
+    case 'prasasti': renderPrasasti(); break;
+  }
+}
+function renderAll() {
+  renderTabir(document.getElementById('tabirSearch')?.value || '');
+  renderCermin();
+  renderPeta();
+  renderMenara();
+  renderPrasasti();
+}
+
+// ===== STATS CHART =====
+function updateStats() {
+  const data = getData();
+  const counts = {
+    tabir: data.tabir.length,
+    cermin: data.cermin.length,
+    peta_done: data.peta.filter(i => i.completed).length,
+    peta_total: data.peta.length,
+    menara_avg: data.menara.length ? Math.round(data.menara.reduce((s,i) => s + i.progress, 0) / data.menara.length) : 0,
+    prasasti: data.prasasti.length
+  };
+  if (statsChart) {
+    statsChart.data.datasets[0].data = [counts.tabir, counts.cermin, counts.peta_done, counts.menara_avg, counts.prasasti];
+    statsChart.update();
+  }
+}
+function initChart() {
+  const ctx = document.getElementById('statsChart');
+  if (!ctx) return;
+  const data = getData();
+  statsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Tabir', 'Cermin', 'Misi ✓', 'Pustaka %', 'Prasasti'],
+      datasets: [{
+        data: [
+          data.tabir.length,
+          data.cermin.length,
+          data.peta.filter(i => i.completed).length,
+          data.menara.length ? Math.round(data.menara.reduce((s,i) => s + i.progress, 0) / data.menara.length) : 0,
+          data.prasasti.length
+        ],
+        backgroundColor: ['rgba(128,0,0,0.6)', 'rgba(212,175,55,0.6)', 'rgba(1,50,32,0.6)', 'rgba(25,25,112,0.6)', 'rgba(139,69,19,0.6)'],
+        borderColor: ['#800000', '#D4AF37', '#013220', '#191970', '#8B4513'],
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } } }
+      }
+    }
+  });
+}
+
+// ===== EXPORT/IMPORT/RESET =====
+function exportData() {
+  const data = getData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'penakluk_tka_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Data diekspor! 📦');
+}
+function triggerImport() { document.getElementById('importFile').click(); }
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported.tabir && imported.cermin) {
+        saveData(imported);
+        renderAll();
+        updateKnightBadge();
+        updateStats();
+        toast('Data berhasil diimpor! 📜');
+      } else {
+        toast('Format data tidak valid!', 'error');
+      }
+    } catch { toast('Gagal membaca file!', 'error'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function resetData() {
+  Swal.fire({
+    title: '⚠️ Reset Semua Data?',
+    text: 'Semua data akan kembali ke awal. Aksi ini tidak bisa dibatalkan!',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Reset!',
+    cancelButtonText: 'Batal',
+    customClass: { popup: 'swal-medieval' }
+  }).then(r => {
+    if (r.isConfirmed) {
+      localStorage.removeItem(STORAGE_KEY);
+      renderAll();
+      updateKnightBadge();
+      updateStats();
+      toast('Data direset ke awal!', 'info');
+    }
+  });
+}
+
+// ===== UTILITY =====
+function esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ===== ELEMENT SDK =====
+window.elementSdk.init({
+  defaultConfig,
+  onConfigChange: async (config) => {
+    const title = config.app_title || defaultConfig.app_title;
+    const footer = config.footer_text || defaultConfig.footer_text;
+    const font = config.font_family || defaultConfig.font_family;
+    const gold = config.gold_color || defaultConfig.gold_color;
+    const bg = config.bg_color || defaultConfig.bg_color;
+    const text = config.text_color || defaultConfig.text_color;
+    const crimson = config.crimson_color || defaultConfig.crimson_color;
+    const nav = config.nav_color || defaultConfig.nav_color;
+
+    document.getElementById('headerTitle').textContent = title;
+    const footerEl = document.getElementById('footerText');
+    if (footerEl) footerEl.innerHTML = `© 2026 ${esc(title)} by <a href="https://blog.studekasa.qzz.io" target="_blank" rel="noopener noreferrer">Studekasa Academy</a><br>${esc(footer)}`;
+
+    document.documentElement.style.setProperty('--gold', gold);
+    document.documentElement.style.setProperty('--crimson', crimson);
+
+    const wrapper = document.getElementById('appWrapper');
+    if (wrapper) wrapper.style.background = `linear-gradient(180deg, ${bg} 0%, ${adjustColor(bg, -10)} 100%)`;
+
+    document.querySelectorAll('.section-title, .card-title, .reel-title, .pustaka-title, .masonry-title, .modal-title, .sidebar-title, .header-title, .knight-level').forEach(el => {
+      el.style.fontFamily = `${font}, Cinzel, serif`;
+      el.style.color = gold;
+    });
+
+    document.querySelectorAll('.card-desc, .reel-desc, .section-subtitle, .header-subtitle, .m-label, .masonry-desc, .pustaka-cat, .mission-level, .knight-xp').forEach(el => {
+      el.style.color = `${text}99`;
+    });
+
+    document.querySelectorAll('.nav-item.active').forEach(el => el.style.color = nav);
+    document.querySelectorAll('.btn-add, .btn-medieval').forEach(el => {
+      el.style.background = `linear-gradient(135deg, ${crimson}, ${adjustColor(crimson, 20)})`;
+    });
+  },
+  mapToCapabilities: (config) => ({
+    recolorables: [
+      { get: () => config.bg_color || defaultConfig.bg_color, set: (v) => { config.bg_color = v; window.elementSdk.setConfig({ bg_color: v }); } },
+      { get: () => config.gold_color || defaultConfig.gold_color, set: (v) => { config.gold_color = v; window.elementSdk.setConfig({ gold_color: v }); } },
+      { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+      { get: () => config.crimson_color || defaultConfig.crimson_color, set: (v) => { config.crimson_color = v; window.elementSdk.setConfig({ crimson_color: v }); } },
+      { get: () => config.nav_color || defaultConfig.nav_color, set: (v) => { config.nav_color = v; window.elementSdk.setConfig({ nav_color: v }); } }
+    ],
+    borderables: [],
+    fontEditable: {
+      get: () => config.font_family || defaultConfig.font_family,
+      set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+    },
+    fontSizeable: undefined
+  }),
+  mapToEditPanelValues: (config) => new Map([
+    ['app_title', config.app_title || defaultConfig.app_title],
+    ['footer_text', config.footer_text || defaultConfig.footer_text]
+  ])
+});
+
+function adjustColor(hex, amount) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  const num = parseInt(c, 16);
+  let r = Math.min(255, Math.max(0, (num >> 16) + amount));
+  let g = Math.min(255, Math.max(0, ((num >> 8) & 0xFF) + amount));
+  let b = Math.min(255, Math.max(0, (num & 0xFF) + amount));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+// ===== INIT =====
+function init() {
+  getData(); // Ensure data exists
+  bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
+  renderAll();
+  updateKnightBadge();
+  initChart();
+}
+
+// Simple PWA-like behavior
+if ('serviceWorker' in navigator) {
+  // Minimal PWA support notification
+  const metaTheme = document.createElement('meta');
+  metaTheme.name = 'theme-color';
+  metaTheme.content = '#1a0a2e';
+  document.head.appendChild(metaTheme);
+  const metaApple = document.createElement('meta');
+  metaApple.name = 'apple-mobile-web-app-capable';
+  metaApple.content = 'yes';
+  document.head.appendChild(metaApple);
+}
+
+init();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e07a295e753514a',t:'MTc3NDIwODA4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

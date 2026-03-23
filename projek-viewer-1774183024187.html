@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rumusria Ultra V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                enableMenu: false,
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        window.renderApp(); // Mulai render aplikasi setelah MathJax siap
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f8fbff; color: #1e293b; overflow-x: hidden; }
+        .duo-card { background: white; border: 2px solid #e2e8f0; border-bottom: 5px solid #e2e8f0; border-radius: 24px; transition: 0.2s; }
+        .duo-card:hover { border-color: #1cb0f6; }
+        .duo-btn-blue { background: #1cb0f6; border-bottom: 4px solid #1899d6; color: white; border-radius: 16px; font-weight: 800; transition: 0.1s; }
+        .duo-btn-blue:active { border-bottom-width: 0; transform: translateY(4px); }
+        .slider-wrapper { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 16px; padding: 15px 5px; scrollbar-width: none; }
+        .slider-wrapper::-webkit-scrollbar { display: none; }
+        .slide-item { scroll-snap-align: start; min-width: 280px; flex-shrink: 0; }
+        .chat-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 10px; }
+        .chat-bubble { padding: 12px 16px; border-radius: 20px; font-size: 0.95rem; max-width: 85%; }
+        .bubble-ai { background: #f1f5f9; color: #334155; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+        .bubble-user { background: #1cb0f6; color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(28, 176, 246, 0.2); }
+        .active-tab { color: #1cb0f6; font-weight: 900; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="pb-24">
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-blue-100 p-4 flex justify-around z-[100] shadow-xl">
+        <button onclick="navigate('home')" id="btn-home" class="flex flex-col items-center gap-1 active-tab">
+            <i data-lucide="layout-grid" class="w-6 h-6"></i>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest">Beranda</span>
+        </button>
+        <button onclick="navigate('bookmarks')" id="btn-bookmarks" class="flex flex-col items-center gap-1 text-slate-400">
+            <i data-lucide="star" class="w-6 h-6"></i>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest">Favorit</span>
+        </button>
+        <button onclick="navigate('settings')" id="btn-settings" class="flex flex-col items-center gap-1 text-slate-400">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest">Data</span>
+        </button>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-6 pt-10">
+        
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-4xl font-[900] text-slate-800 tracking-tight">Rumusria <span class="text-[#1cb0f6]">Pro</span></h1>
+                <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Smart Mathematics V2</p>
+            </div>
+            <div class="w-12 h-12 bg-white rounded-2xl duo-card flex items-center justify-center text-blue-500 shadow-sm">
+                <i data-lucide="brain"></i>
+            </div>
+        </header>
+
+        <!-- PAGE: HOME -->
+        <section id="page-home">
+            <div class="mb-12">
+                <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i data-lucide="award" class="w-4 h-4 text-orange-400"></i> Rekomendasi Pintar
+                </h2>
+                <div class="slider-wrapper" id="smart-slider"></div>
+            </div>
+
+            <div class="mb-10">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-sm font-black text-slate-500 uppercase tracking-widest">Koleksi Lengkap</h2>
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search" placeholder="Cari rumus..." oninput="renderApp()" 
+                               class="bg-white border-2 border-slate-100 rounded-xl pl-9 pr-4 py-2 text-sm font-bold w-40 focus:w-56 focus:border-blue-400 transition-all outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4" id="formula-list"></div>
+            </div>
+        </section>
+
+        <!-- PAGE: BOOKMARKS -->
+        <section id="page-bookmarks" class="hidden">
+            <h2 class="text-2xl font-black mb-8">Tersimpan</h2>
+            <div id="bookmark-list" class="grid grid-cols-1 gap-4"></div>
+        </section>
+
+        <!-- PAGE: SETTINGS -->
+        <section id="page-settings" class="hidden">
+            <h2 class="text-2xl font-black mb-8">Manajemen Data</h2>
+            <div class="space-y-4">
+                <div class="duo-card p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-black text-slate-700">Ekspor Semua Data</h3>
+                        <p class="text-xs text-slate-400">Simpan riwayat chat, hits, dan favorit ke JSON.</p>
+                    </div>
+                    <button onclick="exportData()" class="p-3 bg-blue-50 rounded-2xl text-blue-500 hover:bg-blue-100 transition">
+                        <i data-lucide="download-cloud"></i>
+                    </button>
+                </div>
+                <div class="duo-card p-6 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-black text-slate-700">Impor Data</h3>
+                        <p class="text-xs text-slate-400">Muat cadangan data Rumusria kamu.</p>
+                    </div>
+                    <label class="p-3 bg-slate-50 rounded-2xl text-slate-500 hover:bg-slate-100 transition cursor-pointer">
+                        <i data-lucide="upload-cloud"></i>
+                        <input type="file" class="hidden" onchange="importData(event)">
+                    </label>
+                </div>
+                <div class="duo-card p-6 border-red-100">
+                    <button onclick="clearAllData()" class="w-full text-left">
+                        <h3 class="font-black text-red-500">Reset Aplikasi</h3>
+                        <p class="text-xs text-red-300">Hapus semua riwayat dan kembali ke awal.</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FORMULA MODAL -->
+    <div id="modal" class="fixed inset-0 z-[200] hidden flex flex-col justify-end">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity" onclick="closeModal()"></div>
+        <div class="relative bg-white rounded-t-[40px] h-[92vh] flex flex-col overflow-hidden shadow-2xl">
+            
+            <div class="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
+                <button onclick="closeModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500"><i data-lucide="x"></i></button>
+                <div class="text-center">
+                    <h3 id="m-title" class="font-black text-slate-800 text-xl">Rumus</h3>
+                    <p id="m-cat" class="text-[10px] font-black text-blue-500 uppercase tracking-widest">KATEGORI</p>
+                </div>
+                <button id="m-fav" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 transition-all"><i data-lucide="star"></i></button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scroll p-8 space-y-10">
+                <!-- Formula Display -->
+                <div class="bg-blue-50/30 rounded-[32px] p-10 border-2 border-dashed border-blue-100 flex items-center justify-center text-3xl text-center overflow-x-auto" id="m-latex-container">
+                    <div id="m-latex"></div>
+                </div>
+
+                <!-- Inputs -->
+                <div class="grid grid-cols-2 gap-4" id="m-inputs"></div>
+
+                <!-- Result Box -->
+                <div class="p-8 bg-white duo-card border-blue-200 text-center">
+                    <span class="text-[10px] font-black text-slate-300 uppercase block mb-2">Hasil Akhir</span>
+                    <div id="m-res" class="text-5xl font-black text-[#1cb0f6]">0</div>
+                    <button onclick="runCalculator()" class="mt-6 w-full py-4 duo-btn-blue text-sm uppercase tracking-widest">Hitung & Simpan</button>
+                </div>
+
+                <!-- Similar Suggestions -->
+                <div>
+                    <h4 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Saran Terkait</h4>
+                    <div class="flex gap-4 overflow-x-auto pb-4 custom-scroll" id="m-related"></div>
+                </div>
+
+                <!-- Chat Room -->
+                <div class="space-y-4 pb-10">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="message-circle" class="w-4 h-4 text-blue-500"></i> Diskusi AI
+                        </h4>
+                        <button onclick="clearChat()" class="text-[10px] font-bold text-red-400">Hapus Chat</button>
+                    </div>
+                    <div id="m-chat" class="chat-container min-h-[200px] border-t border-slate-50 pt-4"></div>
+                    <form id="chat-form" class="flex gap-3 sticky bottom-0 bg-white py-2">
+                        <input type="text" id="chat-input" placeholder="Tanya langkah pengerjaan..." class="flex-1 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-blue-300">
+                        <button type="submit" class="w-14 h-14 bg-[#1cb0f6] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition"><i data-lucide="send"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database Rumus (Sama seperti sebelumnya, 25+ rumus)
+        const MATH_DB = [
+            { id: 1, cat: 'Eksponen', name: 'Perkalian Eksponen', latex: 'a^m \\cdot a^n = a^{m+n}', params: [{id:'a',n:'Basis'},{id:'m',n:'m'},{id:'n',n:'n'}], calc: p => p.a**(p.m+p.n) },
+            { id: 2, cat: 'Eksponen', name: 'Pembagian Eksponen', latex: '\\frac{a^m}{a^n} = a^{m-n}', params: [{id:'a',n:'Basis'},{id:'m',n:'m'},{id:'n',n:'n'}], calc: p => p.a**(p.m-p.n) },
+            { id: 3, cat: 'Eksponen', name: 'Pangkat Dipangkatkan', latex: '(a^m)^n = a^{mn}', params: [{id:'a',n:'Basis'},{id:'m',n:'m'},{id:'n',n:'n'}], calc: p => p.a**(p.m*p.n) },
+            { id: 4, cat: 'Logaritma', name: 'Sifat Penjumlahan', latex: '^a\\log b + ^a\\log c = ^a\\log(bc)', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'c',n:'c'}], calc: p => Math.log(p.b*p.c)/Math.log(p.a) },
+            { id: 5, cat: 'Logaritma', name: 'Basis Pangkat', latex: '^{a^n}\\log b^m = \\frac{m}{n} \\cdot ^a\\log b', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'m',n:'m'},{id:'n',n:'n'}], calc: p => (p.m/p.n) * (Math.log(p.b)/Math.log(p.a)) },
+            { id: 6, cat: 'Trigonometri', name: 'Sudut Rangkap Sin', latex: '\\sin 2x = 2\\sin x \\cos x', params: [{id:'x',n:'Derajat'}], calc: p => 2*Math.sin(p.x*Math.PI/180)*Math.cos(p.x*Math.PI/180) },
+            { id: 7, cat: 'Aljabar', name: 'Kuadrat Sempurna', latex: '(a+b)^2 = a^2 + 2ab + b^2', params: [{id:'a',n:'a'},{id:'b',n:'b'}], calc: p => (p.a+p.b)**2 },
+            { id: 8, cat: 'Kalkulus', name: 'Turunan Polinom', latex: '\\frac{d}{dx}ax^n = nax^{n-1}', params: [{id:'a',n:'a'},{id:'n',n:'n'}], calc: p => `${p.n*p.a}x^{${p.n-1}}` },
+            { id: 9, cat: 'Geometri', name: 'Luas Lingkaran', latex: 'L = \\pi r^2', params: [{id:'r',n:'Jari-jari'}], calc: p => Math.PI * (p.r**2) },
+            { id: 10, cat: 'Vektor', name: 'Panjang Vektor', latex: '|\\vec{a}| = \\sqrt{x^2+y^2}', params: [{id:'x',n:'x'},{id:'y',n:'y'}], calc: p => Math.sqrt(p.x**2 + p.y**2) },
+            { id: 11, cat: 'Persamaan', name: 'Rumus ABC', latex: 'x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'c',n:'c'}], calc: p => "Cek Diskriminan" },
+            { id: 12, cat: 'Matriks', name: 'Determinan 2x2', latex: 'det(M) = ad - bc', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'c',n:'c'},{id:'d',n:'d'}], calc: p => p.a*p.d - p.b*p.c },
+            { id: 13, cat: 'Barisan', name: 'Un Aritmatika', latex: 'U_n = a + (n-1)b', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'n',n:'n'}], calc: p => p.a + (p.n-1)*p.b },
+            { id: 14, cat: 'Peluang', name: 'Permutasi nPr', latex: 'P(n,r) = \\frac{n!}{(n-r)!}', params: [{id:'n',n:'n'},{id:'r',n:'r'}], calc: p => { const f=x=>x<=1?1:x*f(x-1); return f(p.n)/f(p.n-p.r) } },
+            { id: 15, cat: 'Eksponen', name: 'Pangkat Pecahan', latex: 'a^{\\frac{m}{n}} = \\sqrt[n]{a^m}', params: [{id:'a',n:'a'},{id:'m',n:'m'},{id:'n',n:'n'}], calc: p => p.a**(p.m/p.n) },
+            { id: 16, cat: 'Trigonometri', name: 'Identitas Pythagoras', latex: '\\sin^2 x + \\cos^2 x = 1', params: [{id:'x',n:'x'}], calc: p => 1 },
+            { id: 17, cat: 'Statistika', name: 'Mean (Rata-rata)', latex: '\\bar{x} = \\frac{\\sum x_i}{n}', params: [{id:'s',n:'Jumlah'},{id:'n',n:'n'}], calc: p => p.s/p.n },
+            { id: 18, cat: 'Aljabar', name: 'Selisih Kuadrat', latex: 'a^2 - b^2 = (a-b)(a+b)', params: [{id:'a',n:'a'},{id:'b',n:'b'}], calc: p => p.a**2 - p.b**2 },
+            { id: 19, cat: 'Integral', name: 'Integral Dasar', latex: '\\int x^n dx = \\frac{x^{n+1}}{n+1}', params: [{id:'n',n:'n'}], calc: p => `\\frac{x^{${p.n+1}}}{${p.n+1}}` },
+            { id: 20, cat: 'Geometri', name: 'Volume Tabung', latex: 'V = \\pi r^2 h', params: [{id:'r',n:'Jari-jari'},{id:'h',n:'Tinggi'}], calc: p => Math.PI * (p.r**2) * p.h },
+            { id: 21, cat: 'Eksponen', name: 'Pangkat Nol', latex: 'a^0 = 1', params: [{id:'a',n:'a'}], calc: p => 1 },
+            { id: 22, cat: 'Logaritma', name: 'Ubah Basis', latex: '^a\\log b = \\frac{^p\\log b}{^p\\log a}', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'p',n:'p'}], calc: p => Math.log(p.b)/Math.log(p.a) },
+            { id: 23, cat: 'Keuangan', name: 'Bunga Tunggal', latex: 'B = M \\cdot i \\cdot t', params: [{id:'m',n:'Modal'},{id:'i',n:'%'},{id:'t',n:'Waktu'}], calc: p => p.m * (p.i/100) * p.t },
+            { id: 24, cat: 'Fungsi', name: 'Invers Linear', latex: 'f^{-1}(x) = \\frac{x-b}{a}', params: [{id:'x',n:'x'},{id:'a',n:'a'},{id:'b',n:'b'}], calc: p => (p.x-p.b)/p.a },
+            { id: 25, cat: 'Matriks', name: 'Adjoin 2x2', latex: 'Adj(M) = \\begin{bmatrix}d & -b \\\\ -c & a\\end{bmatrix}', params: [{id:'a',n:'a'},{id:'b',n:'b'},{id:'c',n:'c'},{id:'d',n:'d'}], calc: p => "Matriks" }
+        ];
+
+        let state = {
+            favs: JSON.parse(localStorage.getItem('ria_favs') || '[]'),
+            hits: JSON.parse(localStorage.getItem('ria_hits') || '{}'),
+            chats: JSON.parse(localStorage.getItem('ria_chats') || '{}'),
+            current: null,
+            page: 'home'
+        };
+
+        function navigate(p) {
+            state.page = p;
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('page-'+p).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab', 'text-slate-400'));
+            document.getElementById('btn-'+p).classList.add('active-tab', 'text-blue-500');
+            renderApp();
+        }
+
+        window.renderApp = function() {
+            // Smart Slider
+            const slider = document.getElementById('smart-slider');
+            slider.innerHTML = '';
+            const sorted = [...MATH_DB].sort((a,b) => (state.hits[b.id]||0) - (state.hits[a.id]||0)).slice(0, 5);
+            
+            sorted.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "slide-item duo-card p-6 bg-gradient-to-br from-[#1cb0f6] to-[#2bd9ff] border-none text-white cursor-pointer shadow-lg";
+                div.onclick = () => openModal(f.id);
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[9px] font-black bg-white/20 px-2 py-1 rounded-full uppercase tracking-widest">${f.cat}</span>
+                        <i data-lucide="sparkles" class="w-4 h-4 text-white/50"></i>
+                    </div>
+                    <h3 class="font-black text-lg mb-3">${f.name}</h3>
+                    <div class="bg-black/10 p-3 rounded-xl text-sm font-mono truncate">\\(${f.latex}\\)</div>
+                `;
+                slider.appendChild(div);
+            });
+
+            // List
+            const list = document.getElementById('formula-list');
+            const searchVal = document.getElementById('search').value.toLowerCase();
+            list.innerHTML = '';
+            MATH_DB.filter(f => f.name.toLowerCase().includes(searchVal) || f.cat.toLowerCase().includes(searchVal)).forEach(f => {
+                const card = document.createElement('div');
+                card.className = "duo-card p-5 flex items-center justify-between cursor-pointer group hover:bg-blue-50/50";
+                card.onclick = () => openModal(f.id);
+                card.innerHTML = `
+                    <div class="flex items-center gap-5">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 font-black group-hover:bg-white transition-colors">
+                            ${f.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 text-sm tracking-tight">${f.name}</h4>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${f.cat}</p>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-5 h-5 text-slate-200 group-hover:text-blue-400 transition-all"></i>
+                `;
+                list.appendChild(card);
+            });
+
+            // Bookmarks
+            const bList = document.getElementById('bookmark-list');
+            bList.innerHTML = state.favs.length ? '' : '<p class="text-slate-300 text-center py-20 font-bold">Belum ada rumus favorit.</p>';
+            state.favs.forEach(id => {
+                const f = MATH_DB.find(x => x.id === id);
+                if(!f) return;
+                const card = document.createElement('div');
+                card.className = "duo-card p-4 flex items-center justify-between";
+                card.onclick = () => openModal(f.id);
+                card.innerHTML = `<span class="font-black text-slate-700">${f.name}</span><i data-lucide="star" class="fill-yellow-400 text-yellow-400"></i>`;
+                bList.appendChild(card);
+            });
+
+            lucide.createIcons();
+            MathJax.typesetPromise();
+        };
+
+        function openModal(id) {
+            const f = MATH_DB.find(x => x.id === id);
+            state.current = f;
+            state.hits[id] = (state.hits[id] || 0) + 1;
+            saveState();
+
+            const modal = document.getElementById('modal');
+            modal.classList.remove('hidden');
+            document.getElementById('m-title').innerText = f.name;
+            document.getElementById('m-cat').innerText = f.cat;
+            
+            // Render MathJax cleanly
+            const latexDiv = document.getElementById('m-latex');
+            latexDiv.innerHTML = `\\[ ${f.latex} \\]`;
+            
+            // Fav Icon
+            const favBtn = document.getElementById('m-fav');
+            favBtn.innerHTML = `<i data-lucide="star" class="${state.favs.includes(id) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}"></i>`;
+            favBtn.onclick = () => {
+                if(state.favs.includes(id)) state.favs = state.favs.filter(x => x !== id);
+                else state.favs.push(id);
+                saveState();
+                openModal(id);
+            };
+
+            // Param Inputs
+            const inBox = document.getElementById('m-inputs');
+            inBox.innerHTML = '';
+            f.params.forEach(p => {
+                inBox.innerHTML += `
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 mb-2 block uppercase">${p.n}</label>
+                        <input type="number" id="v-${p.id}" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-400 transition-all">
+                    </div>
+                `;
+            });
+
+            // Related
+            const relBox = document.getElementById('m-related');
+            relBox.innerHTML = '';
+            MATH_DB.filter(x => x.cat === f.cat && x.id !== f.id).forEach(x => {
+                const div = document.createElement('div');
+                div.className = "min-w-[140px] bg-slate-50 p-4 rounded-2xl text-[11px] font-black text-slate-500 cursor-pointer border-2 border-transparent hover:border-blue-100";
+                div.onclick = (e) => { e.stopPropagation(); openModal(x.id); };
+                div.innerText = x.name;
+                relBox.appendChild(div);
+            });
+
+            document.getElementById('m-res').innerText = '0';
+            renderChat();
+            lucide.createIcons();
+            MathJax.typesetPromise();
+        }
+
+        function runCalculator() {
+            const f = state.current;
+            const vals = {};
+            f.params.forEach(p => {
+                vals[p.id] = parseFloat(document.getElementById('v-'+p.id).value) || 0;
+            });
+            const res = f.calc(vals);
+            document.getElementById('m-res').innerText = typeof res === 'number' ? (Number.isInteger(res) ? res : res.toFixed(3)) : res;
+            
+            // Context for AI
+            addChatMessage('user', `Berapa hasil dari ${f.name} jika parameternya ${JSON.stringify(vals)}?`);
+            askAI(`User baru saja menghitung ${f.name} dengan rumus ${f.latex} menggunakan nilai ${JSON.stringify(vals)}. Hasilnya ${res}. Berikan penjelasan singkat kenapa hasilnya begitu.`);
+        }
+
+        async function askAI(prompt) {
+            const box = document.getElementById('m-chat');
+            const loader = document.createElement('div');
+            loader.className = "bubble-ai chat-bubble italic opacity-50";
+            loader.innerText = "Rumusria sedang berpikir...";
+            box.appendChild(loader);
+            box.scrollTop = box.scrollHeight;
+
+            const apiKey = ""; 
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: "Kamu AI Rumusria. Pakar matematika. Jelaskan langkah demi langkah. Gunakan LaTeX $...$ untuk simbol matematika." }] }
+                    })
+                });
+                const data = await response.json();
+                loader.remove();
+                addChatMessage('ai', data.candidates[0].content.parts[0].text);
+            } catch (e) {
+                loader.innerText = "Maaf, koneksi AI terputus.";
+            }
+        }
+
+        function addChatMessage(role, text) {
+            const id = state.current.id;
+            if(!state.chats[id]) state.chats[id] = [];
+            state.chats[id].push({role, text});
+            saveState();
+            renderChat();
+        }
+
+        function renderChat() {
+            const box = document.getElementById('m-chat');
+            box.innerHTML = '';
+            const history = state.chats[state.current.id] || [];
+            if(!history.length) box.innerHTML = '<p class="text-[11px] text-slate-300 text-center uppercase font-black">Mulai diskusi dengan AI tentang rumus ini</p>';
+            
+            history.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `chat-bubble bubble-${m.role}`;
+                div.innerHTML = marked.parse(m.text);
+                box.appendChild(div);
+            });
+            
+            MathJax.typesetPromise([box]);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function clearChat() {
+            if(confirm('Hapus semua chat untuk rumus ini?')) {
+                state.chats[state.current.id] = [];
+                saveState();
+                renderChat();
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ria_favs', JSON.stringify(state.favs));
+            localStorage.setItem('ria_hits', JSON.stringify(state.hits));
+            localStorage.setItem('ria_chats', JSON.stringify(state.chats));
+        }
+
+        function exportData() {
+            const data = JSON.stringify(state);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'rumusria_v2_backup.json'; a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    state = {...state, ...imported};
+                    saveState();
+                    alert('Data berhasil dimuat!');
+                    location.reload();
+                } catch(err) { alert('File tidak valid.'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if(confirm('Hapus semua data secara permanen?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); renderApp(); }
+
+        document.getElementById('chat-form').onsubmit = (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            if(!input.value.trim()) return;
+            addChatMessage('user', input.value);
+            askAI(`User bertanya tentang rumus ${state.current.name}: ${input.value}`);
+            input.value = '';
+        };
+    </script>
+</body>
+</html>
+

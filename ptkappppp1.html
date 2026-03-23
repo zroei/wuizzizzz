@@ -1,0 +1,1342 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penakluk TKA: Madya</title>
+  <link rel="icon" href="https://i.ibb.co/HDGNQDYH/penakluktka.png" type="image/png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&amp;family=Lora:ital,wght@0,400;0,600;0,700;1,400&amp;family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+:root {
+  --crimson: #800000;
+  --crimson-light: #a01020;
+  --gold: #D4AF37;
+  --gold-light: #e8c84a;
+  --midnight: #0a0a0a;
+  --midnight-card: #141418;
+  --midnight-surface: #1a1a22;
+  --text-primary: #f0e6d3;
+  --text-secondary: #a89880;
+  --border-subtle: rgba(212,175,55,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; scroll-behavior: smooth; }
+body {
+  font-family: 'Lora', Georgia, serif;
+  background: var(--midnight);
+  color: var(--text-primary);
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+h1, h2, h3, h4, h5, .cinzel { font-family: 'Cinzel', serif; }
+.ui-text, .btn, input, select, textarea, .nav-label, .badge, .sidebar-text {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Background Pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(128,0,0,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #0a0a0a 0%, #0f0f14 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--midnight); }
+::-webkit-scrollbar-thumb { background: var(--crimson); border-radius: 3px; }
+
+/* 3D Buttons */
+.btn-knight {
+  background: linear-gradient(135deg, var(--crimson), var(--crimson-light));
+  color: var(--gold);
+  border: none;
+  border-bottom: 4px solid #500000;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+.btn-knight:hover {
+  background: linear-gradient(135deg, var(--crimson-light), #b01530);
+  color: var(--gold-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(128,0,0,0.4);
+}
+.btn-knight:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), #c9a020);
+  color: var(--midnight);
+  border: none;
+  border-bottom: 4px solid #8a7420;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--midnight);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(212,175,55,0.3);
+}
+.btn-gold:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
+/* Cards */
+.knight-card {
+  background: rgba(20,20,24,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2rem;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+}
+.knight-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 8px 32px rgba(212,175,55,0.12), 0 0 0 1px rgba(212,175,55,0.1);
+  transform: translateY(-4px);
+}
+
+/* Top Navbar */
+.top-nav {
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 10px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+}
+.nav-logo { width: 36px; height: 36px; cursor: pointer; user-select: none; }
+.top-nav-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gear-btn {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--gold);
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+.gear-btn:hover { background: rgba(212,175,55,0.1); border-color: var(--gold); }
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  transition: all 0.25s;
+  cursor: pointer;
+  border-radius: 12px;
+  min-width: 56px;
+}
+.bottom-nav-item i { font-size: 1.3rem; transition: all 0.25s; }
+.nav-label { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.bottom-nav-item.active { color: var(--gold); }
+.bottom-nav-item.active i { transform: scale(1.15); filter: drop-shadow(0 0 6px rgba(212,175,55,0.5)); }
+.bottom-nav-item:hover { color: var(--gold-light); background: rgba(212,175,55,0.06); }
+
+/* Sections */
+.tab-section { display: none; animation: fadeSlide 0.4s ease; }
+.tab-section.active { display: block; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Challenge Banner */
+.challenge-banner {
+  background: linear-gradient(135deg, var(--crimson), #600010);
+  border: 1px solid rgba(212,175,55,0.3);
+  border-radius: 1rem;
+  padding: 14px 20px;
+  margin: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.challenge-banner::before {
+  content: '⚔️';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  opacity: 0.3;
+}
+
+/* Power Bar */
+.power-bar-container {
+  background: rgba(20,20,24,0.8);
+  border-radius: 1rem;
+  padding: 16px 20px;
+  margin: 0 16px 16px;
+  border: 1px solid var(--border-subtle);
+}
+.power-bar-track {
+  height: 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.power-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--crimson), var(--gold));
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 12px rgba(212,175,55,0.4);
+}
+
+/* Search */
+.search-box {
+  background: var(--midnight-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  color: var(--text-primary);
+  padding: 10px 16px 10px 42px;
+  width: 100%;
+  font-family: 'Montserrat', sans-serif;
+  transition: border-color 0.3s;
+}
+.search-box:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+.search-box::placeholder { color: var(--text-secondary); }
+.search-wrapper { position: relative; }
+.search-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+
+/* Filter Pills */
+.filter-pills { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; scrollbar-width: none; }
+.filter-pills::-webkit-scrollbar { display: none; }
+.filter-pill {
+  white-space: nowrap;
+  padding: 6px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  flex-shrink: 0;
+}
+.filter-pill.active, .filter-pill:hover {
+  background: var(--gold);
+  color: var(--midnight);
+  border-color: var(--gold);
+}
+
+/* Mantra Grid */
+.mantra-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media(min-width:768px) { .mantra-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(min-width:1024px) { .mantra-grid { grid-template-columns: repeat(3, 1fr); } }
+.mantra-card .mantra-emoji { font-size: 2rem; }
+.mantra-card .mantra-cat {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+}
+.mantra-card h4 { font-size: 1.05rem; margin: 8px 0 6px; }
+.mantra-card p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+/* Visi - Reels Style */
+.visi-reel {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 20px;
+  border-radius: 2rem;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--midnight-card);
+}
+.visi-reel .reel-frame {
+  position: relative;
+  width: 100%;
+  padding-bottom: 177.78%; /* 9:16 */
+}
+.visi-reel iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+.visi-reel .reel-info { padding: 16px; }
+
+/* Misi Timeline */
+.timeline { position: relative; padding-left: 30px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--gold), var(--crimson));
+  border-radius: 2px;
+}
+.timeline-item {
+  position: relative;
+  padding: 0 0 28px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--midnight);
+  border: 3px solid var(--gold);
+  transition: all 0.3s;
+  z-index: 1;
+}
+.timeline-item.done::before {
+  background: var(--gold);
+  box-shadow: 0 0 12px rgba(212,175,55,0.5);
+}
+.misi-check {
+  width: 22px; height: 22px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+/* Kitab */
+.kitab-card { padding: 20px; }
+.hp-bar-track {
+  height: 10px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  border-radius: 99px;
+  transition: width 0.5s;
+}
+.hp-bar-fill.low { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.hp-bar-fill.mid { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.page-input {
+  width: 60px;
+  background: var(--midnight-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-primary);
+  text-align: center;
+  padding: 4px;
+  font-family: 'Montserrat', sans-serif;
+}
+.page-input:focus { outline: none; border-color: var(--gold); }
+
+/* Artefak Gallery */
+.artefak-masonry { columns: 2; column-gap: 12px; }
+@media(min-width:768px) { .artefak-masonry { columns: 3; } }
+.artefak-item {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  border-radius: 1rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid var(--border-subtle);
+}
+.artefak-item:hover { border-color: var(--gold); transform: scale(1.02); }
+.artefak-item img { width: 100%; display: block; }
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: fadeIn 0.3s;
+}
+.lightbox-overlay.show { display: flex; }
+.lightbox-overlay img { max-width: 92%; max-height: 90%; border-radius: 1rem; object-fit: contain; }
+
+/* Sidebar */
+.sidebar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 1060;
+  display: none;
+  animation: fadeIn 0.2s;
+}
+.sidebar-overlay.show { display: block; }
+.sidebar-panel {
+  position: fixed;
+  top: 0; right: -320px;
+  width: 300px;
+  max-width: 85%;
+  height: 100%;
+  background: var(--midnight-surface);
+  border-left: 1px solid var(--border-subtle);
+  z-index: 1070;
+  transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto;
+  padding: 24px 20px;
+}
+.sidebar-panel.show { right: 0; }
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 1rem;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255,255,255,0.02);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-bottom: 10px;
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.sidebar-item:hover { background: rgba(212,175,55,0.08); border-color: var(--gold); color: var(--gold); }
+.sidebar-stat-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #c9a020);
+  color: var(--midnight);
+  border: none;
+  border-bottom: 4px solid #8a7420;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1030;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(212,175,55,0.3);
+}
+.fab:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 28px rgba(212,175,55,0.4); }
+.fab:active { transform: translateY(2px); border-bottom-width: 1px; }
+
+/* Oath Overlay */
+.oath-overlay {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(128,0,0,0.15), rgba(0,0,0,0.95));
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.6s;
+}
+.oath-card {
+  background: var(--midnight-surface);
+  border: 2px solid var(--gold);
+  border-radius: 2rem;
+  padding: 40px 32px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(212,175,55,0.15);
+}
+.oath-card img { width: 80px; margin-bottom: 16px; filter: drop-shadow(0 0 12px rgba(212,175,55,0.3)); }
+.oath-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--midnight);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  color: var(--text-primary);
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+  font-size: 1rem;
+  margin: 16px 0;
+}
+.oath-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+
+/* Modal */
+.modal-knight .modal-content {
+  background: var(--midnight-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2rem;
+  color: var(--text-primary);
+}
+.modal-knight .modal-header { border-bottom: 1px solid var(--border-subtle); }
+.modal-knight .modal-footer { border-top: 1px solid var(--border-subtle); }
+.modal-knight .btn-close { filter: invert(1); }
+.modal-input {
+  background: var(--midnight);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: 1rem;
+  padding: 10px 16px;
+  font-family: 'Montserrat', sans-serif;
+}
+.modal-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); outline: none; }
+select.modal-input { appearance: auto; }
+
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.3); }
+  50% { box-shadow: 0 0 20px 4px rgba(212,175,55,0.15); }
+}
+.pulse-gold { animation: pulseGold 2s infinite; }
+
+.greeting-text {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  color: var(--gold);
+  opacity: 0.8;
+}
+
+/* SweetAlert Custom */
+.swal2-popup.knight-toast {
+  background: var(--midnight-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 1rem !important;
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+.home-logo { width: 100px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.2)); margin: 24px auto 8px; display: block; }
+.studekasa-logo { height: 24px; opacity: 0.5; }
+
+.inline-confirm {
+  display: inline-flex; gap: 6px; align-items: center;
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body><!-- Oath Overlay -->
+  <div class="oath-overlay" id="oathOverlay">
+   <div class="oath-card"><img src="https://i.ibb.co/HDGNQDYH/penakluktka.png" alt="Logo" loading="lazy" onerror="this.style.display='none'">
+    <h2 class="cinzel" style="color:var(--gold); font-size:1.3rem; margin-bottom:4px;">Sumpah Ksatria</h2>
+    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:8px;">Masukkan namamu, Penakluk</p><input type="text" class="oath-input" id="oathName" placeholder="Nama Ksatria..." maxlength="30"> <button class="btn btn-gold w-100 py-2 ui-text" id="oathBtn" style="font-size:0.9rem;">⚔️ Mulai Penaklukan</button>
+   </div>
+  </div><!-- Lightbox -->
+  <div class="lightbox-overlay" id="lightbox" onclick="this.classList.remove('show')"><img id="lightboxImg" src="" alt="Preview">
+  </div><!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <div class="sidebar-panel" id="sidebarPanel">
+   <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="cinzel m-0" style="color:var(--gold); font-size:1.1rem;">⚙️ Pengaturan</h4><button onclick="toggleSidebar(false)" style="background:none;border:none;color:var(--text-secondary);font-size:1.3rem;cursor:pointer;">×</button>
+   </div>
+   <div class="knight-card p-3 mb-4" style="border-radius:1rem;">
+    <p class="ui-text text-center mb-1" style="font-size:0.75rem; color:var(--text-secondary);">Monster Ditaklukkan</p>
+    <p class="sidebar-stat-value text-center m-0" id="statMisi">0</p>
+   </div>
+   <div class="knight-card p-3 mb-4" style="border-radius:1rem;">
+    <p class="ui-text text-center mb-1" style="font-size:0.75rem; color:var(--text-secondary);">Koleksi Mantra</p>
+    <p class="sidebar-stat-value text-center m-0" id="statMantra">0</p>
+   </div>
+   <div class="sidebar-item" onclick="exportData()">
+    <i class="bi bi-download"></i> Ekspor Data (JSON)
+   </div>
+   <div class="sidebar-item" onclick="document.getElementById('importFile').click()">
+    <i class="bi bi-upload"></i> Impor Data (JSON)
+   </div><input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"> <a class="sidebar-item" href="https://blog-penakluktka.studekasa.qzz.io" target="_blank" rel="noopener noreferrer"><i class="bi bi-globe2"></i> Blog Penakluk</a>
+   <div class="sidebar-item" onclick="resetData()" style="color:#ef4444;">
+    <i class="bi bi-trash3"></i> Reset Semua Data
+   </div>
+  </div><!-- Top Nav -->
+  <nav class="top-nav d-flex align-items-center justify-content-between">
+   <div class="d-flex align-items-center gap-2"><img src="https://i.ibb.co/HDGNQDYH/penakluktka.png" alt="Logo" class="nav-logo" id="navLogo" loading="lazy" onerror="this.style.background='var(--crimson)'; this.alt='P';"> <span class="top-nav-title" id="topTitle">Penakluk TKA</span>
+   </div>
+   <div class="d-flex align-items-center gap-2"><span class="greeting-text d-none d-sm-inline" id="greetNav"></span> <button class="gear-btn" onclick="toggleSidebar(true)"><i class="bi bi-gear-fill"></i></button>
+   </div>
+  </nav><!-- Main Content -->
+  <div id="mainContent"><!-- HOME/MANTRA Section -->
+   <section class="tab-section active" id="secMantra"><!-- Challenge Banner -->
+    <div class="challenge-banner" id="challengeBanner">
+     <p class="ui-text m-0 pe-5" style="font-size:0.82rem; font-weight:600; color:rgba(255,255,255,0.9);" id="challengeText"></p>
+    </div><!-- Power Bar -->
+    <div class="power-bar-container">
+     <div class="d-flex justify-content-between align-items-center mb-2"><span class="ui-text" style="font-size:0.75rem; color:var(--gold); font-weight:700;">⚡ POWER KSATRIA</span> <span class="ui-text" style="font-size:0.75rem; color:var(--text-secondary);" id="powerLabel">0%</span>
+     </div>
+     <div class="power-bar-track">
+      <div class="power-bar-fill" id="powerFill" style="width:0%"></div>
+     </div>
+    </div><!-- Search & Filter -->
+    <div class="px-3 mb-3">
+     <div class="search-wrapper mb-3"><i class="bi bi-search"></i> <input type="text" class="search-box" id="mantraSearch" placeholder="Cari mantra...">
+     </div>
+     <div class="filter-pills" id="filterPills"></div>
+    </div><!-- Mantra Grid -->
+    <div class="px-3 pb-3">
+     <div class="mantra-grid" id="mantraGrid"></div>
+    </div>
+   </section><!-- VISI Section -->
+   <section class="tab-section" id="secVisi">
+    <div class="px-3 pt-3">
+     <h3 class="cinzel text-center mb-1" style="color:var(--gold); font-size:1.2rem;">📜 Visi Ksatria</h3>
+     <p class="ui-text text-center mb-4" style="font-size:0.78rem; color:var(--text-secondary);">Video edukasi untuk memperkuat ilmu</p>
+     <div id="visiContainer"></div>
+    </div>
+   </section><!-- MISI Section -->
+   <section class="tab-section" id="secMisi">
+    <div class="px-3 pt-3">
+     <h3 class="cinzel text-center mb-1" style="color:var(--gold); font-size:1.2rem;">🗡️ Misi Penaklukan</h3>
+     <p class="ui-text text-center mb-4" style="font-size:0.78rem; color:var(--text-secondary);">Selesaikan misi untuk meningkatkan Power</p>
+     <div class="timeline" id="misiTimeline"></div>
+    </div>
+   </section><!-- KITAB Section -->
+   <section class="tab-section" id="secKitab">
+    <div class="px-3 pt-3">
+     <h3 class="cinzel text-center mb-1" style="color:var(--gold); font-size:1.2rem;">📖 Kitab Suci</h3>
+     <p class="ui-text text-center mb-4" style="font-size:0.78rem; color:var(--text-secondary);">Taklukkan monster dengan membaca kitab</p>
+     <div id="kitabContainer"></div>
+    </div>
+   </section><!-- ARTEFAK Section -->
+   <section class="tab-section" id="secArtefak">
+    <div class="px-3 pt-3">
+     <h3 class="cinzel text-center mb-1" style="color:var(--gold); font-size:1.2rem;">🖼️ Artefak Kuno</h3>
+     <p class="ui-text text-center mb-4" style="font-size:0.78rem; color:var(--text-secondary);">Galeri poster &amp; referensi belajar</p>
+     <div class="artefak-masonry" id="artefakGallery"></div>
+    </div>
+   </section>
+  </div><!-- Footer -->
+  <div class="text-center py-4 px-3" style="margin-bottom: 60px;"><img src="https://i.ibb.co/5x9VtMnq/Studekasa-Academy.png" alt="Studekasa" class="studekasa-logo mb-2 d-block mx-auto" loading="lazy" onerror="this.style.display='none'">
+   <p class="ui-text m-0" style="font-size:0.68rem; color:var(--text-secondary);">© 2026 Penakluk TKA by Studekasa Academy | Membina Ksatria Menuju Kejayaan</p>
+  </div><!-- FAB --> <button class="fab" id="fabBtn" onclick="handleFab()" title="Tambah"><i class="bi bi-plus-lg"></i></button> <!-- Bottom Nav -->
+  <nav class="bottom-nav" id="bottomNav"><button class="bottom-nav-item active" data-tab="secMantra" onclick="switchTab('secMantra')"> <i class="bi bi-journal-text"></i><span class="nav-label">Mantra</span> </button> <button class="bottom-nav-item" data-tab="secVisi" onclick="switchTab('secVisi')"> <i class="bi bi-play-circle"></i><span class="nav-label">Visi</span> </button> <button class="bottom-nav-item" data-tab="secMisi" onclick="switchTab('secMisi')"> <i class="bi bi-shield-shaded"></i><span class="nav-label">Misi</span> </button> <button class="bottom-nav-item" data-tab="secKitab" onclick="switchTab('secKitab')"> <i class="bi bi-book-half"></i><span class="nav-label">Kitab</span> </button> <button class="bottom-nav-item" data-tab="secArtefak" onclick="switchTab('secArtefak')"> <i class="bi bi-images"></i><span class="nav-label">Artefak</span> </button>
+  </nav><!-- Admin Modal -->
+  <div class="modal fade modal-knight" id="adminModal" tabindex="-1">
+   <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="cinzel modal-title" style="color:var(--gold);">🔐 Mandat Admin</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <p class="ui-text" style="font-size:0.85rem; color:var(--text-secondary);">Masukkan Token Rahasia:</p><input type="password" class="form-control modal-input" id="adminToken" placeholder="Token...">
+     </div>
+     <div class="modal-footer"><button class="btn btn-knight px-4" onclick="verifyAdmin()">Verifikasi</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Add/Edit Mantra Modal -->
+  <div class="modal fade modal-knight" id="mantraModal" tabindex="-1">
+   <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="cinzel modal-title" style="color:var(--gold);" id="mantraModalTitle">✨ Tambah Mantra</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <div class="mb-3"><label class="form-label ui-text" style="font-size:0.8rem; color:var(--text-secondary);">Judul Mantra</label> <input type="text" class="form-control modal-input" id="mInput_title" placeholder="Contoh: Atmosfer">
+      </div>
+      <div class="mb-3"><label class="form-label ui-text" style="font-size:0.8rem; color:var(--text-secondary);">Kategori</label> <select class="form-control modal-input" id="mInput_cat"> <option value="Geografi">🌍 Geografi</option> <option value="Ekonomi">💰 Ekonomi</option> <option value="Sosiologi">👥 Sosiologi</option> </select>
+      </div>
+      <div class="mb-3"><label class="form-label ui-text" style="font-size:0.8rem; color:var(--text-secondary);">Emoji</label> <input type="text" class="form-control modal-input" id="mInput_emoji" placeholder="🌤️" maxlength="4">
+      </div>
+      <div class="mb-3"><label class="form-label ui-text" style="font-size:0.8rem; color:var(--text-secondary);">Penjelasan</label> <textarea class="form-control modal-input" id="mInput_desc" rows="3" placeholder="Deskripsi singkat..."></textarea>
+      </div><input type="hidden" id="mInput_id">
+     </div>
+     <div class="modal-footer"><button class="btn btn-gold px-4 ui-text" onclick="saveMantra()">💾 Simpan</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Inline Delete Confirmation (inside cards) is handled dynamically -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+// ═══════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════
+const STORAGE_KEY = 'penakluk_tka_v1';
+let currentTab = 'secMantra';
+let currentFilter = 'Semua';
+let logoClickCount = 0;
+let logoClickTimer = null;
+let editingMantraId = null;
+
+const DEFAULT_DATA = {
+  knightName: '',
+  mantra: [
+    { id: 'm1', title: 'Atmosfer', cat: 'Geografi', emoji: '🌤️', desc: 'Lapisan gas yang menyelimuti Bumi, terdiri dari troposfer, stratosfer, mesosfer, termosfer, dan eksosfer. Melindungi kehidupan dari radiasi matahari berbahaya.' },
+    { id: 'm2', title: 'Inflasi', cat: 'Ekonomi', emoji: '📈', desc: 'Kenaikan harga barang dan jasa secara umum dan terus-menerus dalam jangka waktu tertentu. Diukur dengan Indeks Harga Konsumen (IHK).' },
+    { id: 'm3', title: 'Stratifikasi Sosial', cat: 'Sosiologi', emoji: '🏛️', desc: 'Pengelompokan masyarakat ke dalam lapisan-lapisan secara bertingkat berdasarkan kekuasaan, kekayaan, pendidikan, atau kehormatan.' }
+  ],
+  misi: [
+    { id: 'ms1', title: 'Misi 1: Dasar Geografi', done: false },
+    { id: 'ms2', title: 'Misi 2: Logika Ekonomi', done: false },
+    { id: 'ms3', title: 'Misi 3: Struktur Sosial', done: false }
+  ],
+  kitab: [
+    { id: 'k1', title: 'Kitab Sakti Geografi', driveId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms', totalPages: 120, currentPage: 0 },
+    { id: 'k2', title: 'Kitab Ekonomi Makro', driveId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms', totalPages: 95, currentPage: 0 },
+    { id: 'k3', title: 'Kitab Sosiologi SMP', driveId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms', totalPages: 80, currentPage: 0 }
+  ],
+  visi: [
+    { id: 'v1', title: 'Tips Belajar TKA', ytId: 'dQw4w9WgXcQ', desc: 'Strategi ampuh menghadapi ujian' },
+    { id: 'v2', title: 'Materi IPS Lengkap', ytId: 'dQw4w9WgXcQ', desc: 'Rangkuman materi komprehensif' },
+    { id: 'v3', title: 'Motivasi Penakluk', ytId: 'dQw4w9WgXcQ', desc: 'Semangat menuju kejayaan!' }
+  ],
+  artefak: [
+    { id: 'a1', url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=400&q=80', title: 'Peta Dunia' },
+    { id: 'a2', url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80', title: 'Buku Ilmu' },
+    { id: 'a3', url: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80', title: 'Perpustakaan' },
+    { id: 'a4', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', title: 'Geografi' },
+    { id: 'a5', url: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80', title: 'Referensi' },
+    { id: 'a6', url: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&q=80', title: 'Koleksi Buku' }
+  ]
+};
+
+const CHALLENGES = [
+  "Taklukkan 5 Mantra hari ini untuk mendapat berkah!",
+  "Baca 10 halaman Kitab untuk meningkatkan Power!",
+  "Selesaikan 1 Misi untuk membuktikan keberanianmu!",
+  "Kumpulkan 3 Mantra baru dari medan Ekonomi!",
+  "Pelajari Stratifikasi Sosial dan jadilah bijaksana!",
+  "Tantang dirimu: Kuasai Geografi dalam sehari!",
+  "Ksatria sejati membaca Kitab sebelum bertarung!"
+];
+const CATEGORIES = ['Semua', 'Geografi', 'Ekonomi', 'Sosiologi'];
+const CAT_EMOJIS = { Geografi: '🌍', Ekonomi: '💰', Sosiologi: '👥' };
+
+// ═══════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Merge defaults for any missing keys
+      return { ...DEFAULT_DATA, ...parsed };
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getData() { return loadData(); }
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function toast(msg, icon = 'success') {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: icon,
+    title: msg,
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    customClass: { popup: 'knight-toast' },
+    background: '#1a1a22',
+    color: '#f0e6d3'
+  });
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function init() {
+  const data = getData();
+
+  // Oath overlay
+  if (data.knightName) {
+    document.getElementById('oathOverlay').style.display = 'none';
+    document.getElementById('greetNav').textContent = `Hai, ${data.knightName}`;
+  }
+
+  // Challenge
+  document.getElementById('challengeText').textContent = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
+
+  // Logo secret click
+  document.getElementById('navLogo').addEventListener('click', () => {
+    logoClickCount++;
+    clearTimeout(logoClickTimer);
+    logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 2000);
+    if (logoClickCount >= 5) {
+      logoClickCount = 0;
+      new bootstrap.Modal(document.getElementById('adminModal')).show();
+    }
+  });
+
+  // Oath submit
+  document.getElementById('oathBtn').addEventListener('click', submitOath);
+  document.getElementById('oathName').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitOath();
+  });
+
+  // Search
+  document.getElementById('mantraSearch').addEventListener('input', renderMantra);
+
+  renderAll();
+}
+
+function submitOath() {
+  const name = document.getElementById('oathName').value.trim();
+  if (!name) {
+    document.getElementById('oathName').style.borderColor = '#ef4444';
+    return;
+  }
+  const data = getData();
+  data.knightName = name;
+  saveData(data);
+  document.getElementById('oathOverlay').style.display = 'none';
+  document.getElementById('greetNav').textContent = `Hai, ${name}`;
+  confetti({ particleCount: 80, spread: 60, colors: ['#D4AF37', '#800000', '#ffffff'] });
+  toast(`Selamat datang, Ksatria ${name}! ⚔️`);
+}
+
+function verifyAdmin() {
+  const token = document.getElementById('adminToken').value;
+  if (token === 'KSATRIA2026') {
+    bootstrap.Modal.getInstance(document.getElementById('adminModal')).hide();
+    toast('Mandat Admin Diterima! 👑');
+  } else {
+    toast('Token salah!', 'error');
+  }
+  document.getElementById('adminToken').value = '';
+}
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelectorAll('.bottom-nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tabId);
+  });
+  // Show FAB only on Mantra tab
+  document.getElementById('fabBtn').style.display = tabId === 'secMantra' ? 'flex' : 'none';
+  renderAll();
+}
+
+function toggleSidebar(show) {
+  document.getElementById('sidebarOverlay').classList.toggle('show', show);
+  document.getElementById('sidebarPanel').classList.toggle('show', show);
+  if (show) updateStats();
+}
+
+// ═══════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════
+function renderAll() {
+  renderMantra();
+  renderVisi();
+  renderMisi();
+  renderKitab();
+  renderArtefak();
+  updatePower();
+  updateStats();
+}
+
+// ═══════════════════════════════════════════
+// MANTRA (Glosarium)
+// ═══════════════════════════════════════════
+function renderMantra() {
+  const data = getData();
+  const search = (document.getElementById('mantraSearch').value || '').toLowerCase();
+  const grid = document.getElementById('mantraGrid');
+  const pillsEl = document.getElementById('filterPills');
+
+  // Pills
+  pillsEl.innerHTML = CATEGORIES.map(c =>
+    `<button class="filter-pill ui-text ${currentFilter === c ? 'active' : ''}" onclick="setFilter('${c}')">${c === 'Semua' ? '🔮 Semua' : (CAT_EMOJIS[c] || '') + ' ' + c}</button>`
+  ).join('');
+
+  let items = data.mantra || [];
+  if (currentFilter !== 'Semua') items = items.filter(m => m.cat === currentFilter);
+  if (search) items = items.filter(m => m.title.toLowerCase().includes(search) || m.desc.toLowerCase().includes(search));
+
+  if (items.length === 0) {
+    grid.innerHTML = `<div class="text-center py-5" style="grid-column:1/-1;"><p style="font-size:2rem;">🔮</p><p class="ui-text" style="color:var(--text-secondary);">Belum ada mantra. Tambahkan melalui tombol +</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(m => `
+    <div class="knight-card mantra-card p-4" id="mantra-${m.id}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="mantra-emoji">${m.emoji || '✨'}</span>
+          <span class="mantra-cat">${m.cat}</span>
+        </div>
+        <div class="d-flex gap-1" id="mantra-actions-${m.id}">
+          <button class="btn btn-sm" style="background:none;border:none;color:var(--gold);font-size:0.9rem;" onclick="editMantra('${m.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm" style="background:none;border:none;color:#ef4444;font-size:0.9rem;" onclick="confirmDeleteMantra('${m.id}')" title="Hapus"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>
+      <h4 class="cinzel">${m.title}</h4>
+      <p>${m.desc}</p>
+    </div>
+  `).join('');
+}
+
+function setFilter(cat) {
+  currentFilter = cat;
+  renderMantra();
+}
+
+function handleFab() {
+  editingMantraId = null;
+  document.getElementById('mantraModalTitle').textContent = '✨ Tambah Mantra';
+  document.getElementById('mInput_title').value = '';
+  document.getElementById('mInput_cat').value = 'Geografi';
+  document.getElementById('mInput_emoji').value = '';
+  document.getElementById('mInput_desc').value = '';
+  document.getElementById('mInput_id').value = '';
+  new bootstrap.Modal(document.getElementById('mantraModal')).show();
+}
+
+function editMantra(id) {
+  const data = getData();
+  const m = data.mantra.find(x => x.id === id);
+  if (!m) return;
+  editingMantraId = id;
+  document.getElementById('mantraModalTitle').textContent = '✏️ Edit Mantra';
+  document.getElementById('mInput_title').value = m.title;
+  document.getElementById('mInput_cat').value = m.cat;
+  document.getElementById('mInput_emoji').value = m.emoji;
+  document.getElementById('mInput_desc').value = m.desc;
+  document.getElementById('mInput_id').value = m.id;
+  new bootstrap.Modal(document.getElementById('mantraModal')).show();
+}
+
+function saveMantra() {
+  const title = document.getElementById('mInput_title').value.trim();
+  const cat = document.getElementById('mInput_cat').value;
+  const emoji = document.getElementById('mInput_emoji').value.trim() || '✨';
+  const desc = document.getElementById('mInput_desc').value.trim();
+  if (!title || !desc) { toast('Isi semua field!', 'warning'); return; }
+
+  const data = getData();
+  if (editingMantraId) {
+    const idx = data.mantra.findIndex(m => m.id === editingMantraId);
+    if (idx > -1) {
+      data.mantra[idx] = { ...data.mantra[idx], title, cat, emoji, desc };
+    }
+    toast('Mantra diperbarui! ✏️');
+  } else {
+    data.mantra.push({ id: 'm' + Date.now(), title, cat, emoji, desc });
+    toast('Mantra baru ditambahkan! ✨');
+  }
+  saveData(data);
+  bootstrap.Modal.getInstance(document.getElementById('mantraModal')).hide();
+  editingMantraId = null;
+  renderMantra();
+  updateStats();
+}
+
+function confirmDeleteMantra(id) {
+  const actionsEl = document.getElementById(`mantra-actions-${id}`);
+  if (!actionsEl) return;
+  actionsEl.innerHTML = `
+    <span class="inline-confirm">
+      <span class="ui-text" style="font-size:0.7rem; color:#ef4444;">Hapus?</span>
+      <button class="btn btn-sm" style="background:var(--crimson);color:#fff;border:none;border-radius:8px;font-size:0.7rem;padding:2px 8px;" onclick="deleteMantra('${id}')">Ya</button>
+      <button class="btn btn-sm" style="background:var(--midnight);color:var(--text-secondary);border:1px solid var(--border-subtle);border-radius:8px;font-size:0.7rem;padding:2px 8px;" onclick="renderMantra()">Batal</button>
+    </span>
+  `;
+}
+
+function deleteMantra(id) {
+  const data = getData();
+  data.mantra = data.mantra.filter(m => m.id !== id);
+  saveData(data);
+  toast('Mantra dihapus! 🗑️');
+  renderMantra();
+  updateStats();
+}
+
+// ═══════════════════════════════════════════
+// VISI (Video)
+// ═══════════════════════════════════════════
+function renderVisi() {
+  const data = getData();
+  const container = document.getElementById('visiContainer');
+  container.innerHTML = (data.visi || []).map((v, i) => `
+    <div class="visi-reel">
+      <div class="reel-frame">
+        <iframe
+          src="about:blank"
+          data-src="https://www.youtube.com/embed/${v.ytId}?rel=0"
+          title="${v.title}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+      <div class="reel-info">
+        <h5 class="cinzel mb-1" style="font-size:0.95rem; color:var(--gold);">${v.title}</h5>
+        <p class="ui-text m-0" style="font-size:0.78rem; color:var(--text-secondary);">${v.desc}</p>
+      </div>
+    </div>
+  `).join('');
+
+  // Lazy load iframes with IntersectionObserver
+  const iframes = container.querySelectorAll('iframe[data-src]');
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const iframe = entry.target;
+          iframe.src = iframe.dataset.src;
+          iframe.removeAttribute('data-src');
+          obs.unobserve(iframe);
+        }
+      });
+    }, { rootMargin: '200px' });
+    iframes.forEach(iframe => obs.observe(iframe));
+  } else {
+    iframes.forEach(iframe => { iframe.src = iframe.dataset.src; });
+  }
+}
+
+// ═══════════════════════════════════════════
+// MISI (Timeline)
+// ═══════════════════════════════════════════
+function renderMisi() {
+  const data = getData();
+  const container = document.getElementById('misiTimeline');
+  container.innerHTML = (data.misi || []).map(m => `
+    <div class="timeline-item ${m.done ? 'done' : ''}">
+      <div class="knight-card p-3 d-flex align-items-center gap-3" style="border-radius:1.2rem;">
+        <input type="checkbox" class="misi-check" ${m.done ? 'checked' : ''} onchange="toggleMisi('${m.id}', this.checked)">
+        <div class="flex-grow-1">
+          <h5 class="cinzel m-0" style="font-size:0.9rem; color:${m.done ? 'var(--gold)' : 'var(--text-primary)'}; ${m.done ? 'text-decoration:line-through;opacity:0.7;' : ''}">${m.title}</h5>
+          <span class="ui-text" style="font-size:0.7rem; color:${m.done ? '#22c55e' : 'var(--text-secondary)'};">${m.done ? '✅ Ditaklukkan!' : '⏳ Belum ditaklukkan'}</span>
+        </div>
+        ${m.done ? '<span style="font-size:1.3rem;">🏆</span>' : '<span style="font-size:1.3rem;">⚔️</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleMisi(id, checked) {
+  const data = getData();
+  const misi = data.misi.find(m => m.id === id);
+  if (misi) {
+    misi.done = checked;
+    saveData(data);
+    if (checked) {
+      confetti({ particleCount: 60, spread: 50, colors: ['#D4AF37', '#800000', '#fff'], origin: { y: 0.7 } });
+      toast('Monster Ditaklukkan! 🏆');
+    }
+    renderMisi();
+    updatePower();
+    updateStats();
+  }
+}
+
+// ═══════════════════════════════════════════
+// KITAB
+// ═══════════════════════════════════════════
+function renderKitab() {
+  const data = getData();
+  const container = document.getElementById('kitabContainer');
+  container.innerHTML = (data.kitab || []).map(k => {
+    const pct = k.totalPages > 0 ? Math.round((k.currentPage / k.totalPages) * 100) : 0;
+    const hpRemain = 100 - pct;
+    const hpClass = hpRemain > 60 ? '' : hpRemain > 30 ? 'mid' : 'low';
+    return `
+      <div class="knight-card kitab-card mb-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h5 class="cinzel m-0" style="font-size:0.95rem; color:var(--gold);">📖 ${k.title}</h5>
+          </div>
+          <span class="ui-text" style="font-size:0.7rem; color:${hpRemain > 60 ? '#22c55e' : hpRemain > 30 ? '#f59e0b' : '#ef4444'}; font-weight:700;">HP: ${hpRemain}%</span>
+        </div>
+        <div class="hp-bar-track mb-2">
+          <div class="hp-bar-fill ${hpClass}" style="width:${hpRemain}%"></div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <span class="ui-text" style="font-size:0.78rem; color:var(--text-secondary);">Halaman:</span>
+            <input type="number" class="page-input ui-text" value="${k.currentPage}" min="0" max="${k.totalPages}" onchange="updateKitabPage('${k.id}', this.value)">
+            <span class="ui-text" style="font-size:0.78rem; color:var(--text-secondary);">/ ${k.totalPages}</span>
+          </div>
+          <a href="https://drive.google.com/file/d/${k.driveId}/preview" target="_blank" rel="noopener noreferrer" class="btn btn-knight btn-sm px-3" style="font-size:0.72rem;">
+            <i class="bi bi-eye"></i> Baca
+          </a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateKitabPage(id, value) {
+  const data = getData();
+  const kitab = data.kitab.find(k => k.id === id);
+  if (kitab) {
+    const val = Math.max(0, Math.min(kitab.totalPages, parseInt(value) || 0));
+    kitab.currentPage = val;
+    saveData(data);
+    renderKitab();
+    toast('Progress diperbarui! 📖');
+  }
+}
+
+// ═══════════════════════════════════════════
+// ARTEFAK (Gallery)
+// ═══════════════════════════════════════════
+function renderArtefak() {
+  const data = getData();
+  const gallery = document.getElementById('artefakGallery');
+  gallery.innerHTML = (data.artefak || []).map(a => `
+    <div class="artefak-item" onclick="openLightbox('${a.url}')">
+      <img src="${a.url}" alt="${a.title}" loading="lazy" onerror="this.style.background='var(--midnight-surface)'; this.alt='Gambar tidak tersedia'; this.style.height='200px';">
+      <div style="padding:10px 12px; background:var(--midnight-card);">
+        <p class="ui-text m-0" style="font-size:0.75rem; color:var(--text-secondary);">${a.title}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openLightbox(url) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = url;
+  lb.classList.add('show');
+}
+
+// ═══════════════════════════════════════════
+// POWER BAR & STATS
+// ═══════════════════════════════════════════
+function updatePower() {
+  const data = getData();
+  const total = (data.misi || []).length;
+  const done = (data.misi || []).filter(m => m.done).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('powerFill').style.width = pct + '%';
+  document.getElementById('powerLabel').textContent = pct + '%';
+}
+
+function updateStats() {
+  const data = getData();
+  const misiDone = (data.misi || []).filter(m => m.done).length;
+  const mantraCount = (data.mantra || []).length;
+  const el1 = document.getElementById('statMisi');
+  const el2 = document.getElementById('statMantra');
+  if (el1) el1.textContent = misiDone;
+  if (el2) el2.textContent = mantraCount;
+}
+
+// ═══════════════════════════════════════════
+// IMPORT / EXPORT / RESET
+// ═══════════════════════════════════════════
+function exportData() {
+  const data = getData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `penakluk_tka_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Data berhasil diekspor! 📦');
+  toggleSidebar(false);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported && typeof imported === 'object') {
+        const merged = { ...DEFAULT_DATA, ...imported };
+        saveData(merged);
+        renderAll();
+        toast('Data berhasil diimpor! 📥');
+      } else {
+        toast('Format file tidak valid!', 'error');
+      }
+    } catch(err) {
+      toast('Gagal membaca file!', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+  toggleSidebar(false);
+}
+
+function resetData() {
+  // Inline confirmation in sidebar
+  const resetBtn = document.querySelector('.sidebar-item[onclick="resetData()"]');
+  if (!resetBtn) return;
+  resetBtn.innerHTML = `
+    <span class="inline-confirm" style="width:100%;">
+      <span style="font-size:0.8rem; color:#ef4444;">Yakin hapus semua?</span>
+      <button class="btn btn-sm" style="background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:0.72rem;padding:3px 10px;" onclick="event.stopPropagation(); doReset();">Ya</button>
+      <button class="btn btn-sm" style="background:var(--midnight);color:var(--text-secondary);border:1px solid var(--border-subtle);border-radius:8px;font-size:0.72rem;padding:3px 10px;" onclick="event.stopPropagation(); cancelReset();">Batal</button>
+    </span>
+  `;
+}
+
+function doReset() {
+  localStorage.removeItem(STORAGE_KEY);
+  toast('Data direset! Refresh untuk memulai ulang.', 'info');
+  toggleSidebar(false);
+  setTimeout(() => location.reload(), 1000);
+}
+
+function cancelReset() {
+  const resetBtn = document.querySelector('.sidebar-item .inline-confirm');
+  if (resetBtn && resetBtn.parentElement) {
+    resetBtn.parentElement.innerHTML = `<i class="bi bi-trash3"></i> Reset Semua Data`;
+  }
+}
+
+// ═══════════════════════════════════════════
+// ELEMENT SDK
+// ═══════════════════════════════════════════
+const defaultConfig = {
+  app_title: 'Penakluk TKA',
+  daily_challenge: '',
+  background_color: '#0a0a0a',
+  surface_color: '#141418',
+  text_color: '#f0e6d3',
+  primary_action_color: '#800000',
+  secondary_action_color: '#D4AF37',
+  font_family: 'Lora',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const text = config.text_color || defaultConfig.text_color;
+  const primary = config.primary_action_color || defaultConfig.primary_action_color;
+  const accent = config.secondary_action_color || defaultConfig.secondary_action_color;
+  const font = config.font_family || defaultConfig.font_family;
+  const fontSize = config.font_size || defaultConfig.font_size;
+
+  document.documentElement.style.setProperty('--midnight', bg);
+  document.documentElement.style.setProperty('--midnight-card', surface);
+  document.documentElement.style.setProperty('--midnight-surface', surface);
+  document.documentElement.style.setProperty('--text-primary', text);
+  document.documentElement.style.setProperty('--crimson', primary);
+  document.documentElement.style.setProperty('--crimson-light', primary);
+  document.documentElement.style.setProperty('--gold', accent);
+  document.documentElement.style.setProperty('--gold-light', accent);
+
+  document.body.style.background = bg;
+  document.body.style.color = text;
+  document.body.style.fontFamily = `${font}, Lora, Georgia, serif`;
+  document.body.style.fontSize = fontSize + 'px';
+
+  const title = config.app_title || defaultConfig.app_title;
+  const titleEl = document.getElementById('topTitle');
+  if (titleEl) titleEl.textContent = title;
+
+  if (config.daily_challenge) {
+    const cEl = document.getElementById('challengeText');
+    if (cEl) cEl.textContent = config.daily_challenge;
+  }
+
+  // Apply font to headings
+  document.querySelectorAll('h1,h2,h3,h4,h5,.cinzel').forEach(el => {
+    el.style.fontFamily = `Cinzel, ${font}, serif`;
+  });
+
+  document.querySelectorAll('.ui-text,.btn,input,select,textarea,.nav-label').forEach(el => {
+    el.style.fontFamily = `Montserrat, ${font}, sans-serif`;
+  });
+}
+
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => { applyConfig(config); },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+        { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => config.font_family || defaultConfig.font_family,
+        set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => config.font_size || defaultConfig.font_size,
+        set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['app_title', config.app_title || defaultConfig.app_title],
+      ['daily_challenge', config.daily_challenge || '']
+    ])
+  });
+}
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', init);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e07992f31895f5c',t:'MTc3NDIwNzY5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

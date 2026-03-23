@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Penakluk TKA: Madya</title>
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUGVuYWtsdWsgVEtBOiBNYWR5YSIsInNob3J0X25hbWUiOiJQZW5ha2x1ayBUS0EiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzFhMWEyZSIsInRoZW1lX2NvbG9yIjoiIzgwMDAwMCJ9">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&amp;family=Montserrat:wght@400;600;700&amp;family=Lora:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script>
+tailwind.config={theme:{extend:{colors:{crimson:'#800000','navy-dark':'#1a1a2e','navy-mid':'#16213e',gold:'#d4af37','gold-light':'#f0d060','parchment':'#f5e6c8','parchment-dark':'#e8d5a3'},fontFamily:{cinzel:['Cinzel','serif'],montserrat:['Montserrat','sans-serif'],lora:['Lora','serif']}}}}
+</script>
+  <style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#1a1a2e;color:#f5e6c8;font-family:'Lora',serif}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#16213e}
+::-webkit-scrollbar-thumb{background:#800000;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#a00000}
+
+.app-shell{display:flex;flex-direction:column;height:100%;width:100%;overflow:hidden}
+.app-header{flex-shrink:0;position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border-bottom:2px solid #800000;backdrop-filter:blur(12px);padding:8px 16px}
+.app-content{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:80px;scroll-behavior:smooth}
+.app-bottom-nav{flex-shrink:0;position:fixed;bottom:0;left:0;right:0;z-index:50;background:linear-gradient(180deg,rgba(26,26,46,0.95),#1a1a2e);border-top:2px solid #800000;backdrop-filter:blur(16px)}
+
+.nav-item-knight{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;color:#f5e6c8;opacity:0.5;transition:all 0.3s ease;cursor:pointer;border:none;background:none;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;position:relative}
+.nav-item-knight.active,.nav-item-knight:hover{opacity:1;color:#d4af37}
+.nav-item-knight.active::before{content:'';position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:30px;height:3px;background:#d4af37;border-radius:0 0 3px 3px}
+.nav-item-knight i{font-size:20px;transition:transform 0.2s}
+.nav-item-knight:hover i{transform:scale(1.15)}
+
+.btn-knight{background:linear-gradient(145deg,#800000,#600000);color:#f5e6c8;border:1px solid #d4af37;font-family:'Montserrat',sans-serif;font-weight:600;border-radius:12px;padding:8px 20px;transition:all 0.15s ease;cursor:pointer;text-transform:uppercase;font-size:12px;letter-spacing:1px;position:relative;overflow:hidden}
+.btn-knight:hover{background:linear-gradient(145deg,#a00000,#800000);color:#f0d060;box-shadow:0 0 20px rgba(128,0,0,0.4)}
+.btn-knight:active{transform:translateY(2px);box-shadow:inset 0 2px 4px rgba(0,0,0,0.3)}
+.btn-knight-gold{background:linear-gradient(145deg,#d4af37,#b8972e);color:#1a1a2e;border:1px solid #f0d060}
+.btn-knight-gold:hover{background:linear-gradient(145deg,#f0d060,#d4af37);box-shadow:0 0 20px rgba(212,175,55,0.4)}
+.btn-knight-gold:active{transform:translateY(2px)}
+.btn-knight-sm{padding:5px 14px;font-size:10px;border-radius:8px}
+.btn-knight-icon{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;font-size:16px}
+
+.card-parchment{background:linear-gradient(145deg,rgba(245,230,200,0.08),rgba(245,230,200,0.03));border:1px solid rgba(212,175,55,0.2);border-radius:16px;padding:20px;transition:all 0.3s ease;position:relative;overflow:hidden;border-bottom:4px solid #800000}
+.card-parchment::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#d4af37,transparent);opacity:0;transition:opacity 0.3s}
+.card-parchment:hover{transform:translateY(-4px) rotateX(2deg);box-shadow:0 12px 40px rgba(128,0,0,0.2);border-color:rgba(212,175,55,0.5)}
+.card-parchment:hover::before{opacity:1}
+
+.modal-knight{border-radius:2rem!important;background:rgba(22,33,62,0.98)!important;border:2px solid rgba(212,175,55,0.3)!important;backdrop-filter:blur(20px)!important;color:#f5e6c8!important}
+.modal-knight .modal-header{border-bottom:1px solid rgba(212,175,55,0.2)!important;padding:1.5rem!important}
+.modal-knight .modal-body{padding:1.5rem!important}
+.modal-knight .modal-footer{border-top:1px solid rgba(212,175,55,0.2)!important}
+.modal-backdrop.show{backdrop-filter:blur(8px);background:rgba(0,0,0,0.6)!important}
+
+.search-knight{background:rgba(245,230,200,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:10px 16px 10px 42px;color:#f5e6c8;font-family:'Lora',serif;width:100%;transition:all 0.3s;font-size:14px}
+.search-knight:focus{outline:none;border-color:#d4af37;box-shadow:0 0 15px rgba(212,175,55,0.15);background:rgba(245,230,200,0.12)}
+.search-knight::placeholder{color:rgba(245,230,200,0.4)}
+.search-wrap{position:relative}
+.search-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#d4af37;font-size:16px}
+
+.badge-knight{background:linear-gradient(135deg,#800000,#600000);color:#f5e6c8;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;border:1px solid rgba(212,175,55,0.3)}
+.badge-gold{background:linear-gradient(135deg,#d4af37,#b8972e);color:#1a1a2e}
+
+.timeline-line{position:absolute;left:20px;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#d4af37,#800000,#d4af37);border-radius:2px}
+.timeline-node{width:42px;height:42px;border-radius:50%;background:linear-gradient(145deg,#800000,#600000);border:3px solid #d4af37;display:flex;align-items:center;justify-content:center;color:#d4af37;font-size:16px;flex-shrink:0;z-index:2;transition:all 0.3s}
+.timeline-node.completed{background:linear-gradient(145deg,#d4af37,#b8972e);color:#1a1a2e;box-shadow:0 0 15px rgba(212,175,55,0.4)}
+
+.progress-knight{height:8px;background:rgba(245,230,200,0.1);border-radius:4px;overflow:hidden}
+.progress-knight-bar{height:100%;background:linear-gradient(90deg,#800000,#d4af37);border-radius:4px;transition:width 0.6s ease}
+
+.masonry-grid{columns:2;column-gap:12px}
+.masonry-item{break-inside:avoid;margin-bottom:12px;border-radius:12px;overflow:hidden;border:1px solid rgba(212,175,55,0.2);transition:all 0.3s;cursor:pointer;position:relative}
+.masonry-item:hover{transform:scale(1.02);box-shadow:0 8px 30px rgba(128,0,0,0.3)}
+.masonry-item img{width:100%;display:block;aspect-ratio:auto}
+
+.video-feed-item{width:100%;aspect-ratio:9/16;max-height:500px;border-radius:16px;overflow:hidden;border:2px solid rgba(212,175,55,0.2);background:#000;position:relative}
+.video-feed-item iframe{width:100%;height:100%;border:none}
+.video-placeholder{display:flex;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#d4af37;font-family:'Cinzel',serif;font-size:18px}
+
+.fade-section{animation:fadeUp 0.5s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.shimmer-gold{background:linear-gradient(90deg,#d4af37 0%,#f0d060 50%,#d4af37 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 5px rgba(212,175,55,0.3)}50%{box-shadow:0 0 20px rgba(212,175,55,0.6)}}
+.pulse-glow{animation:pulse-glow 2s ease infinite}
+
+.section-title{font-family:'Cinzel',serif;font-weight:900;color:#d4af37;font-size:1.5rem;letter-spacing:2px;text-transform:uppercase;position:relative;display:inline-block}
+.section-title::after{content:'';display:block;width:60%;height:3px;background:linear-gradient(90deg,#d4af37,transparent);margin-top:6px;border-radius:2px}
+
+.login-overlay{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0a0a1a,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;flex-direction:column}
+.login-logo{width:120px;height:120px;border-radius:50%;border:4px solid #d4af37;object-fit:cover;cursor:pointer;transition:all 0.3s;box-shadow:0 0 30px rgba(212,175,55,0.3)}
+.login-logo:hover{transform:scale(1.08);box-shadow:0 0 50px rgba(212,175,55,0.5)}
+
+.checkbox-knight{width:22px;height:22px;border:2px solid #d4af37;border-radius:6px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;flex-shrink:0}
+.checkbox-knight.checked{background:linear-gradient(145deg,#d4af37,#b8972e);border-color:#f0d060}
+.checkbox-knight.checked i{color:#1a1a2e}
+
+.toast-knight{position:fixed;top:80px;right:16px;z-index:9999;background:linear-gradient(135deg,rgba(22,33,62,0.98),rgba(26,26,46,0.98));border:1px solid rgba(212,175,55,0.4);border-radius:12px;padding:12px 20px;color:#f5e6c8;font-family:'Montserrat',sans-serif;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,0.4);transform:translateX(120%);transition:transform 0.4s ease;max-width:300px}
+.toast-knight.show{transform:translateX(0)}
+
+@media(min-width:768px){
+  .masonry-grid{columns:3}
+  .app-content{padding-left:16px;padding-right:16px}
+}
+@media(max-width:380px){
+  .nav-item-knight span{font-size:8px}
+  .nav-item-knight i{font-size:18px}
+  .section-title{font-size:1.2rem}
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="loginOverlay" class="login-overlay">
+   <div class="text-center fade-section"><img src="https://i.ibb.co/HDGNQDYH/penakluktka.png" alt="Penakluk TKA" class="login-logo mb-4" id="loginLogo" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#800000,#d4af37)';this.alt='Logo';">
+    <h1 class="font-cinzel text-gold text-3xl font-bold mt-4 shimmer-gold">Penakluk TKA</h1>
+    <p class="font-montserrat text-parchment/60 text-sm mt-2">Klik logo untuk memulai petualangan</p>
+   </div>
+   <div id="loginForm" class="mt-6 text-center" style="display:none">
+    <p class="font-cinzel text-gold text-lg mb-3">Siapakah Ksatria Ini?</p><input type="text" id="knightNameInput" placeholder="Nama Ksatriamu..." class="search-knight text-center mb-4" style="max-width:280px;padding-left:16px" maxlength="30"> <br><button class="btn-knight btn-knight-gold" onclick="KnightApp.login()">Masuk ke Arena</button>
+   </div>
+  </div>
+  <div id="mainApp" class="app-shell" style="display:none"><!-- HEADER -->
+   <header class="app-header">
+    <div class="flex items-center justify-between">
+     <div class="flex items-center gap-3"><img src="https://i.ibb.co/5x9VtMnq/Studekasa-Academy.png" alt="Studekasa" class="rounded-xl" style="height:36px" loading="lazy" onerror="this.style.background='#800000';this.style.width='36px';this.style.height='36px';this.alt='SA';">
+      <div>
+       <h1 class="font-cinzel text-gold text-base font-bold leading-tight" id="headerTitle">Penakluk TKA</h1>
+       <p class="font-montserrat text-parchment/50 text-xs" id="knightGreeting">Selamat Datang, Ksatria</p>
+      </div>
+     </div>
+     <div class="flex items-center gap-2"><button class="btn-knight btn-knight-icon" onclick="KnightApp.showSettings()" title="Pengaturan"> <i class="bi bi-gear-fill"></i> </button>
+     </div>
+    </div>
+   </header><!-- MAIN CONTENT -->
+   <main class="app-content" id="appContent"><!-- GLOSSARY -->
+    <section id="sec-glossary" class="p-4 fade-section">
+     <div class="flex items-center justify-between mb-4">
+      <h2 class="section-title">The Glossary</h2><button class="btn-knight btn-knight-sm btn-knight-gold" onclick="KnightApp.addGlossary()"> <i class="bi bi-plus-lg"></i> Tambah </button>
+     </div>
+     <div class="search-wrap mb-4"><i class="bi bi-search"></i> <input type="text" class="search-knight" placeholder="Cari istilah..." oninput="KnightApp.filterGlossary(this.value)">
+     </div>
+     <div id="glossaryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+     <p id="glossaryEmpty" class="text-center text-parchment/40 font-lora py-8" style="display:none">Belum ada istilah. Mulai petualanganmu!</p>
+    </section><!-- VISION -->
+    <section id="sec-vision" class="p-4 fade-section" style="display:none">
+     <h2 class="section-title mb-4">The Vision</h2>
+     <div class="search-wrap mb-4"><i class="bi bi-search"></i> <input type="text" class="search-knight" placeholder="Cari video..." oninput="KnightApp.filterVision(this.value)">
+     </div>
+     <div id="visionFeed" class="flex flex-col gap-4 max-w-md mx-auto"></div>
+     <div class="text-center mt-4"><button class="btn-knight btn-knight-sm" onclick="KnightApp.addVision()"> <i class="bi bi-plus-lg"></i> Tambah Video </button>
+     </div>
+    </section><!-- CONQUEST -->
+    <section id="sec-conquest" class="p-4 fade-section" style="display:none">
+     <h2 class="section-title mb-4">The Conquest</h2>
+     <div class="search-wrap mb-4"><i class="bi bi-search"></i> <input type="text" class="search-knight" placeholder="Cari misi..." oninput="KnightApp.filterConquest(this.value)">
+     </div>
+     <div class="relative pl-12" id="conquestTimeline">
+      <div class="timeline-line"></div>
+     </div>
+     <div class="mt-4 text-center"><button class="btn-knight btn-knight-sm" onclick="KnightApp.addConquest()"> <i class="bi bi-plus-lg"></i> Misi Baru </button>
+     </div>
+    </section><!-- LIBRARY -->
+    <section id="sec-library" class="p-4 fade-section" style="display:none">
+     <h2 class="section-title mb-4">The Library</h2>
+     <div class="search-wrap mb-4"><i class="bi bi-search"></i> <input type="text" class="search-knight" placeholder="Cari materi..." oninput="KnightApp.filterLibrary(this.value)">
+     </div>
+     <div id="libraryList" class="flex flex-col gap-3"></div>
+     <div class="mt-4 text-center"><button class="btn-knight btn-knight-sm" onclick="KnightApp.addLibrary()"> <i class="bi bi-plus-lg"></i> Tambah Materi </button>
+     </div>
+    </section><!-- GALLERY -->
+    <section id="sec-gallery" class="p-4 fade-section" style="display:none">
+     <h2 class="section-title mb-4">The Gallery</h2>
+     <div class="search-wrap mb-4"><i class="bi bi-search"></i> <input type="text" class="search-knight" placeholder="Cari poster..." oninput="KnightApp.filterGallery(this.value)">
+     </div>
+     <div id="galleryGrid" class="masonry-grid"></div>
+     <div class="mt-4 text-center"><button class="btn-knight btn-knight-sm" onclick="KnightApp.addGallery()"> <i class="bi bi-plus-lg"></i> Tambah Poster </button>
+     </div>
+    </section><!-- FOOTER -->
+    <footer class="text-center py-6 px-4 mt-4 border-t border-gold/10">
+     <p class="font-montserrat text-parchment/30 text-xs" id="footerText">© 2026 Penakluk TKA by Studekasa | Menuju Kemenangan Agung</p>
+    </footer>
+   </main><!-- BOTTOM NAV -->
+   <nav class="app-bottom-nav">
+    <div class="flex justify-around items-center py-1 px-2"><button class="nav-item-knight active" data-section="glossary" onclick="KnightApp.navigate('glossary')"> <i class="bi bi-journal-text"></i><span>Glossary</span> </button> <button class="nav-item-knight" data-section="vision" onclick="KnightApp.navigate('vision')"> <i class="bi bi-camera-reels"></i><span>Vision</span> </button> <button class="nav-item-knight" data-section="conquest" onclick="KnightApp.navigate('conquest')"> <i class="bi bi-map"></i><span>Conquest</span> </button> <button class="nav-item-knight" data-section="library" onclick="KnightApp.navigate('library')"> <i class="bi bi-collection"></i><span>Library</span> </button> <button class="nav-item-knight" data-section="gallery" onclick="KnightApp.navigate('gallery')"> <i class="bi bi-images"></i><span>Gallery</span> </button>
+    </div>
+   </nav>
+  </div><!-- SETTINGS MODAL -->
+  <div class="modal fade" id="settingsModal" tabindex="-1">
+   <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-knight">
+     <div class="modal-header">
+      <h5 class="font-cinzel text-gold font-bold"><i class="bi bi-gear-fill me-2"></i>War Room</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body">
+      <div class="flex flex-col gap-3"><button class="btn-knight w-full text-left flex items-center gap-3" onclick="KnightApp.exportData()"> <i class="bi bi-download text-lg"></i> Ekspor Data (JSON) </button> <label class="btn-knight w-full text-left flex items-center gap-3 cursor-pointer mb-0"> <i class="bi bi-upload text-lg"></i> Impor Data (JSON) <input type="file" accept=".json" onchange="KnightApp.importData(event)" class="hidden"> </label> <button class="btn-knight w-full text-left flex items-center gap-3" onclick="KnightApp.resetData()" style="border-color:#ff4444"> <i class="bi bi-trash3 text-lg" style="color:#ff6666"></i> Reset Semua Data </button>
+       <hr class="border-gold/20 my-2">
+       <div id="statsPanel" class="card-parchment">
+        <h6 class="font-cinzel text-gold text-sm mb-3">Statistik Ksatria</h6>
+        <div id="statsContent" class="font-lora text-sm text-parchment/80 space-y-1"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- TOAST -->
+  <div id="toastKnight" class="toast-knight"><span id="toastText"></span>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+// --- WAR ROOM LOGIC ---
+
+const STORAGE_KEY = 'penakluk_tka_v1';
+
+const KnightApp = {
+  data: null,
+  currentSection: 'glossary',
+  searchFilters: { glossary:'', vision:'', conquest:'', library:'', gallery:'' },
+
+  defaultData() {
+    return {
+      knight: '',
+      glossary: [
+        { id: 'g1', term:'Aljabar', category:'Matematika', desc:'Cabang matematika yang mempelajari simbol dan aturan untuk memanipulasi simbol tersebut dalam persamaan dan ekspresi.', color:'#800000' },
+        { id: 'g2', term:'Fotosintesis', category:'IPA', desc:'Proses pembuatan makanan oleh tumbuhan hijau menggunakan cahaya matahari, air, dan karbon dioksida menjadi glukosa dan oksigen.', color:'#2d5a27' },
+        { id: 'g3', term:'Majas', category:'B. Indo', desc:'Gaya bahasa yang digunakan untuk menimbulkan kesan tertentu bagi pendengar atau pembaca, seperti metafora, personifikasi, dan hiperbola.', color:'#1a3a5c' }
+      ],
+      vision: [
+        { id: 'v1', title:'Belajar Matematika Dasar', videoId:'jPhJev78y9Q', category:'Matematika' }
+      ],
+      conquest: [
+        { id: 'c1', title:'Misi Bilangan Bulat', desc:'Kuasai operasi hitung bilangan bulat positif dan negatif', done:false },
+        { id: 'c2', title:'Misi Sel Tumbuhan', desc:'Pelajari struktur dan fungsi sel tumbuhan secara lengkap', done:false },
+        { id: 'c3', title:'Misi Teks Prosedur', desc:'Pahami dan tulis teks prosedur dengan benar', done:false }
+      ],
+      library: [
+        { id: 'l1', title:'Matematika Dasar', desc:'Bilangan, operasi hitung, dan aljabar dasar', progress:30, driveId:'1-7hXv_YhJ5-n_2jX8_p_kZ_T_m_H_Q' },
+        { id: 'l2', title:'IPA Terpadu', desc:'Fisika, kimia, dan biologi dasar', progress:15, driveId:'1-7hXv_YhJ5-n_2jX8_p_kZ_T_m_H_Q' },
+        { id: 'l3', title:'Bahasa Indonesia', desc:'Tata bahasa, sastra, dan menulis', progress:50, driveId:'1-7hXv_YhJ5-n_2jX8_p_kZ_T_m_H_Q' }
+      ],
+      gallery: [
+        { id: 'p1', title:'Rumus Matematika', img:'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80', tag:'Matematika' },
+        { id: 'p2', title:'Sistem Tata Surya', img:'https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=400&q=80', tag:'IPA' },
+        { id: 'p3', title:'Peta Dunia Kuno', img:'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80', tag:'Sejarah' },
+        { id: 'p4', title:'Perpustakaan Kuno', img:'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=80', tag:'Literasi' },
+        { id: 'p5', title:'Eksperimen Sains', img:'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80', tag:'IPA' }
+      ]
+    };
+  },
+
+  uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); },
+
+  init() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try { this.data = JSON.parse(raw); } catch(e) { this.data = this.defaultData(); }
+    } else {
+      this.data = this.defaultData();
+    }
+    if (this.data.knight) {
+      document.getElementById('loginOverlay').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'flex';
+      document.getElementById('knightGreeting').textContent = 'Halo, Sir ' + this.data.knight;
+    }
+    this.save();
+    this.render();
+    this.updateStats();
+  },
+
+  save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+  },
+
+  toast(msg) {
+    const t = document.getElementById('toastKnight');
+    document.getElementById('toastText').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  },
+
+  // --- LOGIN ---
+  showLoginForm() {
+    document.getElementById('loginForm').style.display = 'block';
+    setTimeout(() => document.getElementById('knightNameInput').focus(), 200);
+  },
+
+  login() {
+    const name = document.getElementById('knightNameInput').value.trim();
+    if (!name) { this.toast('Masukkan nama ksatriamu!'); return; }
+    this.data.knight = name;
+    this.save();
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'flex';
+    document.getElementById('knightGreeting').textContent = 'Halo, Sir ' + name;
+    this.render();
+    if (typeof confetti === 'function') {
+      confetti({ particleCount:80, spread:70, origin:{y:0.6}, colors:['#d4af37','#800000','#f5e6c8'] });
+    }
+  },
+
+  // --- NAVIGATION ---
+  navigate(section) {
+    this.currentSection = section;
+    document.querySelectorAll('[id^="sec-"]').forEach(s => s.style.display = 'none');
+    document.getElementById('sec-' + section).style.display = 'block';
+    document.querySelectorAll('.nav-item-knight').forEach(n => n.classList.remove('active'));
+    document.querySelector(`[data-section="${section}"]`).classList.add('active');
+    document.getElementById('appContent').scrollTop = 0;
+    this.render();
+  },
+
+  // --- RENDER ---
+  render() {
+    this.renderGlossary();
+    this.renderVision();
+    this.renderConquest();
+    this.renderLibrary();
+    this.renderGallery();
+  },
+
+  // --- GLOSSARY ---
+  renderGlossary() {
+    const grid = document.getElementById('glossaryGrid');
+    const empty = document.getElementById('glossaryEmpty');
+    const q = this.searchFilters.glossary.toLowerCase();
+    const items = this.data.glossary.filter(g =>
+      g.term.toLowerCase().includes(q) || g.category.toLowerCase().includes(q) || g.desc.toLowerCase().includes(q)
+    );
+    if (!items.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = items.map(g => `
+      <div class="card-parchment" style="border-bottom-color:${g.color||'#800000'}">
+        <div class="flex items-start justify-between mb-2">
+          <span class="badge-knight">${this._esc(g.category)}</span>
+          <div class="flex gap-1">
+            <button class="btn-knight btn-knight-icon btn-knight-sm" onclick="KnightApp.editGlossary('${g.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+            <button class="btn-knight btn-knight-icon btn-knight-sm" onclick="KnightApp.deleteGlossary('${g.id}')" title="Hapus"><i class="bi bi-trash3"></i></button>
+          </div>
+        </div>
+        <h3 class="font-cinzel text-gold text-lg font-bold mb-2">${this._esc(g.term)}</h3>
+        <p class="font-lora text-parchment/70 text-sm leading-relaxed">${this._esc(g.desc)}</p>
+      </div>
+    `).join('');
+  },
+
+  filterGlossary(v) { this.searchFilters.glossary = v; this.renderGlossary(); },
+
+  addGlossary() {
+    Swal.fire({
+      title:'Istilah Baru', background:'#16213e', color:'#f5e6c8',
+      confirmButtonColor:'#800000', customClass:{popup:'modal-knight'},
+      html:`
+        <input id="sGterm" class="swal2-input" placeholder="Istilah" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sGcat" class="swal2-input" placeholder="Kategori" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <textarea id="sGdesc" class="swal2-textarea" placeholder="Deskripsi" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37"></textarea>
+      `,
+      preConfirm:()=>{
+        const t=document.getElementById('sGterm').value.trim();
+        const c=document.getElementById('sGcat').value.trim();
+        const d=document.getElementById('sGdesc').value.trim();
+        if(!t||!c||!d){Swal.showValidationMessage('Isi semua kolom');return false}
+        return{term:t,category:c,desc:d}
+      }
+    }).then(r=>{
+      if(r.isConfirmed){
+        this.data.glossary.push({id:this.uid(),...r.value,color:'#800000'});
+        this.save();this.renderGlossary();this.toast('Istilah ditambahkan!');
+      }
+    });
+  },
+
+  editGlossary(id) {
+    const g = this.data.glossary.find(x=>x.id===id); if(!g) return;
+    Swal.fire({
+      title:'Edit Istilah', background:'#16213e', color:'#f5e6c8',
+      confirmButtonColor:'#800000', customClass:{popup:'modal-knight'},
+      html:`
+        <input id="sGterm" class="swal2-input" value="${this._esc(g.term)}" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sGcat" class="swal2-input" value="${this._esc(g.category)}" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <textarea id="sGdesc" class="swal2-textarea" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">${this._esc(g.desc)}</textarea>
+      `,
+      preConfirm:()=>{
+        const t=document.getElementById('sGterm').value.trim();
+        const c=document.getElementById('sGcat').value.trim();
+        const d=document.getElementById('sGdesc').value.trim();
+        if(!t||!c||!d){Swal.showValidationMessage('Isi semua kolom');return false}
+        return{term:t,category:c,desc:d}
+      }
+    }).then(r=>{
+      if(r.isConfirmed){
+        Object.assign(g,r.value);this.save();this.renderGlossary();this.toast('Istilah diperbarui!');
+      }
+    });
+  },
+
+  deleteGlossary(id) {
+    Swal.fire({
+      title:'Hapus Istilah?', text:'Aksi ini tidak bisa dibatalkan.',
+      icon:'warning', showCancelButton:true, confirmButtonColor:'#800000',
+      cancelButtonColor:'#333', confirmButtonText:'Hapus!',
+      background:'#16213e', color:'#f5e6c8', customClass:{popup:'modal-knight'}
+    }).then(r=>{
+      if(r.isConfirmed){
+        this.data.glossary = this.data.glossary.filter(x=>x.id!==id);
+        this.save();this.renderGlossary();this.toast('Istilah dihapus.');
+      }
+    });
+  },
+
+  // --- VISION ---
+  renderVision() {
+    const feed = document.getElementById('visionFeed');
+    const q = this.searchFilters.vision.toLowerCase();
+    const items = this.data.vision.filter(v =>
+      v.title.toLowerCase().includes(q) || (v.category||'').toLowerCase().includes(q)
+    );
+    feed.innerHTML = items.map(v => `
+      <div class="video-feed-item" data-vid="${v.id}">
+        <div class="video-placeholder" data-video-id="${this._esc(v.videoId)}">
+          <div class="text-center p-4">
+            <i class="bi bi-play-circle text-5xl mb-3 block"></i>
+            <p class="font-cinzel text-base">${this._esc(v.title)}</p>
+            ${v.category?'<span class="badge-knight badge-gold mt-2 inline-block">'+this._esc(v.category)+'</span>':''}
+            <br><button class="btn-knight btn-knight-sm mt-3" onclick="KnightApp.loadVideo(this,'${this._esc(v.videoId)}')">▶ Putar</button>
+            <button class="btn-knight btn-knight-sm mt-3" style="border-color:#ff4444" onclick="KnightApp.deleteVision('${v.id}')"><i class="bi bi-trash3"></i></button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  loadVideo(btn, videoId) {
+    const container = btn.closest('.video-feed-item');
+    container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" allowfullscreen allow="autoplay" loading="lazy"></iframe>`;
+  },
+
+  filterVision(v) { this.searchFilters.vision = v; this.renderVision(); },
+
+  addVision() {
+    Swal.fire({
+      title:'Tambah Video', background:'#16213e', color:'#f5e6c8',
+      confirmButtonColor:'#800000', customClass:{popup:'modal-knight'},
+      html:`
+        <input id="sVtitle" class="swal2-input" placeholder="Judul Video" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sVid" class="swal2-input" placeholder="YouTube Video ID" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sVcat" class="swal2-input" placeholder="Kategori (opsional)" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+      `,
+      preConfirm:()=>{
+        const t=document.getElementById('sVtitle').value.trim();
+        const vid=document.getElementById('sVid').value.trim();
+        if(!t||!vid){Swal.showValidationMessage('Judul dan Video ID wajib');return false}
+        return{title:t,videoId:vid,category:document.getElementById('sVcat').value.trim()}
+      }
+    }).then(r=>{
+      if(r.isConfirmed){
+        this.data.vision.push({id:this.uid(),...r.value});
+        this.save();this.renderVision();this.toast('Video ditambahkan!');
+      }
+    });
+  },
+
+  deleteVision(id) {
+    this.data.vision = this.data.vision.filter(x=>x.id!==id);
+    this.save();this.renderVision();this.toast('Video dihapus.');
+  },
+
+  // --- CONQUEST ---
+  renderConquest() {
+    const tl = document.getElementById('conquestTimeline');
+    const q = this.searchFilters.conquest.toLowerCase();
+    const items = this.data.conquest.filter(c =>
+      c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)
+    );
+    const line = '<div class="timeline-line"></div>';
+    tl.innerHTML = line + items.map((c, i) => `
+      <div class="flex gap-4 mb-6 relative items-start" data-cid="${c.id}">
+        <div class="timeline-node ${c.done?'completed':''}" style="margin-left:-1px">
+          ${c.done?'<i class="bi bi-check-lg"></i>':'<span class="font-cinzel text-xs font-bold">'+(i+1)+'</span>'}
+        </div>
+        <div class="card-parchment flex-1" style="border-bottom-color:${c.done?'#d4af37':'#800000'}">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h4 class="font-cinzel text-gold text-sm font-bold ${c.done?'line-through opacity-60':''}">${this._esc(c.title)}</h4>
+              <p class="font-lora text-parchment/60 text-xs mt-1">${this._esc(c.desc)}</p>
+            </div>
+            <div class="flex gap-1 ml-2 flex-shrink-0">
+              <div class="checkbox-knight ${c.done?'checked':''}" onclick="KnightApp.toggleConquest('${c.id}')">
+                ${c.done?'<i class="bi bi-check-lg text-sm"></i>':''}
+              </div>
+              <button class="btn-knight btn-knight-icon btn-knight-sm" onclick="KnightApp.deleteConquest('${c.id}')"><i class="bi bi-trash3"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  toggleConquest(id) {
+    const c = this.data.conquest.find(x=>x.id===id); if(!c) return;
+    c.done = !c.done;
+    this.save(); this.renderConquest(); this.updateStats();
+    if (c.done && typeof confetti === 'function') {
+      confetti({ particleCount:120, spread:90, origin:{y:0.7}, colors:['#d4af37','#800000','#f5e6c8','#f0d060'] });
+      this.toast('🎉 Misi Selesai!');
+    }
+  },
+
+  filterConquest(v) { this.searchFilters.conquest = v; this.renderConquest(); },
+
+  addConquest() {
+    Swal.fire({
+      title:'Misi Baru', background:'#16213e', color:'#f5e6c8',
+      confirmButtonColor:'#800000', customClass:{popup:'modal-knight'},
+      html:`
+        <input id="sCtitle" class="swal2-input" placeholder="Judul Misi" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <textarea id="sCdesc" class="swal2-textarea" placeholder="Deskripsi Misi" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37"></textarea>
+      `,
+      preConfirm:()=>{
+        const t=document.getElementById('sCtitle').value.trim();
+        const d=document.getElementById('sCdesc').value.trim();
+        if(!t){Swal.showValidationMessage('Judul misi wajib');return false}
+        return{title:t,desc:d||'Selesaikan misi ini!'}
+      }
+    }).then(r=>{
+      if(r.isConfirmed){
+        this.data.conquest.push({id:this.uid(),...r.value,done:false});
+        this.save();this.renderConquest();this.toast('Misi ditambahkan!');
+      }
+    });
+  },
+
+  deleteConquest(id) {
+    this.data.conquest = this.data.conquest.filter(x=>x.id!==id);
+    this.save();this.renderConquest();this.toast('Misi dihapus.');
+  },
+
+  // --- LIBRARY ---
+  renderLibrary() {
+    const list = document.getElementById('libraryList');
+    const q = this.searchFilters.library.toLowerCase();
+    const items = this.data.library.filter(l =>
+      l.title.toLowerCase().includes(q) || l.desc.toLowerCase().includes(q)
+    );
+    list.innerHTML = items.map(l => `
+      <div class="card-parchment">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex-1">
+            <h4 class="font-cinzel text-gold text-sm font-bold">${this._esc(l.title)}</h4>
+            <p class="font-lora text-parchment/60 text-xs mt-1">${this._esc(l.desc)}</p>
+          </div>
+          <div class="flex gap-1 ml-2">
+            <button class="btn-knight btn-knight-icon btn-knight-sm" onclick="KnightApp.editLibProgress('${l.id}')" title="Update Progress"><i class="bi bi-pencil"></i></button>
+            <button class="btn-knight btn-knight-icon btn-knight-sm" onclick="KnightApp.openLibrary('${this._esc(l.driveId)}')" title="Buka"><i class="bi bi-box-arrow-up-right"></i></button>
+            <button class="btn-knight btn-knight-icon btn-knight-sm" onclick="KnightApp.deleteLibrary('${l.id}')"><i class="bi bi-trash3"></i></button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mt-3">
+          <div class="progress-knight flex-1">
+            <div class="progress-knight-bar" style="width:${l.progress}%"></div>
+          </div>
+          <span class="font-montserrat text-gold text-xs font-bold">${l.progress}%</span>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  filterLibrary(v) { this.searchFilters.library = v; this.renderLibrary(); },
+
+  editLibProgress(id) {
+    const l = this.data.library.find(x=>x.id===id); if(!l) return;
+    Swal.fire({
+      title:'Update Progress', input:'range', inputValue:l.progress,
+      inputAttributes:{min:'0',max:'100',step:'5'},
+      background:'#16213e', color:'#f5e6c8', confirmButtonColor:'#800000',
+      customClass:{popup:'modal-knight'}
+    }).then(r=>{
+      if(r.isConfirmed){
+        l.progress = parseInt(r.value);
+        this.save();this.renderLibrary();this.updateStats();
+        if(l.progress===100){
+          this.toast('🏆 Materi Tuntas!');
+          if(typeof confetti==='function') confetti({particleCount:60,spread:50,colors:['#d4af37','#800000']});
+        } else { this.toast('Progress diperbarui!'); }
+      }
+    });
+  },
+
+  openLibrary(driveId) {
+    window.open('https://drive.google.com/file/d/'+driveId+'/view','_blank','noopener,noreferrer');
+  },
+
+  addLibrary() {
+    Swal.fire({
+      title:'Tambah Materi', background:'#16213e', color:'#f5e6c8',
+      confirmButtonColor:'#800000', customClass:{popup:'modal-knight'},
+      html:`
+        <input id="sLtitle" class="swal2-input" placeholder="Judul Materi" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sLdesc" class="swal2-input" placeholder="Deskripsi" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sLdrive" class="swal2-input" placeholder="Google Drive File ID (opsional)" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+      `,
+      preConfirm:()=>{
+        const t=document.getElementById('sLtitle').value.trim();
+        if(!t){Swal.showValidationMessage('Judul wajib');return false}
+        return{title:t,desc:document.getElementById('sLdesc').value.trim()||'',driveId:document.getElementById('sLdrive').value.trim()||''}
+      }
+    }).then(r=>{
+      if(r.isConfirmed){
+        this.data.library.push({id:this.uid(),...r.value,progress:0});
+        this.save();this.renderLibrary();this.toast('Materi ditambahkan!');
+      }
+    });
+  },
+
+  deleteLibrary(id) {
+    this.data.library = this.data.library.filter(x=>x.id!==id);
+    this.save();this.renderLibrary();this.toast('Materi dihapus.');
+  },
+
+  // --- GALLERY ---
+  renderGallery() {
+    const grid = document.getElementById('galleryGrid');
+    const q = this.searchFilters.gallery.toLowerCase();
+    const items = this.data.gallery.filter(g =>
+      g.title.toLowerCase().includes(q) || (g.tag||'').toLowerCase().includes(q)
+    );
+    grid.innerHTML = items.map(g => `
+      <div class="masonry-item">
+        <img src="${this._esc(g.img)}" alt="${this._esc(g.title)}" loading="lazy"
+          onerror="this.style.background='linear-gradient(135deg,#800000,#1a1a2e)';this.style.height='150px';this.alt='Gambar tidak tersedia';">
+        <div style="padding:10px;background:rgba(26,26,46,0.9)">
+          <p class="font-cinzel text-gold text-xs font-bold">${this._esc(g.title)}</p>
+          ${g.tag?'<span class="badge-knight mt-1 inline-block" style="font-size:8px">'+this._esc(g.tag)+'</span>':''}
+          <button class="btn-knight btn-knight-sm mt-2 block w-full" style="font-size:9px" onclick="KnightApp.deleteGallery('${g.id}')"><i class="bi bi-trash3"></i> Hapus</button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  filterGallery(v) { this.searchFilters.gallery = v; this.renderGallery(); },
+
+  addGallery() {
+    Swal.fire({
+      title:'Tambah Poster', background:'#16213e', color:'#f5e6c8',
+      confirmButtonColor:'#800000', customClass:{popup:'modal-knight'},
+      html:`
+        <input id="sPtitle" class="swal2-input" placeholder="Judul Poster" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sPimg" class="swal2-input" placeholder="URL Gambar (https://...)" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+        <input id="sPtag" class="swal2-input" placeholder="Tag (opsional)" style="background:#1a1a2e;color:#f5e6c8;border:1px solid #d4af37">
+      `,
+      preConfirm:()=>{
+        const t=document.getElementById('sPtitle').value.trim();
+        const img=document.getElementById('sPimg').value.trim();
+        if(!t||!img){Swal.showValidationMessage('Judul dan URL gambar wajib');return false}
+        return{title:t,img:img,tag:document.getElementById('sPtag').value.trim()}
+      }
+    }).then(r=>{
+      if(r.isConfirmed){
+        this.data.gallery.push({id:this.uid(),...r.value});
+        this.save();this.renderGallery();this.toast('Poster ditambahkan!');
+      }
+    });
+  },
+
+  deleteGallery(id) {
+    this.data.gallery = this.data.gallery.filter(x=>x.id!==id);
+    this.save();this.renderGallery();this.toast('Poster dihapus.');
+  },
+
+  // --- SETTINGS ---
+  showSettings() {
+    this.updateStats();
+    new bootstrap.Modal(document.getElementById('settingsModal')).show();
+  },
+
+  updateStats() {
+    const d = this.data;
+    const misiDone = d.conquest.filter(c=>c.done).length;
+    const misiTotal = d.conquest.length;
+    const avgProgress = d.library.length ? Math.round(d.library.reduce((a,l)=>a+l.progress,0)/d.library.length) : 0;
+    document.getElementById('statsContent').innerHTML = `
+      <p>⚔️ Ksatria: <strong class="text-gold">${this._esc(d.knight||'Belum login')}</strong></p>
+      <p>📖 Istilah: <strong class="text-gold">${d.glossary.length}</strong></p>
+      <p>🎬 Video: <strong class="text-gold">${d.vision.length}</strong></p>
+      <p>🗺️ Misi: <strong class="text-gold">${misiDone}/${misiTotal}</strong></p>
+      <p>📚 Rata-rata Progress: <strong class="text-gold">${avgProgress}%</strong></p>
+      <p>🖼️ Poster: <strong class="text-gold">${d.gallery.length}</strong></p>
+    `;
+  },
+
+  exportData() {
+    const blob = new Blob([JSON.stringify(this.data,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'knight_backup.json'; a.click();
+    URL.revokeObjectURL(url);
+    this.toast('Data berhasil diekspor!');
+  },
+
+  importData(event) {
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if(imported.glossary && imported.conquest) {
+          this.data = imported;
+          this.save(); this.render(); this.updateStats();
+          this.toast('Data berhasil diimpor!');
+          if(this.data.knight) document.getElementById('knightGreeting').textContent='Halo, Sir '+this.data.knight;
+        } else { this.toast('Format file tidak valid.'); }
+      } catch(err) { this.toast('Gagal membaca file.'); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  },
+
+  resetData() {
+    Swal.fire({
+      title:'Reset Semua Data?',
+      text:'Semua data akan dihapus dan dikembalikan ke default.',
+      icon:'warning', showCancelButton:true, confirmButtonColor:'#800000',
+      cancelButtonColor:'#333', confirmButtonText:'Reset!',
+      background:'#16213e', color:'#f5e6c8', customClass:{popup:'modal-knight'}
+    }).then(r=>{
+      if(r.isConfirmed){
+        localStorage.removeItem(STORAGE_KEY);
+        this.data = this.defaultData();
+        this.save(); this.render(); this.updateStats();
+        document.getElementById('knightGreeting').textContent = 'Selamat Datang, Ksatria';
+        this.toast('Data direset ke default.');
+      }
+    });
+  },
+
+  _esc(s) {
+    if(!s) return '';
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+};
+
+// --- ELEMENT SDK INIT ---
+const defaultConfig = {
+  app_title: 'Penakluk TKA',
+  footer_text: '© 2026 Penakluk TKA by Studekasa | Menuju Kemenangan Agung',
+  background_color: '#1a1a2e',
+  surface_color: '#16213e',
+  text_color: '#f5e6c8',
+  primary_color: '#800000',
+  accent_color: '#d4af37',
+  font_family: 'Cinzel',
+  font_size: 16
+};
+
+function applyConfig(config) {
+  const bg = config.background_color || defaultConfig.background_color;
+  const surface = config.surface_color || defaultConfig.surface_color;
+  const txt = config.text_color || defaultConfig.text_color;
+  const primary = config.primary_color || defaultConfig.primary_color;
+  const accent = config.accent_color || defaultConfig.accent_color;
+  const font = config.font_family || defaultConfig.font_family;
+  const size = config.font_size || defaultConfig.font_size;
+
+  document.body.style.background = bg;
+  document.body.style.color = txt;
+  document.body.style.fontSize = size + 'px';
+
+  const header = document.querySelector('.app-header');
+  if(header) header.style.background = `linear-gradient(135deg,${bg},${surface})`;
+
+  document.querySelectorAll('.card-parchment').forEach(c => {
+    c.style.borderBottomColor = primary;
+  });
+  document.querySelectorAll('.section-title,.font-cinzel.text-gold').forEach(el => {
+    el.style.color = accent;
+    el.style.fontFamily = font + ', Cinzel, serif';
+  });
+  document.querySelectorAll('.font-lora').forEach(el => {
+    el.style.fontSize = size + 'px';
+  });
+  document.querySelectorAll('.section-title').forEach(el => {
+    el.style.fontSize = (size * 1.5) + 'px';
+  });
+
+  const title = document.getElementById('headerTitle');
+  if(title) { title.textContent = config.app_title || defaultConfig.app_title; title.style.color = accent; title.style.fontFamily = font+', Cinzel, serif'; }
+  const footer = document.getElementById('footerText');
+  if(footer) footer.textContent = config.footer_text || defaultConfig.footer_text;
+}
+
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => { applyConfig(config); },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get:()=>config.background_color||defaultConfig.background_color, set:(v)=>{config.background_color=v;window.elementSdk.setConfig({background_color:v})} },
+        { get:()=>config.surface_color||defaultConfig.surface_color, set:(v)=>{config.surface_color=v;window.elementSdk.setConfig({surface_color:v})} },
+        { get:()=>config.text_color||defaultConfig.text_color, set:(v)=>{config.text_color=v;window.elementSdk.setConfig({text_color:v})} },
+        { get:()=>config.primary_color||defaultConfig.primary_color, set:(v)=>{config.primary_color=v;window.elementSdk.setConfig({primary_color:v})} },
+        { get:()=>config.accent_color||defaultConfig.accent_color, set:(v)=>{config.accent_color=v;window.elementSdk.setConfig({accent_color:v})} }
+      ],
+      borderables: [],
+      fontEditable: { get:()=>config.font_family||defaultConfig.font_family, set:(v)=>{config.font_family=v;window.elementSdk.setConfig({font_family:v})} },
+      fontSizeable: { get:()=>config.font_size||defaultConfig.font_size, set:(v)=>{config.font_size=v;window.elementSdk.setConfig({font_size:v})} }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['app_title', config.app_title || defaultConfig.app_title],
+      ['footer_text', config.footer_text || defaultConfig.footer_text]
+    ])
+  });
+}
+
+// --- LOGIN LOGO CLICK ---
+document.getElementById('loginLogo').addEventListener('click', () => KnightApp.showLoginForm());
+
+// Handle enter key on login input
+document.getElementById('knightNameInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') { e.preventDefault(); KnightApp.login(); }
+});
+
+// --- INITIALIZE ---
+KnightApp.init();
+
+// --- SERVICE WORKER LITE (inline) ---
+if ('serviceWorker' in navigator) {
+  const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503})))});`;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e0a107a34396d1c',t:'MTc3NDIzMzU1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

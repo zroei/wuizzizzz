@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WOIPS Platform</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+*{font-family:'Nunito',sans-serif;box-sizing:border-box}
+:root{--pri:#F97316;--grn:#58CC02;--blu:#1CB0F6;--yel:#FFC800;--pur:#CE82FF;--bg:#FFF8F0;--card:#FFFFFF;--txt:#2D2D2D;--sub:#6B7280;--rad:1rem}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);overflow:hidden}
+.app-shell{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.app-header{background:linear-gradient(135deg,var(--pri),#FB923C);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 12px rgba(249,115,22,.25)}
+.app-header h1{font-size:1.3rem;font-weight:900;color:#fff;margin:0;letter-spacing:1px}
+.app-header .logo-sub{font-size:.65rem;color:rgba(255,255,255,.85);font-weight:600}
+.gear-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;transition:.2s}
+.gear-btn:hover{background:rgba(255,255,255,.35);transform:rotate(90deg)}
+.main-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 90px;-webkit-overflow-scrolling:touch}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;box-shadow:0 -2px 16px rgba(0,0,0,.08);z-index:1000;flex-shrink:0;border-top:3px solid #f0f0f0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 2px 8px;cursor:pointer;transition:.2s;border:none;background:none;color:var(--sub);font-size:.6rem;font-weight:700;gap:1px}
+.nav-item i{font-size:1.25rem;transition:.2s}
+.nav-item.active{color:var(--pri)}
+.nav-item.active i{transform:scale(1.15)}
+.nav-item[data-tab="notes"].active{color:var(--pri)}
+.nav-item[data-tab="reels"].active{color:var(--blu)}
+.nav-item[data-tab="maps"].active{color:var(--grn)}
+.nav-item[data-tab="pedia"].active{color:var(--pur)}
+.nav-item[data-tab="pict"].active{color:var(--yel)}
+.section{display:none}
+.section.active{display:block}
+.section-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.section-head h2{font-size:1.1rem;font-weight:900;margin:0}
+.stat-badge{background:var(--pri);color:#fff;font-size:.7rem;font-weight:800;padding:2px 10px;border-radius:20px;display:inline-flex;align-items:center}
+.search-box{position:relative;margin-bottom:8px}
+.search-box input{width:100%;padding:10px 14px 10px 38px;border:2px solid #e5e7eb;border-radius:var(--rad);font-size:.85rem;font-weight:600;background:#fff;transition:.2s;border-bottom:4px solid #e5e7eb}
+.search-box input:focus{outline:none;border-color:var(--pri);box-shadow:0 2px 8px rgba(249,115,22,.15)}
+.search-box i{position:absolute;left:12px;top:50%;transform:translateY(-55%);color:var(--sub);font-size:1rem}
+.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-ms-overflow-style:none;margin-bottom:4px}
+.filter-row::-webkit-scrollbar{display:none}
+.pill{padding:5px 14px;border-radius:20px;font-size:.72rem;font-weight:700;border:2px solid #e5e7eb;background:#fff;cursor:pointer;white-space:nowrap;transition:.15s;border-bottom:3px solid #e5e7eb;color:var(--txt)}
+.pill:active{transform:translateY(1px);border-bottom-width:1px}
+.pill.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:576px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:992px){.card-grid{grid-template-columns:repeat(3,1fr)}}
+.item-card{background:var(--card);border-radius:var(--rad);padding:14px;border:2px solid #f0f0f0;border-bottom:4px solid #e5e7eb;transition:.2s;cursor:pointer;position:relative;overflow:hidden}
+.item-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.item-card .cat-stripe{position:absolute;bottom:0;left:0;right:0;height:4px}
+.item-card .emoji-big{font-size:2rem}
+.item-card .card-title{font-size:.9rem;font-weight:800;margin:4px 0 2px}
+.item-card .card-sub{font-size:.72rem;color:var(--sub);font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-actions{display:flex;gap:4px;margin-top:8px}
+.act-btn{width:30px;height:30px;border-radius:50%;border:2px solid #e5e7eb;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;transition:.15s;border-bottom:3px solid #e5e7eb;color:var(--sub)}
+.act-btn:active{transform:translateY(1px);border-bottom-width:1px}
+.act-btn:hover{border-color:var(--pri);color:var(--pri)}
+.act-btn.bookmarked{color:var(--yel);border-color:var(--yel)}
+.fab{position:fixed;bottom:70px;right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--pri),#FB923C);color:#fff;border:none;font-size:1.6rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(249,115,22,.4);cursor:pointer;z-index:999;transition:.2s;border-bottom:4px solid #C2410C}
+.fab:active{transform:translateY(2px);border-bottom-width:1px}
+.fab:hover{transform:scale(1.08)}
+.modal-woips .modal-content{border-radius:1.5rem;border:2px solid #f0f0f0;border-bottom:4px solid #e5e7eb;overflow:hidden}
+.modal-woips .modal-header{background:linear-gradient(135deg,var(--pri),#FB923C);color:#fff;border:none;padding:14px 20px}
+.modal-woips .modal-title{font-weight:800;font-size:1rem}
+.modal-woips .modal-body{padding:16px 20px;max-height:65vh;overflow-y:auto}
+.modal-woips .btn-close{filter:brightness(0) invert(1)}
+.btn-3d{border-radius:var(--rad);font-weight:700;font-size:.85rem;padding:8px 20px;border:none;border-bottom:4px solid rgba(0,0,0,.2);transition:.15s;cursor:pointer}
+.btn-3d:active{transform:translateY(2px);border-bottom-width:1px}
+.btn-pri{background:var(--pri);color:#fff}
+.btn-pri:hover{background:#EA580C}
+.btn-grn{background:var(--grn);color:#fff}
+.btn-grn:hover{background:#4AA802}
+.btn-blu{background:var(--blu);color:#fff}
+.btn-pur{background:var(--pur);color:#fff}
+.btn-yel{background:var(--yel);color:#333}
+.btn-outline{background:#fff;color:var(--txt);border:2px solid #e5e7eb;border-bottom:4px solid #e5e7eb}
+.btn-outline:hover{border-color:var(--pri);color:var(--pri)}
+.maps-card{display:flex;align-items:flex-start;gap:12px;padding:12px 14px}
+.maps-card .check-box{width:24px;height:24px;border:3px solid #d1d5db;border-radius:8px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;margin-top:2px}
+.maps-card .check-box.done{background:var(--grn);border-color:var(--grn);color:#fff}
+.maps-card .maps-info{flex:1;min-width:0}
+.maps-card .maps-title{font-size:.85rem;font-weight:800}
+.maps-card .maps-title.done-text{text-decoration:line-through;opacity:.5}
+.maps-tag{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:10px;background:#EEF2FF;color:var(--blu);display:inline-block;margin-right:4px}
+.maps-deadline{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block}
+.deadline-ok{background:#ECFDF5;color:var(--grn)}
+.deadline-warn{background:#FEF3C7;color:#D97706}
+.deadline-over{background:#FEE2E2;color:#DC2626}
+.pin-badge{position:absolute;top:8px;right:8px;font-size:.8rem;color:var(--pri)}
+.progress-mini{height:4px;border-radius:2px;background:#e5e7eb;overflow:hidden;margin-top:4px}
+.progress-mini .bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--grn),var(--blu));transition:.3s}
+.pict-grid{columns:2;column-gap:10px}
+@media(min-width:768px){.pict-grid{columns:3}}
+.pict-item{break-inside:avoid;margin-bottom:10px;border-radius:var(--rad);overflow:hidden;cursor:pointer;position:relative;border:2px solid #f0f0f0;transition:.2s;background:#fff}
+.pict-item:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.pict-item img{width:100%;display:block;border-radius:var(--rad) var(--rad) 0 0}
+.pict-item .pict-info{padding:8px 10px}
+.pict-item .pict-info h4{font-size:.75rem;font-weight:800;margin:0}
+.pict-item .pict-info p{font-size:.65rem;color:var(--sub);margin:2px 0 0;font-weight:600}
+.sidebar-list{list-style:none;padding:0;margin:0}
+.sidebar-list li{padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;border-radius:var(--rad);font-weight:700;font-size:.85rem}
+.sidebar-list li:hover{background:#FFF7ED;color:var(--pri)}
+.sidebar-list li i{font-size:1.1rem;width:24px;text-align:center}
+.highlight-box{background:linear-gradient(135deg,#FFF7ED,#FEF3C7);border-left:4px solid var(--yel);border-radius:0 var(--rad) var(--rad) 0;padding:12px 14px;margin:10px 0;font-size:.82rem;font-weight:600}
+.view-emoji{font-size:3.5rem;text-align:center;margin:8px 0}
+.view-title{font-size:1.15rem;font-weight:900;text-align:center;margin-bottom:2px}
+.view-sub{font-size:.78rem;color:var(--sub);text-align:center;font-weight:600;margin-bottom:12px}
+.view-content{font-size:.85rem;line-height:1.7;font-weight:600}
+.view-img{width:100%;border-radius:var(--rad);margin:10px 0}
+.form-label-w{font-size:.8rem;font-weight:700;margin-bottom:4px;color:var(--txt)}
+.form-input-w{width:100%;padding:10px 14px;border:2px solid #e5e7eb;border-radius:var(--rad);font-size:.85rem;font-weight:600;border-bottom:4px solid #e5e7eb;transition:.2s;font-family:'Nunito',sans-serif}
+.form-input-w:focus{outline:none;border-color:var(--pri)}
+textarea.form-input-w{min-height:80px;resize:vertical}
+.lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2000;display:none;flex-direction:column;align-items:center;justify-content:center}
+.lightbox-overlay.show{display:flex}
+.lightbox-overlay img{max-width:92%;max-height:75%;object-fit:contain;border-radius:var(--rad);transition:transform .3s}
+.lightbox-overlay img.zoomed{transform:scale(1.8)}
+.lb-close{position:absolute;top:12px;right:16px;color:#fff;font-size:2rem;cursor:pointer;z-index:2001;background:none;border:none}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:2rem;cursor:pointer;background:rgba(255,255,255,.15);border:none;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.lb-prev{left:10px}
+.lb-next{right:10px}
+.lb-info{color:#fff;text-align:center;margin-top:12px;font-weight:700;font-size:.9rem}
+.lb-dl{color:#fff;background:var(--pri);border:none;padding:6px 16px;border-radius:20px;font-weight:700;font-size:.78rem;margin-top:8px;cursor:pointer}
+.empty-state{text-align:center;padding:40px 20px;color:var(--sub)}
+.empty-state i{font-size:3rem;margin-bottom:8px;opacity:.4}
+.empty-state p{font-weight:700;font-size:.9rem}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stat-card{background:#fff;border-radius:var(--rad);padding:10px;text-align:center;border:2px solid #f0f0f0;border-bottom:3px solid #e5e7eb}
+.stat-card .stat-num{font-size:1.3rem;font-weight:900}
+.stat-card .stat-lbl{font-size:.6rem;font-weight:700;color:var(--sub)}
+.drive-frame{width:100%;height:400px;border:none;border-radius:var(--rad)}
+.pedia-prog{display:flex;align-items:center;gap:8px;margin:12px 0}
+.pedia-prog input{width:70px;padding:6px;border:2px solid #e5e7eb;border-radius:8px;text-align:center;font-weight:700;font-size:.85rem}
+.pedia-prog span{font-weight:600;font-size:.82rem;color:var(--sub)}
+.footer-credit{text-align:center;padding:16px;font-size:.7rem;font-weight:600;color:var(--sub);margin-top:12px}
+.footer-credit a{color:var(--pri);text-decoration:none;font-weight:700}
+input[type="date"].form-input-w{font-family:'Nunito',sans-serif}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div class="app-shell" id="app">
+   <header class="app-header">
+    <div>
+     <h1 id="appTitle">🏆 WOIPS</h1>
+     <div class="logo-sub">
+      World Olympiad IPS Study
+     </div>
+    </div><button class="gear-btn" onclick="openSidebar()" aria-label="Settings"><i class="bi bi-gear-fill"></i></button>
+   </header>
+   <div class="main-content" id="mainContent"><!-- NOTES -->
+    <div class="section active" id="sec-notes">
+     <div class="section-head">
+      <h2>📒 OlymNotes</h2><span class="stat-badge" id="stat-notes">0</span>
+     </div>
+     <div class="search-box">
+      <i class="bi bi-search"></i><input type="text" placeholder="Cari istilah..." oninput="renderNotes()">
+     </div>
+     <div class="filter-row" id="filter-notes"></div>
+     <div class="card-grid" id="grid-notes"></div>
+    </div><!-- REELS -->
+    <div class="section" id="sec-reels">
+     <div class="section-head">
+      <h2>🎬 OlymReels</h2><span class="stat-badge" id="stat-reels" style="background:var(--blu)">0</span>
+     </div>
+     <div class="search-box">
+      <i class="bi bi-search"></i><input type="text" placeholder="Cari video..." oninput="renderReels()">
+     </div>
+     <div class="filter-row" id="filter-reels"></div>
+     <div class="card-grid" id="grid-reels"></div>
+    </div><!-- MAPS -->
+    <div class="section" id="sec-maps">
+     <div class="section-head">
+      <h2>🗺️ OlymMaps</h2><span class="stat-badge" id="stat-maps" style="background:var(--grn)">0</span>
+     </div>
+     <div class="search-box">
+      <i class="bi bi-search"></i><input type="text" placeholder="Cari roadmap..." oninput="renderMaps()">
+     </div>
+     <div class="filter-row" id="filter-maps"></div>
+     <div id="grid-maps"></div>
+    </div><!-- PEDIA -->
+    <div class="section" id="sec-pedia">
+     <div class="section-head">
+      <h2>📚 OlymPedia</h2><span class="stat-badge" id="stat-pedia" style="background:var(--pur)">0</span>
+     </div>
+     <div class="search-box">
+      <i class="bi bi-search"></i><input type="text" placeholder="Cari materi..." oninput="renderPedia()">
+     </div>
+     <div class="filter-row" id="filter-pedia"></div>
+     <div id="grid-pedia"></div>
+    </div><!-- PICT -->
+    <div class="section" id="sec-pict">
+     <div class="section-head">
+      <h2>🖼️ OlymPict</h2><span class="stat-badge" id="stat-pict" style="background:var(--yel)">0</span>
+     </div>
+     <div class="search-box">
+      <i class="bi bi-search"></i><input type="text" placeholder="Cari gambar..." oninput="renderPict()">
+     </div>
+     <div class="filter-row" id="filter-pict"></div>
+     <div class="pict-grid" id="grid-pict"></div>
+    </div>
+    <div class="footer-credit" id="footerText">
+     © 2026 WOIPS by <a href="https://blogwoips.zone.id" target="_blank" rel="noopener noreferrer">Studekasa</a> | Platform Belajar OSN IPS Terintegrasi
+    </div>
+   </div><button class="fab" onclick="openAddModal()" aria-label="Tambah"><i class="bi bi-plus-lg"></i></button>
+   <nav class="bottom-nav"><button class="nav-item active" data-tab="notes" onclick="switchTab('notes')"><i class="bi bi-journal-text"></i>Notes</button> <button class="nav-item" data-tab="reels" onclick="switchTab('reels')"><i class="bi bi-camera-reels"></i>Reels</button> <button class="nav-item" data-tab="maps" onclick="switchTab('maps')"><i class="bi bi-map"></i>Maps</button> <button class="nav-item" data-tab="pedia" onclick="switchTab('pedia')"><i class="bi bi-collection"></i>Pedia</button> <button class="nav-item" data-tab="pict" onclick="switchTab('pict')"><i class="bi bi-images"></i>Pict</button>
+   </nav>
+  </div><!-- Sidebar Modal -->
+  <div class="modal fade modal-woips" id="sidebarModal" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title"><i class="bi bi-gear-fill me-2"></i>Pengaturan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body p-0">
+      <div class="stats-row p-3" id="sidebarStats"></div>
+      <ul class="sidebar-list">
+       <li onclick="exportData()"><i class="bi bi-download text-primary"></i>Ekspor Data (JSON)</li>
+       <li onclick="document.getElementById('importFile').click()"><i class="bi bi-upload text-success"></i>Impor Data (JSON)<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></li>
+       <li onclick="resetData()"><i class="bi bi-arrow-counterclockwise text-danger"></i>Reset Semua Data</li>
+       <li onclick="showDocs()"><i class="bi bi-book text-info"></i>Dokumentasi &amp; Panduan</li>
+       <li onclick="window.open('https://blogwoips.zone.id','_blank')"><i class="bi bi-globe2" style="color:var(--pri)"></i>Blog WOIPS</li>
+       <li onclick="showAbout()"><i class="bi bi-info-circle" style="color:var(--pur)"></i>Tentang Aplikasi</li>
+      </ul>
+     </div>
+    </div>
+   </div>
+  </div><!-- View Modal -->
+  <div class="modal fade modal-woips" id="viewModal" tabindex="-1">
+   <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title" id="viewModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body" id="viewModalBody"></div>
+    </div>
+   </div>
+  </div><!-- Form Modal -->
+  <div class="modal fade modal-woips" id="formModal" tabindex="-1">
+   <div class="modal-dialog">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h5 class="modal-title" id="formModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+     </div>
+     <div class="modal-body" id="formModalBody"></div>
+    </div>
+   </div>
+  </div><!-- Lightbox -->
+  <div class="lightbox-overlay" id="lightbox"><button class="lb-close" onclick="closeLightbox()"><i class="bi bi-x-lg"></i></button> <button class="lb-nav lb-prev" onclick="lbNav(-1)"><i class="bi bi-chevron-left"></i></button> <img id="lbImg" src="" alt="Lightbox" ondblclick="this.classList.toggle('zoomed')"> <button class="lb-nav lb-next" onclick="lbNav(1)"><i class="bi bi-chevron-right"></i></button>
+   <div class="lb-info" id="lbInfo"></div><button class="lb-dl" onclick="downloadLbImg()"><i class="bi bi-download me-1"></i>Download</button>
+  </div>
+  <script>
+// --- Storage ---
+const STORAGE_KEY='woips_v1';
+let DB;
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function load(){try{DB=JSON.parse(localStorage.getItem(STORAGE_KEY))}catch(e){DB=null}if(!DB)DB=defaultData();save()}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(DB))}
+function toast(msg,icon='success'){Swal.fire({toast:true,position:'top-end',icon,title:msg,showConfirmButton:false,timer:2000,timerProgressBar:true,customClass:{popup:'rounded-4'}})}
+
+let currentTab='notes';
+let activeFilters={notes:'Semua',reels:'Semua',maps:'Semua',pedia:'Semua',pict:'Semua'};
+
+function switchTab(t){
+currentTab=t;
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.getElementById('sec-'+t).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>{n.classList.toggle('active',n.dataset.tab===t)});
+renderAll();
+}
+
+function getSearch(tab){
+const inp=document.querySelector('#sec-'+tab+' .search-box input');
+return inp?inp.value.toLowerCase():'';
+}
+
+function getCatColor(cat){
+const m={'Geografi':'#F97316','Ekonomi':'#58CC02','Sejarah':'#1CB0F6','Sosiologi':'#CE82FF','Sains':'#FFC800','Umum':'#6B7280'};
+return m[cat]||'#e5e7eb';
+}
+
+// --- RENDER NOTES ---
+function renderNotes(){
+const q=getSearch('notes');const f=activeFilters.notes;
+let items=DB.notes.filter(n=>{
+const match=(n.title+n.subtitle+n.category).toLowerCase().includes(q);
+return match&&(f==='Semua'||n.category===f);
+});
+document.getElementById('stat-notes').textContent=items.length;
+const cats=['Semua',...[...new Set(DB.notes.map(n=>n.category))]];
+document.getElementById('filter-notes').innerHTML=cats.map(c=>`<button class="pill ${activeFilters.notes===c?'active':''}" onclick="activeFilters.notes='${c}';renderNotes()">${c}</button>`).join('');
+const g=document.getElementById('grid-notes');
+if(!items.length){g.innerHTML='<div class="empty-state"><i class="bi bi-journal-x"></i><p>Belum ada catatan</p></div>';return;}
+g.innerHTML=items.map(n=>`<div class="item-card" onclick="viewNote('${n.id}')">
+${n.bookmarked?'<div class="pin-badge"><i class="bi bi-bookmark-fill"></i></div>':''}
+<div class="emoji-big">${n.emoji||'📝'}</div>
+<div class="card-title">${n.title}</div>
+<div class="card-sub">${n.subtitle||''}</div>
+<div class="cat-stripe" style="background:${getCatColor(n.category)}"></div>
+<div class="card-actions" onclick="event.stopPropagation()">
+<button class="act-btn" onclick="editNote('${n.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+<button class="act-btn" onclick="delItem('notes','${n.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+<button class="act-btn ${n.bookmarked?'bookmarked':''}" onclick="toggleBookmark('notes','${n.id}')" title="Bookmark"><i class="bi bi-bookmark${n.bookmarked?'-fill':''}"></i></button>
+</div></div>`).join('');
+}
+
+// --- RENDER REELS ---
+function renderReels(){
+const q=getSearch('reels');const f=activeFilters.reels;
+let items=DB.reels.filter(n=>(n.title+n.desc+n.category).toLowerCase().includes(q)&&(f==='Semua'||n.category===f));
+document.getElementById('stat-reels').textContent=items.length;
+const cats=['Semua',...[...new Set(DB.reels.map(n=>n.category))]];
+document.getElementById('filter-reels').innerHTML=cats.map(c=>`<button class="pill ${activeFilters.reels===c?'active':''}" onclick="activeFilters.reels='${c}';renderReels()" style="${activeFilters.reels===c?'background:var(--blu);border-color:var(--blu)':''}">${c}</button>`).join('');
+const g=document.getElementById('grid-reels');
+if(!items.length){g.innerHTML='<div class="empty-state"><i class="bi bi-camera-reels"></i><p>Belum ada video</p></div>';return;}
+g.innerHTML=items.map(n=>`<div class="item-card" onclick="viewReel('${n.id}')">
+${n.bookmarked?'<div class="pin-badge"><i class="bi bi-bookmark-fill" style="color:var(--blu)"></i></div>':''}
+<div class="emoji-big">🎬</div>
+<div class="card-title">${n.title}</div>
+<div class="card-sub">${n.desc||''}</div>
+<div class="cat-stripe" style="background:${getCatColor(n.category)}"></div>
+<div class="card-actions" onclick="event.stopPropagation()">
+<button class="act-btn" onclick="editReel('${n.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+<button class="act-btn" onclick="delItem('reels','${n.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+<button class="act-btn ${n.bookmarked?'bookmarked':''}" onclick="toggleBookmark('reels','${n.id}')" title="Bookmark"><i class="bi bi-bookmark${n.bookmarked?'-fill':''}"></i></button>
+</div></div>`).join('');
+}
+
+// --- RENDER MAPS ---
+function renderMaps(){
+const q=getSearch('maps');const f=activeFilters.maps;
+let items=DB.maps.filter(n=>(n.title+n.tag+n.notes).toLowerCase().includes(q)&&(f==='Semua'||n.tag===f));
+document.getElementById('stat-maps').textContent=items.length;
+const cats=['Semua',...[...new Set(DB.maps.map(n=>n.tag))]];
+document.getElementById('filter-maps').innerHTML=cats.map(c=>`<button class="pill ${activeFilters.maps===c?'active':''}" onclick="activeFilters.maps='${c}';renderMaps()" style="${activeFilters.maps===c?'background:var(--grn);border-color:var(--grn)':''}">${c}</button>`).join('');
+const g=document.getElementById('grid-maps');
+if(!items.length){g.innerHTML='<div class="empty-state"><i class="bi bi-map"></i><p>Belum ada roadmap</p></div>';return;}
+g.innerHTML=items.map(n=>{
+let dlClass='deadline-ok';
+if(n.deadline){const d=new Date(n.deadline),now=new Date();now.setHours(0,0,0,0);if(d<now&&!n.done)dlClass='deadline-over';else if(d-now<3*86400000&&!n.done)dlClass='deadline-warn';}
+return `<div class="item-card maps-card" style="position:relative">
+${n.pinned?'<div class="pin-badge"><i class="bi bi-pin-fill"></i></div>':''}
+<div class="check-box ${n.done?'done':''}" onclick="toggleDone('${n.id}')"><i class="bi bi-check-lg" style="display:${n.done?'block':'none'}"></i></div>
+<div class="maps-info" onclick="viewMap('${n.id}')">
+<div class="maps-title ${n.done?'done-text':''}">${n.title}</div>
+<div style="margin-top:4px"><span class="maps-tag">${n.tag}</span>${n.deadline?`<span class="maps-deadline ${dlClass}">${n.deadline}</span>`:''}</div>
+</div>
+<div class="card-actions" onclick="event.stopPropagation()" style="position:absolute;right:10px;bottom:10px">
+<button class="act-btn" onclick="editMap('${n.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+<button class="act-btn" onclick="delItem('maps','${n.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+<button class="act-btn ${n.pinned?'bookmarked':''}" onclick="togglePin('${n.id}')" title="Pin"><i class="bi bi-pin${n.pinned?'-fill':''}"></i></button>
+</div></div>`;
+}).join('');
+}
+
+// --- RENDER PEDIA ---
+function renderPedia(){
+const q=getSearch('pedia');const f=activeFilters.pedia;
+let items=DB.pedia.filter(n=>(n.title+n.category).toLowerCase().includes(q)&&(f==='Semua'||n.category===f));
+document.getElementById('stat-pedia').textContent=items.length;
+const cats=['Semua',...[...new Set(DB.pedia.map(n=>n.category))]];
+document.getElementById('filter-pedia').innerHTML=cats.map(c=>`<button class="pill ${activeFilters.pedia===c?'active':''}" onclick="activeFilters.pedia='${c}';renderPedia()" style="${activeFilters.pedia===c?'background:var(--pur);border-color:var(--pur)':''}">${c}</button>`).join('');
+const g=document.getElementById('grid-pedia');
+if(!items.length){g.innerHTML='<div class="empty-state"><i class="bi bi-collection"></i><p>Belum ada materi</p></div>';return;}
+g.innerHTML=items.map(n=>{
+const pct=n.totalPages?Math.round((n.progress/n.totalPages)*100):0;
+return `<div class="item-card" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="viewPedia('${n.id}')">
+<div style="font-size:2rem;flex-shrink:0">${n.emoji||'📖'}</div>
+<div style="flex:1;min-width:0">
+<div class="card-title" style="margin:0">${n.title}</div>
+<div class="card-sub" style="-webkit-line-clamp:1">${n.category} · ${n.progress}/${n.totalPages} hal</div>
+<div class="progress-mini"><div class="bar" style="width:${pct}%"></div></div>
+</div>
+<div class="card-actions" onclick="event.stopPropagation()" style="flex-shrink:0">
+<button class="act-btn" onclick="editPedia('${n.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
+<button class="act-btn" onclick="delItem('pedia','${n.id}')" title="Hapus"><i class="bi bi-trash"></i></button>
+<button class="act-btn ${n.bookmarked?'bookmarked':''}" onclick="toggleBookmark('pedia','${n.id}')" title="Bookmark"><i class="bi bi-bookmark${n.bookmarked?'-fill':''}"></i></button>
+</div></div>`;
+}).join('');
+}
+
+// --- RENDER PICT ---
+function renderPict(){
+const q=getSearch('pict');const f=activeFilters.pict;
+let items=DB.pict.filter(n=>(n.title+n.desc+n.category).toLowerCase().includes(q)&&(f==='Semua'||n.category===f));
+document.getElementById('stat-pict').textContent=items.length;
+const cats=['Semua',...[...new Set(DB.pict.map(n=>n.category))]];
+document.getElementById('filter-pict').innerHTML=cats.map(c=>`<button class="pill ${activeFilters.pict===c?'active':''}" onclick="activeFilters.pict='${c}';renderPict()" style="${activeFilters.pict===c?'background:var(--yel);border-color:var(--yel);color:#333':''}">${c}</button>`).join('');
+const g=document.getElementById('grid-pict');
+if(!items.length){g.innerHTML='<div class="empty-state"><i class="bi bi-images"></i><p>Belum ada gambar</p></div>';return;}
+g.innerHTML=items.map((n,i)=>`<div class="pict-item" onclick="openLightbox(${i})">
+<img src="${n.url}" alt="${n.title}" loading="lazy" onerror="this.style.background='linear-gradient(135deg,#FFF7ED,#FFEDD5)';this.style.height='120px';this.alt='Gambar tidak tersedia'">
+<div class="pict-info"><h4>${n.title}</h4><p>${n.category}</p></div>
+</div>`).join('');
+}
+
+function renderAll(){renderNotes();renderReels();renderMaps();renderPedia();renderPict();}
+
+// --- VIEW MODALS ---
+function showModal(id){new bootstrap.Modal(document.getElementById(id)).show()}
+function hideModal(id){bootstrap.Modal.getInstance(document.getElementById(id))?.hide()}
+
+function viewNote(id){
+const n=DB.notes.find(x=>x.id===id);if(!n)return;
+document.getElementById('viewModalTitle').textContent='OlymNotes';
+document.getElementById('viewModalBody').innerHTML=`
+<div class="view-emoji">${n.emoji||'📝'}</div>
+<div class="view-title">${n.title}</div>
+<div class="view-sub">${n.subtitle||''}</div>
+<div class="view-content">${n.content||''}</div>
+${n.extra?`<div class="highlight-box">💡 ${n.extra}</div>`:''}
+${n.image?`<img class="view-img" src="${n.image}" alt="${n.title}" loading="lazy" onerror="this.style.display='none'">`:''}
+<div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
+<button class="btn-3d btn-pri" onclick="editNote('${n.id}');hideModal('viewModal')"><i class="bi bi-pencil me-1"></i>Edit</button>
+<button class="btn-3d btn-outline" onclick="copyText(\`${n.title}: ${(n.content||'').replace(/(<([^>]+)>)/gi,'').replace(/`/g,"'")}\`)"><i class="bi bi-clipboard me-1"></i>Copy</button>
+<button class="btn-3d ${n.bookmarked?'btn-yel':'btn-outline'}" onclick="toggleBookmark('notes','${n.id}');viewNote('${n.id}')"><i class="bi bi-bookmark${n.bookmarked?'-fill':''} me-1"></i>${n.bookmarked?'Bookmarked':'Bookmark'}</button>
+<button class="btn-3d btn-outline" style="color:#DC2626;border-color:#FCA5A5" onclick="delItem('notes','${n.id}');hideModal('viewModal')"><i class="bi bi-trash me-1"></i>Hapus</button>
+</div>`;
+showModal('viewModal');
+}
+
+function viewReel(id){
+const n=DB.reels.find(x=>x.id===id);if(!n)return;
+const embedUrl=getYTEmbed(n.url);
+document.getElementById('viewModalTitle').textContent='OlymReels';
+document.getElementById('viewModalBody').innerHTML=`
+<div class="view-title" style="text-align:left;font-size:1rem">${n.title}</div>
+<div class="view-sub" style="text-align:left">${n.desc||''}</div>
+${embedUrl?`<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:var(--rad);overflow:hidden;margin:10px 0"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe></div>`:`<div class="highlight-box">Video tidak dapat dimuat. URL: ${n.url}</div>`}
+<div style="display:flex;gap:6px;margin-top:14px">
+<button class="btn-3d ${n.bookmarked?'btn-yel':'btn-outline'}" onclick="toggleBookmark('reels','${n.id}');viewReel('${n.id}')"><i class="bi bi-bookmark${n.bookmarked?'-fill':''} me-1"></i>${n.bookmarked?'Bookmarked':'Bookmark'}</button>
+</div>`;
+showModal('viewModal');
+}
+
+function viewMap(id){
+const n=DB.maps.find(x=>x.id===id);if(!n)return;
+let dlClass='deadline-ok';
+if(n.deadline){const d=new Date(n.deadline),now=new Date();now.setHours(0,0,0,0);if(d<now&&!n.done)dlClass='deadline-over';else if(d-now<3*86400000&&!n.done)dlClass='deadline-warn';}
+document.getElementById('viewModalTitle').textContent='OlymMaps';
+document.getElementById('viewModalBody').innerHTML=`
+<div class="view-title" style="text-align:left">${n.title}</div>
+<div style="margin:8px 0"><span class="maps-tag">${n.tag}</span>${n.deadline?`<span class="maps-deadline ${dlClass}">📅 ${n.deadline}</span>`:''} ${n.done?'<span class="maps-tag" style="background:#ECFDF5;color:var(--grn)">✅ Selesai</span>':''}</div>
+${n.notes?`<div class="highlight-box">📝 ${n.notes}</div>`:''}
+${n.link?`<a href="${n.link}" target="_blank" rel="noopener noreferrer" class="btn-3d btn-blu" style="display:inline-block;text-decoration:none;margin:8px 0"><i class="bi bi-link-45deg me-1"></i>Buka Materi</a>`:''}
+<div style="display:flex;gap:6px;margin-top:14px">
+<button class="btn-3d btn-grn" onclick="editMap('${n.id}');hideModal('viewModal')"><i class="bi bi-pencil me-1"></i>Edit</button>
+<button class="btn-3d btn-outline" style="color:#DC2626" onclick="delItem('maps','${n.id}');hideModal('viewModal')"><i class="bi bi-trash me-1"></i>Hapus</button>
+</div>`;
+showModal('viewModal');
+}
+
+function viewPedia(id){
+const n=DB.pedia.find(x=>x.id===id);if(!n)return;
+const pct=n.totalPages?Math.round((n.progress/n.totalPages)*100):0;
+document.getElementById('viewModalTitle').textContent='OlymPedia';
+document.getElementById('viewModalBody').innerHTML=`
+<div class="view-title" style="text-align:left"><span style="font-size:1.5rem;margin-right:6px">${n.emoji||'📖'}</span>${n.title}</div>
+<div class="view-sub" style="text-align:left">${n.category}</div>
+${n.driveId?`<iframe class="drive-frame" src="https://drive.google.com/file/d/${n.driveId}/preview" allow="autoplay" loading="lazy"></iframe>`:'<div class="highlight-box">ID Google Drive belum diatur</div>'}
+<div class="pedia-prog">
+<span>Progress:</span>
+<input type="number" id="pediaProgInput" value="${n.progress}" min="0" max="${n.totalPages}">
+<span>/ ${n.totalPages} halaman (${pct}%)</span>
+</div>
+<div class="progress-mini" style="height:8px;margin-bottom:12px"><div class="bar" style="width:${pct}%"></div></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<button class="btn-3d btn-pur" onclick="savePediaProgress('${n.id}')"><i class="bi bi-save me-1"></i>Simpan Progress</button>
+<button class="btn-3d ${n.bookmarked?'btn-yel':'btn-outline'}" onclick="toggleBookmark('pedia','${n.id}');viewPedia('${n.id}')"><i class="bi bi-bookmark${n.bookmarked?'-fill':''} me-1"></i>${n.bookmarked?'Bookmarked':'Bookmark'}</button>
+<button class="btn-3d btn-outline" onclick="editPedia('${n.id}');hideModal('viewModal')"><i class="bi bi-pencil me-1"></i>Edit</button>
+</div>`;
+showModal('viewModal');
+}
+
+function savePediaProgress(id){
+const n=DB.pedia.find(x=>x.id===id);if(!n)return;
+const v=parseInt(document.getElementById('pediaProgInput').value)||0;
+n.progress=Math.min(Math.max(v,0),n.totalPages);save();renderPedia();viewPedia(id);toast('Progress disimpan!');
+}
+
+// --- LIGHTBOX ---
+let lbItems=[], lbIdx=0;
+function openLightbox(idx){
+const q=getSearch('pict');const f=activeFilters.pict;
+lbItems=DB.pict.filter(n=>(n.title+n.desc+n.category).toLowerCase().includes(q)&&(f==='Semua'||n.category===f));
+lbIdx=idx;updateLb();document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('show');document.getElementById('lbImg').classList.remove('zoomed')}
+function lbNav(d){lbIdx=(lbIdx+d+lbItems.length)%lbItems.length;document.getElementById('lbImg').classList.remove('zoomed');updateLb();}
+function updateLb(){
+if(!lbItems[lbIdx])return;
+document.getElementById('lbImg').src=lbItems[lbIdx].url;
+document.getElementById('lbInfo').textContent=lbItems[lbIdx].title+' — '+lbItems[lbIdx].category;
+}
+function downloadLbImg(){
+if(!lbItems[lbIdx])return;
+const a=document.createElement('a');a.href=lbItems[lbIdx].url;a.target='_blank';a.rel='noopener noreferrer';a.click();
+}
+
+// --- UTILS ---
+function getYTEmbed(url){
+if(!url)return'';
+let m=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+return m?`https://www.youtube.com/embed/${m[1]}`:'';
+}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>toast('Teks disalin!')).catch(()=>toast('Gagal menyalin','error'))}
+
+function toggleBookmark(col,id){
+const n=DB[col].find(x=>x.id===id);if(!n)return;
+n.bookmarked=!n.bookmarked;save();renderAll();toast(n.bookmarked?'Ditandai!':'Tanda dihapus');
+}
+function togglePin(id){
+const n=DB.maps.find(x=>x.id===id);if(!n)return;
+n.pinned=!n.pinned;save();renderMaps();toast(n.pinned?'Disematkan!':'Lepas pin');
+}
+function toggleDone(id){
+const n=DB.maps.find(x=>x.id===id);if(!n)return;
+n.done=!n.done;save();renderMaps();
+if(n.done){confetti({particleCount:80,spread:60,origin:{y:0.7}});toast('🎉 Selesai!');}
+}
+
+function delItem(col,id){
+Swal.fire({title:'Hapus item ini?',text:'Data akan hilang permanen',icon:'warning',showCancelButton:true,confirmButtonColor:'#DC2626',confirmButtonText:'Hapus',cancelButtonText:'Batal',customClass:{popup:'rounded-4'}}).then(r=>{
+if(r.isConfirmed){DB[col]=DB[col].filter(x=>x.id!==id);save();renderAll();toast('Item dihapus');}
+});
+}
+
+// --- ADD/EDIT FORMS ---
+function openAddModal(){
+const tab=currentTab;
+let title='',fields='';
+if(tab==='notes'){title='Tambah Istilah';fields=noteFormFields();}
+else if(tab==='reels'){title='Tambah Video';fields=reelFormFields();}
+else if(tab==='maps'){title='Tambah Roadmap';fields=mapFormFields();}
+else if(tab==='pedia'){title='Tambah Materi';fields=pediaFormFields();}
+else if(tab==='pict'){title='Tambah Gambar';fields=pictFormFields();}
+document.getElementById('formModalTitle').textContent=title;
+document.getElementById('formModalBody').innerHTML=`<form id="addForm" onsubmit="submitForm(event)">${fields}<button type="submit" class="btn-3d btn-pri w-100 mt-3"><i class="bi bi-plus-circle me-1"></i>Simpan</button></form>`;
+showModal('formModal');
+}
+
+function noteFormFields(d={}){return `
+<label class="form-label-w">Emoji</label><input class="form-input-w mb-2" name="emoji" value="${d.emoji||''}" placeholder="📝">
+<label class="form-label-w">Judul *</label><input class="form-input-w mb-2" name="title" value="${d.title||''}" required>
+<label class="form-label-w">Subtitle</label><input class="form-input-w mb-2" name="subtitle" value="${d.subtitle||''}">
+<label class="form-label-w">Kategori</label><input class="form-input-w mb-2" name="category" value="${d.category||''}" placeholder="Geografi/Ekonomi/Sejarah/Sosiologi">
+<label class="form-label-w">Konten (HTML)</label><textarea class="form-input-w mb-2" name="content">${d.content||''}</textarea>
+<label class="form-label-w">Info Tambahan</label><textarea class="form-input-w mb-2" name="extra">${d.extra||''}</textarea>
+<label class="form-label-w">URL Gambar</label><input class="form-input-w mb-2" name="image" value="${d.image||''}" placeholder="https://...">
+<input type="hidden" name="editId" value="${d.id||''}">`;
+}
+function reelFormFields(d={}){return `
+<label class="form-label-w">Judul *</label><input class="form-input-w mb-2" name="title" value="${d.title||''}" required>
+<label class="form-label-w">Deskripsi</label><textarea class="form-input-w mb-2" name="desc">${d.desc||''}</textarea>
+<label class="form-label-w">URL YouTube *</label><input class="form-input-w mb-2" name="url" value="${d.url||''}" required placeholder="https://youtube.com/watch?v=...">
+<label class="form-label-w">Kategori</label><input class="form-input-w mb-2" name="category" value="${d.category||''}">
+<input type="hidden" name="editId" value="${d.id||''}">`;
+}
+function mapFormFields(d={}){return `
+<label class="form-label-w">Judul *</label><input class="form-input-w mb-2" name="title" value="${d.title||''}" required>
+<label class="form-label-w">Tag Kategori</label><input class="form-input-w mb-2" name="tag" value="${d.tag||''}" placeholder="Geografi/Ekonomi/Sejarah/Sosiologi">
+<label class="form-label-w">Deadline</label><input type="date" class="form-input-w mb-2" name="deadline" value="${d.deadline||''}">
+<label class="form-label-w">Catatan Belajar</label><textarea class="form-input-w mb-2" name="notes">${d.notes||''}</textarea>
+<label class="form-label-w">Link Materi</label><input class="form-input-w mb-2" name="link" value="${d.link||''}" placeholder="https://...">
+<input type="hidden" name="editId" value="${d.id||''}">`;
+}
+function pediaFormFields(d={}){return `
+<label class="form-label-w">Emoji</label><input class="form-input-w mb-2" name="emoji" value="${d.emoji||''}" placeholder="📖">
+<label class="form-label-w">Judul *</label><input class="form-input-w mb-2" name="title" value="${d.title||''}" required>
+<label class="form-label-w">Kategori</label><input class="form-input-w mb-2" name="category" value="${d.category||''}">
+<label class="form-label-w">Google Drive ID *</label><input class="form-input-w mb-2" name="driveId" value="${d.driveId||''}" required placeholder="1aBcDeFgHiJkLmN...">
+<label class="form-label-w">Total Halaman</label><input type="number" class="form-input-w mb-2" name="totalPages" value="${d.totalPages||100}" min="1">
+<input type="hidden" name="editId" value="${d.id||''}">`;
+}
+function pictFormFields(d={}){return `
+<label class="form-label-w">Judul *</label><input class="form-input-w mb-2" name="title" value="${d.title||''}" required>
+<label class="form-label-w">Deskripsi</label><textarea class="form-input-w mb-2" name="desc">${d.desc||''}</textarea>
+<label class="form-label-w">URL Gambar *</label><input class="form-input-w mb-2" name="url" value="${d.url||''}" required placeholder="https://images.unsplash.com/...">
+<label class="form-label-w">Kategori</label><input class="form-input-w mb-2" name="category" value="${d.category||''}">
+<input type="hidden" name="editId" value="${d.id||''}">`;
+}
+
+function submitForm(e){
+e.preventDefault();
+const fd=new FormData(e.target);const d=Object.fromEntries(fd);
+const editId=d.editId;delete d.editId;
+const tab=currentTab;
+if(editId){
+const item=DB[tab].find(x=>x.id===editId);
+if(item){Object.assign(item,d);if(d.totalPages)item.totalPages=parseInt(d.totalPages);save();renderAll();toast('Item diperbarui');hideModal('formModal');return;}
+}
+d.id=uid();d.bookmarked=false;
+if(tab==='notes')DB.notes.push(d);
+else if(tab==='reels')DB.reels.push(d);
+else if(tab==='maps'){d.done=false;d.pinned=false;DB.maps.push(d);}
+else if(tab==='pedia'){d.progress=0;d.totalPages=parseInt(d.totalPages)||100;DB.pedia.push(d);}
+else if(tab==='pict')DB.pict.push(d);
+save();renderAll();toast('Item ditambahkan!');hideModal('formModal');
+}
+
+function editNote(id){const n=DB.notes.find(x=>x.id===id);if(!n)return;document.getElementById('formModalTitle').textContent='Edit Istilah';document.getElementById('formModalBody').innerHTML=`<form id="addForm" onsubmit="submitForm(event)">${noteFormFields(n)}<button type="submit" class="btn-3d btn-pri w-100 mt-3"><i class="bi bi-save me-1"></i>Simpan</button></form>`;showModal('formModal');}
+function editReel(id){const n=DB.reels.find(x=>x.id===id);if(!n)return;document.getElementById('formModalTitle').textContent='Edit Video';document.getElementById('formModalBody').innerHTML=`<form id="addForm" onsubmit="submitForm(event)">${reelFormFields(n)}<button type="submit" class="btn-3d btn-pri w-100 mt-3"><i class="bi bi-save me-1"></i>Simpan</button></form>`;showModal('formModal');}
+function editMap(id){const n=DB.maps.find(x=>x.id===id);if(!n)return;document.getElementById('formModalTitle').textContent='Edit Roadmap';document.getElementById('formModalBody').innerHTML=`<form id="addForm" onsubmit="submitForm(event)">${mapFormFields(n)}<button type="submit" class="btn-3d btn-pri w-100 mt-3"><i class="bi bi-save me-1"></i>Simpan</button></form>`;showModal('formModal');}
+function editPedia(id){const n=DB.pedia.find(x=>x.id===id);if(!n)return;document.getElementById('formModalTitle').textContent='Edit Materi';document.getElementById('formModalBody').innerHTML=`<form id="addForm" onsubmit="submitForm(event)">${pediaFormFields(n)}<button type="submit" class="btn-3d btn-pri w-100 mt-3"><i class="bi bi-save me-1"></i>Simpan</button></form>`;showModal('formModal');}
+
+// --- SIDEBAR ---
+function openSidebar(){
+const stats=`
+<div class="stat-card"><div class="stat-num" style="color:var(--pri)">${DB.notes.length}</div><div class="stat-lbl">Istilah</div></div>
+<div class="stat-card"><div class="stat-num" style="color:var(--blu)">${DB.reels.length}</div><div class="stat-lbl">Video</div></div>
+<div class="stat-card"><div class="stat-num" style="color:var(--grn)">${DB.maps.filter(m=>m.done).length}/${DB.maps.length}</div><div class="stat-lbl">Roadmap</div></div>
+<div class="stat-card"><div class="stat-num" style="color:var(--pur)">${DB.pedia.length}</div><div class="stat-lbl">Materi</div></div>
+<div class="stat-card"><div class="stat-num" style="color:var(--yel)">${DB.pict.length}</div><div class="stat-lbl">Gambar</div></div>
+<div class="stat-card"><div class="stat-num" style="color:var(--pri)">${DB.notes.filter(n=>n.bookmarked).length+DB.reels.filter(n=>n.bookmarked).length+DB.pedia.filter(n=>n.bookmarked).length}</div><div class="stat-lbl">Bookmark</div></div>`;
+document.getElementById('sidebarStats').innerHTML=stats;
+showModal('sidebarModal');
+}
+
+function exportData(){
+const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='woips_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+toast('Data diekspor!');
+}
+function importData(e){
+const file=e.target.files[0];if(!file)return;
+const reader=new FileReader();
+reader.onload=function(ev){
+try{const d=JSON.parse(ev.target.result);if(d.notes&&d.reels&&d.maps&&d.pedia&&d.pict){DB=d;save();renderAll();toast('Data diimpor!');hideModal('sidebarModal');}else{toast('Format tidak valid','error');}}
+catch(err){toast('Gagal membaca file','error');}
+};reader.readAsText(file);e.target.value='';
+}
+function resetData(){
+Swal.fire({title:'Reset semua data?',text:'Ini akan mengembalikan ke data default',icon:'warning',showCancelButton:true,confirmButtonColor:'#DC2626',confirmButtonText:'Reset',cancelButtonText:'Batal',customClass:{popup:'rounded-4'}}).then(r=>{
+if(r.isConfirmed){localStorage.removeItem(STORAGE_KEY);DB=defaultData();save();renderAll();toast('Data direset');hideModal('sidebarModal');}
+});
+}
+function showDocs(){
+hideModal('sidebarModal');
+document.getElementById('viewModalTitle').textContent='📖 Dokumentasi WOIPS';
+document.getElementById('viewModalBody').innerHTML=`
+<div style="font-size:.85rem;font-weight:600;line-height:1.8">
+<h5 style="font-weight:900;color:var(--pri)">📒 OlymNotes</h5>
+<p>Glosarium istilah penting OSN IPS. Setiap istilah memiliki emoji, subtitle, penjelasan lengkap, dan info tambahan. Bisa di-bookmark, edit, hapus, dan copy teks.</p>
+<h5 style="font-weight:900;color:var(--blu)">🎬 OlymReels</h5>
+<p>Kumpulan video edukasi pendek dari YouTube. Tonton langsung di aplikasi tanpa pindah tab. Bisa tambah video favoritmu sendiri.</p>
+<h5 style="font-weight:900;color:var(--grn)">🗺️ OlymMaps</h5>
+<p>Roadmap belajar berupa to-do list. Setiap item punya deadline, catatan, dan link materi. Centang saat selesai untuk efek confetti! 🎉</p>
+<h5 style="font-weight:900;color:var(--pur)">📚 OlymPedia</h5>
+<p>Gudang materi dari Google Drive. Baca langsung di aplikasi dan catat progress baca per halaman. Simpan materi favoritmu.</p>
+<h5 style="font-weight:900;color:var(--yel)">🖼️ OlymPict</h5>
+<p>Galeri gambar ilustrasi edukatif. Tampilan masonry grid dengan lightbox zoom. Double-klik untuk zoom, navigasi kiri/kanan.</p>
+<hr>
+<p><strong>Tips:</strong> Gunakan tombol ⚙️ untuk ekspor backup data (JSON), impor, atau reset. Semua data tersimpan di perangkatmu.</p>
+</div>`;
+showModal('viewModal');
+}
+function showAbout(){
+hideModal('sidebarModal');
+Swal.fire({title:'🏆 WOIPS v2.0',html:`<div style="font-size:.85rem;font-weight:600;line-height:1.8;text-align:left">
+<p><strong>World Olympiad IPS Study</strong></p>
+<p>Platform belajar terintegrasi untuk persiapan Olimpiade Sains Nasional bidang IPS (Geografi, Ekonomi, Sejarah, Sosiologi).</p>
+<p>Dibuat oleh <strong style="color:var(--pri)">Studekasa</strong></p>
+<p><a href="https://blogwoips.zone.id" target="_blank" rel="noopener noreferrer" style="color:var(--pri);font-weight:800">🌐 blogwoips.zone.id</a></p>
+<p style="color:var(--sub);font-size:.75rem">Versi 2.0 • 2026</p>
+</div>`,confirmButtonColor:'#F97316',customClass:{popup:'rounded-4'}});
+}
+
+// --- DEFAULT DATA ---
+function defaultData(){
+return {
+notes:[
+{id:uid(),emoji:'🌍',title:'Atmosfer',subtitle:'Lapisan udara Bumi',category:'Geografi',content:'<p>Atmosfer adalah selubung gas yang mengelilingi Bumi. Terdiri dari beberapa lapisan: <strong>troposfer</strong> (cuaca), <strong>stratosfer</strong> (ozon), <strong>mesosfer</strong>, <strong>termosfer</strong>, dan <strong>eksosfer</strong>.</p><p>Komposisi utama: Nitrogen (78%), Oksigen (21%), gas lain (1%). Atmosfer melindungi Bumi dari radiasi UV berbahaya.</p>',extra:'Troposfer hanya setebal ~12 km tapi mengandung 75% massa atmosfer dan hampir semua uap air.',image:'',bookmarked:false},
+{id:uid(),emoji:'🪨',title:'Litosfer',subtitle:'Lapisan batuan keras Bumi',category:'Geografi',content:'<p>Litosfer adalah lapisan terluar Bumi yang padat, terdiri dari <strong>kerak</strong> dan <strong>mantel atas</strong>. Tebalnya sekitar 100 km.</p><p>Litosfer terpecah menjadi lempeng-lempeng tektonik yang bergerak di atas astenosfer. Pergerakan ini menyebabkan gempa, gunung api, dan pembentukan pegunungan.</p>',extra:'Lempeng tektonik bergerak rata-rata 2-10 cm per tahun, sepelan pertumbuhan kuku manusia.',image:'',bookmarked:true},
+{id:uid(),emoji:'💧',title:'Hidrosfer',subtitle:'Seluruh air di Bumi',category:'Geografi',content:'<p>Hidrosfer mencakup semua bentuk air di Bumi: <strong>lautan</strong> (97.5%), <strong>es kutub & gletser</strong> (1.7%), <strong>air tanah</strong>, dan <strong>air permukaan</strong> (sungai, danau).</p><p>Siklus hidrologi: evaporasi → kondensasi → presipitasi → infiltrasi → runoff.</p>',extra:'Air tawar yang bisa langsung digunakan manusia hanya sekitar 0.3% dari total air di Bumi.',image:'',bookmarked:false},
+{id:uid(),emoji:'📈',title:'Inflasi',subtitle:'Kenaikan harga umum berkelanjutan',category:'Ekonomi',content:'<p>Inflasi adalah kenaikan tingkat harga barang dan jasa secara umum dan terus-menerus dalam periode tertentu.</p><p>Jenis inflasi: <strong>Demand-pull</strong> (permintaan naik), <strong>Cost-push</strong> (biaya produksi naik), <strong>Built-in</strong> (ekspektasi). Diukur dengan Indeks Harga Konsumen (IHK).</p>',extra:'Inflasi ringan (2-4% per tahun) sebenarnya sehat bagi perekonomian karena mendorong konsumsi dan investasi.',image:'',bookmarked:false},
+{id:uid(),emoji:'⚖️',title:'Kelangkaan',subtitle:'Sumber daya terbatas vs kebutuhan tak terbatas',category:'Ekonomi',content:'<p>Kelangkaan (scarcity) adalah kondisi di mana kebutuhan manusia tidak terbatas sementara sumber daya untuk memenuhinya terbatas.</p><p>Ini adalah masalah dasar ekonomi yang memunculkan konsep <strong>pilihan</strong> (choice) dan <strong>biaya peluang</strong> (opportunity cost).</p>',extra:'Konsep kelangkaan bukan berarti barang langka, tapi ketidakseimbangan antara keinginan dan ketersediaan.',image:'',bookmarked:false},
+{id:uid(),emoji:'📊',title:'Elastisitas',subtitle:'Responsivitas permintaan/penawaran',category:'Ekonomi',content:'<p>Elastisitas mengukur seberapa besar perubahan permintaan atau penawaran terhadap perubahan harga.</p><p>Jenis: <strong>Elastis</strong> (E>1): sensitif harga. <strong>Inelastis</strong> (E<1): tidak sensitif. <strong>Uniter</strong> (E=1): proporsional.</p><p>Barang mewah cenderung elastis, kebutuhan pokok cenderung inelastis.</p>',extra:'Harga bensin naik 10% tapi pembelian hanya turun 2% → permintaan bensin bersifat inelastis.',image:'',bookmarked:false},
+{id:uid(),emoji:'🏴',title:'Kolonialisme',subtitle:'Penjajahan dan penguasaan wilayah',category:'Sejarah',content:'<p>Kolonialisme adalah praktik penguasaan suatu negara atas wilayah lain untuk dieksploitasi sumber dayanya.</p><p>Di Indonesia, kolonialisme dimulai sejak kedatangan <strong>Portugis</strong> (1511), <strong>Belanda/VOC</strong> (1602), hingga <strong>Jepang</strong> (1942-1945). Total penjajahan berlangsung lebih dari 3 abad.</p>',extra:'Sistem Tanam Paksa (Cultuurstelsel, 1830-1870) menghasilkan keuntungan besar bagi Belanda tapi menyengsarakan rakyat Indonesia.',image:'',bookmarked:true},
+{id:uid(),emoji:'🏭',title:'Revolusi Industri',subtitle:'Transformasi produksi dan masyarakat',category:'Sejarah',content:'<p>Revolusi Industri dimulai di <strong>Inggris abad ke-18</strong>, menandai peralihan dari produksi tangan ke mesin.</p><p>Tahapan: RI 1.0 (mesin uap), RI 2.0 (listrik), RI 3.0 (komputer), RI 4.0 (AI & IoT). Dampak: urbanisasi, kapitalisme, kelas sosial baru.</p>',extra:'James Watt tidak menemukan mesin uap, ia menyempurnakan desain Thomas Newcomen sehingga lebih efisien.',image:'',bookmarked:false},
+{id:uid(),emoji:'✊',title:'Reformasi',subtitle:'Gerakan perubahan 1998',category:'Sejarah',content:'<p>Reformasi 1998 adalah gerakan perubahan politik di Indonesia yang mengakhiri rezim <strong>Orde Baru</strong> (32 tahun).</p><p>Dipicu krisis moneter 1997, gerakan mahasiswa, dan Tragedi Trisakti (12 Mei 1998). Presiden Soeharto mengundurkan diri 21 Mei 1998.</p><p>Hasil: demokrasi multipartai, kebebasan pers, otonomi daerah, amandemen UUD 1945.</p>',extra:'Reformasi mengubah Indonesia dari sistem sentralistik menjadi desentralisasi dengan 34 provinsi otonom.',image:'',bookmarked:false},
+{id:uid(),emoji:'🤝',title:'Sosialisasi',subtitle:'Proses belajar nilai dan norma sosial',category:'Sosiologi',content:'<p>Sosialisasi adalah proses individu mempelajari nilai, norma, dan peran sosial agar bisa berpartisipasi dalam masyarakat.</p><p>Agen sosialisasi: <strong>keluarga</strong> (primer), <strong>sekolah</strong>, <strong>teman sebaya</strong>, <strong>media massa</strong> (sekunder). Tahap: preparatory, play, game, generalized other (George H. Mead).</p>',extra:'Kasus anak liar (feral children) membuktikan bahwa tanpa sosialisasi, manusia tidak bisa mengembangkan kemampuan sosial dasar.',image:'',bookmarked:false},
+{id:uid(),emoji:'🏛️',title:'Stratifikasi Sosial',subtitle:'Lapisan-lapisan dalam masyarakat',category:'Sosiologi',content:'<p>Stratifikasi sosial adalah pengelompokan masyarakat ke dalam lapisan-lapisan berdasarkan kriteria tertentu.</p><p>Dasar: <strong>kekayaan</strong> (ekonomi), <strong>kekuasaan</strong> (politik), <strong>kehormatan</strong> (sosial). Sifat: terbuka (bisa naik-turun) atau tertutup (kasta).</p>',extra:'Max Weber membedakan stratifikasi berdasarkan 3 dimensi: kelas (ekonomi), status (kehormatan), dan partai (kekuasaan).',image:'',bookmarked:false},
+{id:uid(),emoji:'🚀',title:'Mobilitas Sosial',subtitle:'Perpindahan posisi dalam masyarakat',category:'Sosiologi',content:'<p>Mobilitas sosial adalah perpindahan individu atau kelompok dari satu posisi sosial ke posisi lainnya.</p><p>Jenis: <strong>vertikal naik</strong> (promosi), <strong>vertikal turun</strong> (PHK), <strong>horizontal</strong> (pindah pekerjaan setara). Faktor pendorong: pendidikan, urbanisasi, modernisasi.</p>',extra:'Pendidikan dianggap sebagai "social elevator" paling efektif untuk mobilitas sosial vertikal naik.',image:'',bookmarked:false}
+],
+reels:[
+{id:uid(),title:'Memahami Atmosfer Bumi',desc:'Penjelasan lapisan-lapisan atmosfer dan fungsinya bagi kehidupan di Bumi.',url:'https://www.youtube.com/watch?v=azXiDRNqmSo',category:'Geografi',bookmarked:false},
+{id:uid(),title:'Inflasi Explained',desc:'Apa itu inflasi? Mengapa harga naik terus? Penjelasan sederhana tentang konsep inflasi.',url:'https://www.youtube.com/watch?v=T8-85cZRI9o',category:'Ekonomi',bookmarked:false},
+{id:uid(),title:'Sejarah Kolonialisme Indonesia',desc:'Perjalanan 350 tahun penjajahan di Indonesia dari Portugis hingga Jepang.',url:'https://www.youtube.com/watch?v=bGPMJNEwCBE',category:'Sejarah',bookmarked:false},
+{id:uid(),title:'Stratifikasi Sosial',desc:'Bagaimana masyarakat terbagi dalam lapisan-lapisan sosial dan dampaknya.',url:'https://www.youtube.com/watch?v=SlkIKCMt-Fs',category:'Sosiologi',bookmarked:true},
+{id:uid(),title:'Siklus Air (Hidrologi)',desc:'Animasi lengkap proses siklus air dari evaporasi hingga presipitasi.',url:'https://www.youtube.com/watch?v=al-do-HGuIk',category:'Geografi',bookmarked:false},
+{id:uid(),title:'Supply and Demand',desc:'Konsep dasar penawaran dan permintaan dalam ekonomi dengan contoh nyata.',url:'https://www.youtube.com/watch?v=kIFBaaPJUO0',category:'Ekonomi',bookmarked:false}
+],
+maps:[
+{id:uid(),title:'Pelajari Lapisan Atmosfer',tag:'Geografi',deadline:'2026-02-15',notes:'Fokus pada troposfer dan stratosfer, pahami perbedaan karakteristiknya.',link:'',done:false,pinned:true},
+{id:uid(),title:'Latihan Soal Litosfer & Tektonik',tag:'Geografi',deadline:'2026-02-20',notes:'Kerjakan minimal 30 soal tentang lempeng tektonik dan vulkanisme.',link:'',done:false,pinned:false},
+{id:uid(),title:'Rangkum Siklus Hidrologi',tag:'Geografi',deadline:'2026-02-25',notes:'Buat mind map siklus hidrologi lengkap dengan faktor yang mempengaruhi.',link:'',done:true,pinned:false},
+{id:uid(),title:'Hafal Rumus Elastisitas',tag:'Ekonomi',deadline:'2026-03-01',notes:'Ed = %ΔQd / %ΔP. Latihan hitung elastisitas dari soal-soal OSN.',link:'',done:false,pinned:true},
+{id:uid(),title:'Analisis Kasus Inflasi Indonesia',tag:'Ekonomi',deadline:'2026-03-05',notes:'Pelajari inflasi 1998 dan 2008, bandingkan penyebab dan dampaknya.',link:'',done:false,pinned:false},
+{id:uid(),title:'Buat Ringkasan Kelangkaan',tag:'Ekonomi',deadline:'2026-03-10',notes:'Buat catatan tentang kelangkaan, pilihan, dan biaya peluang.',link:'',done:false,pinned:false},
+{id:uid(),title:'Timeline Kolonialisme Nusantara',tag:'Sejarah',deadline:'2026-03-15',notes:'Buat timeline dari kedatangan Portugis 1511 sampai proklamasi 1945.',link:'',done:false,pinned:false},
+{id:uid(),title:'Essai Revolusi Industri',tag:'Sejarah',deadline:'2026-03-20',notes:'Tulis esai perbandingan dampak RI 1.0 vs RI 4.0 terhadap masyarakat.',link:'',done:false,pinned:false},
+{id:uid(),title:'Review Materi Reformasi 1998',tag:'Sejarah',deadline:'2026-03-25',notes:'Hafal kronologi lengkap dan tokoh-tokoh kunci Reformasi.',link:'',done:true,pinned:false},
+{id:uid(),title:'Latihan Soal Sosialisasi',tag:'Sosiologi',deadline:'2026-04-01',notes:'Kerjakan soal tentang agen sosialisasi dan tahap perkembangan Mead.',link:'',done:false,pinned:false},
+{id:uid(),title:'Analisis Stratifikasi di Indonesia',tag:'Sosiologi',deadline:'2026-04-05',notes:'Bandingkan sistem kasta, kelas, dan estate. Berikan contoh Indonesia.',link:'',done:false,pinned:false},
+{id:uid(),title:'Studi Kasus Mobilitas Sosial',tag:'Sosiologi',deadline:'2026-04-10',notes:'Cari 3 contoh mobilitas vertikal naik melalui pendidikan di Indonesia.',link:'',done:false,pinned:false}
+],
+pedia:[
+{id:uid(),emoji:'🌏',title:'Geografi Fisik: Atmosfer & Cuaca',category:'Geografi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:120,progress:0,bookmarked:false},
+{id:uid(),emoji:'🗺️',title:'Geografi: Litosfer & Geomorfologi',category:'Geografi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:95,progress:0,bookmarked:false},
+{id:uid(),emoji:'💧',title:'Geografi: Hidrosfer & Oseanografi',category:'Geografi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:80,progress:0,bookmarked:true},
+{id:uid(),emoji:'💹',title:'Ekonomi Mikro: Permintaan & Penawaran',category:'Ekonomi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:150,progress:0,bookmarked:false},
+{id:uid(),emoji:'🏦',title:'Ekonomi Makro: Inflasi & Kebijakan',category:'Ekonomi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:200,progress:0,bookmarked:false},
+{id:uid(),emoji:'📉',title:'Ekonomi: Elastisitas & Pasar',category:'Ekonomi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:110,progress:0,bookmarked:false},
+{id:uid(),emoji:'📜',title:'Sejarah: Kolonialisme di Nusantara',category:'Sejarah',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:250,progress:0,bookmarked:false},
+{id:uid(),emoji:'⚙️',title:'Sejarah: Revolusi Industri Global',category:'Sejarah',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:180,progress:0,bookmarked:false},
+{id:uid(),emoji:'🇮🇩',title:'Sejarah: Reformasi Indonesia 1998',category:'Sejarah',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:140,progress:0,bookmarked:true},
+{id:uid(),emoji:'👥',title:'Sosiologi: Sosialisasi & Interaksi',category:'Sosiologi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:130,progress:0,bookmarked:false},
+{id:uid(),emoji:'🏛️',title:'Sosiologi: Stratifikasi & Diferensiasi',category:'Sosiologi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:160,progress:0,bookmarked:false},
+{id:uid(),emoji:'🔄',title:'Sosiologi: Mobilitas & Perubahan Sosial',category:'Sosiologi',driveId:'1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs',totalPages:145,progress:0,bookmarked:false}
+],
+pict:[
+{id:uid(),title:'Lapisan Atmosfer Bumi',desc:'Diagram lapisan-lapisan atmosfer dari troposfer hingga eksosfer',url:'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=600',category:'Geografi',bookmarked:false},
+{id:uid(),title:'Gunung Berapi Aktif',desc:'Ilustrasi gunung berapi dan proses tektonik lempeng',url:'https://images.unsplash.com/photo-1501875989516-55d1703cfc3f?w=600',category:'Geografi',bookmarked:false},
+{id:uid(),title:'Sungai dan Siklus Air',desc:'Pemandangan sungai yang menggambarkan bagian dari siklus hidrologi',url:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600',category:'Geografi',bookmarked:false},
+{id:uid(),title:'Pasar Tradisional',desc:'Aktivitas jual beli di pasar tradisional sebagai contoh ekonomi mikro',url:'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=600',category:'Ekonomi',bookmarked:false},
+{id:uid(),title:'Uang dan Inflasi',desc:'Ilustrasi konsep nilai uang dan dampak inflasi terhadap daya beli',url:'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600',category:'Ekonomi',bookmarked:false},
+{id:uid(),title:'Pabrik Era Industri',desc:'Pabrik sebagai simbol Revolusi Industri dan transformasi ekonomi',url:'https://images.unsplash.com/photo-1513828583688-c52571021e15?w=600',category:'Sejarah',bookmarked:false},
+{id:uid(),title:'Arsitektur Kolonial',desc:'Bangunan bersejarah peninggalan era kolonial Belanda di Indonesia',url:'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=600',category:'Sejarah',bookmarked:false},
+{id:uid(),title:'Interaksi Sosial Masyarakat',desc:'Kegiatan gotong royong sebagai bentuk interaksi dan sosialisasi',url:'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600',category:'Sosiologi',bookmarked:false},
+{id:uid(),title:'Kota dan Urbanisasi',desc:'Pemandangan kota besar sebagai contoh mobilitas sosial dan urbanisasi',url:'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600',category:'Sosiologi',bookmarked:false}
+]
+};
+}
+
+// --- ELEMENT SDK ---
+const defaultConfig={
+app_title:'🏆 WOIPS',
+footer_text:'© 2026 WOIPS by Studekasa | Platform Belajar OSN IPS Terintegrasi',
+background_color:'#FFF8F0',
+surface_color:'#FFFFFF',
+text_color:'#2D2D2D',
+primary_action_color:'#F97316',
+secondary_action_color:'#58CC02'
+};
+
+function applyConfig(config){
+const t=config.app_title||defaultConfig.app_title;
+const f=config.footer_text||defaultConfig.footer_text;
+const bg=config.background_color||defaultConfig.background_color;
+const sf=config.surface_color||defaultConfig.surface_color;
+const tx=config.text_color||defaultConfig.text_color;
+const pa=config.primary_action_color||defaultConfig.primary_action_color;
+const sa=config.secondary_action_color||defaultConfig.secondary_action_color;
+
+document.getElementById('appTitle').textContent=t;
+const ft=document.getElementById('footerText');
+ft.innerHTML=f.includes('Studekasa')?`${f.split('Studekasa')[0]}<a href="https://blogwoips.zone.id" target="_blank" rel="noopener noreferrer">Studekasa</a>${f.split('Studekasa')[1]||''}`:f;
+
+document.documentElement.style.setProperty('--bg',bg);
+document.documentElement.style.setProperty('--card',sf);
+document.documentElement.style.setProperty('--txt',tx);
+document.documentElement.style.setProperty('--pri',pa);
+document.documentElement.style.setProperty('--grn',sa);
+
+document.body.style.background=bg;
+document.body.style.color=tx;
+const header=document.querySelector('.app-header');
+if(header)header.style.background=`linear-gradient(135deg,${pa},${pa}cc)`;
+const fab=document.querySelector('.fab');
+if(fab){fab.style.background=`linear-gradient(135deg,${pa},${pa}cc)`;fab.style.borderBottomColor=tx+'33';}
+}
+
+if(window.elementSdk){
+window.elementSdk.init({
+defaultConfig,
+onConfigChange:async(config)=>{applyConfig(config);},
+mapToCapabilities:(config)=>({
+recolorables:[
+{get:()=>config.background_color||defaultConfig.background_color,set:v=>{config.background_color=v;window.elementSdk.setConfig({background_color:v})}},
+{get:()=>config.surface_color||defaultConfig.surface_color,set:v=>{config.surface_color=v;window.elementSdk.setConfig({surface_color:v})}},
+{get:()=>config.text_color||defaultConfig.text_color,set:v=>{config.text_color=v;window.elementSdk.setConfig({text_color:v})}},
+{get:()=>config.primary_action_color||defaultConfig.primary_action_color,set:v=>{config.primary_action_color=v;window.elementSdk.setConfig({primary_action_color:v})}},
+{get:()=>config.secondary_action_color||defaultConfig.secondary_action_color,set:v=>{config.secondary_action_color=v;window.elementSdk.setConfig({secondary_action_color:v})}}
+],
+borderables:[],
+fontEditable:{get:()=>config.font_family||'Nunito',set:v=>{config.font_family=v;window.elementSdk.setConfig({font_family:v});document.body.style.fontFamily=v+', Nunito, sans-serif'}},
+fontSizeable:undefined
+}),
+mapToEditPanelValues:(config)=>new Map([
+['app_title',config.app_title||defaultConfig.app_title],
+['footer_text',config.footer_text||defaultConfig.footer_text]
+])
+});
+}
+
+// --- INIT ---
+load();
+renderAll();
+applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e02fbd465d7e785',t:'MTc3NDE1OTMwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
