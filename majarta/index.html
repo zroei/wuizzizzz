@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>MaJarTa · Materi Belajar Kita!</title>
+  <!-- Google Font Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- RemixIcon (stabil dan lengkap) -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- canvas-confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <style>
+    body { font-family: 'Nunito', sans-serif; background-color: #faf8f5; color: #4b3b2e; }
+    
+    /* Soft shadow Duolingo style */
+    .card-soft {
+      border-radius: 32px;
+      background: white;
+      box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .card-soft:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 28px -8px rgba(0, 0, 0, 0.12);
+    }
+    .card-soft-bookmark {
+      outline: 2px solid #ffb37c;
+      outline-offset: 2px;
+    }
+    
+    /* Tag pill untuk kereta (horizontal scroll) */
+    .tag-kereta {
+      border-radius: 100px;
+      background: #f7f0e9;
+      padding: 8px 20px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #8b6f50;
+      transition: all 0.2s;
+      cursor: pointer;
+      white-space: nowrap;
+      border: 1px solid #f0e4d8;
+    }
+    .tag-kereta.active {
+      background: #ffdcc2;
+      color: #d97c2b;
+      font-weight: 700;
+      border-color: #ffb37c;
+    }
+    
+    /* Container kereta tag dengan scroll horizontal */
+    .tag-carousel {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 5px 4px 12px 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #ffb37c #f7f0e9;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tag-carousel::-webkit-scrollbar {
+      height: 6px;
+    }
+    .tag-carousel::-webkit-scrollbar-track {
+      background: #f7f0e9;
+      border-radius: 10px;
+    }
+    .tag-carousel::-webkit-scrollbar-thumb {
+      background: #ffb37c;
+      border-radius: 10px;
+    }
+    
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #f0e4d8;
+      display: flex; justify-content: space-around;
+      padding: 10px 0 24px;
+      z-index: 40;
+    }
+    .nav-item {
+      color: #b8a99a; font-weight: 600; font-size: 0.8rem;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-item.active { color: #f97316; }
+    .nav-item i { font-size: 1.5rem; }
+    
+    /* Sidebar full screen untuk mobile */
+    .panel-full {
+      position: fixed; 
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    
+    /* Tombol minimal */
+    .btn-minimal {
+      background: white;
+      border: 1px solid #f0e4d8;
+      border-radius: 40px;
+      padding: 10px 18px;
+      font-weight: 600;
+      color: #4b3b2e;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-minimal:hover {
+      background: #faf1e9;
+      border-color: #e1cbb8;
+    }
+    
+    /* Popup panduan */
+    .guide-popup {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 40px;
+      padding: 28px;
+      max-width: 380px;
+      width: 90%;
+      z-index: 200;
+      box-shadow: 0 30px 50px -20px rgba(0,0,0,0.3);
+    }
+    
+    /* Truncate untuk deskripsi panjang */
+    .desc-truncate {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-[#faf8f5] font-['Nunito']" 
+      x-data="majartaApp()" 
+      x-init="init(); initOfflineCache();" 
+      @keydown.escape="closeAll">
+
+  <!-- ALERT POPUP -->
+  <div x-show="alert.show" x-transition.duration.200 class="fixed top-24 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm text-[#4b3b2e] font-bold py-4 px-8 rounded-full shadow-lg border border-[#f0e4d8] z-[300] flex items-center gap-3" :class="{'border-green-400': alert.type==='success','border-red-400': alert.type==='error'}" @click="alert.show = false">
+    <i x-show="alert.type==='success'" class="ri-checkbox-circle-fill text-green-500 text-xl"></i>
+    <i x-show="alert.type==='error'" class="ri-alert-fill text-red-500 text-xl"></i>
+    <span x-text="alert.message"></span>
+  </div>
+
+  <!-- POPUP PANDUAN -->
+  <div x-show="guideOpen" x-transition class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[200] flex items-center justify-center p-4" @click.self="guideOpen = false">
+    <div class="guide-popup">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-black text-[#f97316]">📘 Panduan</h3>
+        <button @click="guideOpen = false" class="w-8 h-8 rounded-full bg-[#f7f0e9] flex items-center justify-center">
+          <i class="ri-close-line text-xl"></i>
+        </button>
+      </div>
+      <div class="space-y-4 text-[#6b5a4a]">
+        <p class="flex gap-3"><i class="ri-hand-fill text-[#f97316]"></i> Klik kartu untuk lihat detail & slide gambar</p>
+        <p class="flex gap-3"><i class="ri-download-2-fill text-[#f97316]"></i> Download gambar asli lewat tombol download di penampil</p>
+        <p class="flex gap-3"><i class="ri-swap-fill text-[#f97316]"></i> Geser gambar di viewer untuk navigasi</p>
+        <p class="flex gap-3"><i class="ri-database-2-fill text-[#f97316]"></i> Data tersimpan di localStorage</p>
+        <div class="border-t border-[#f0e4d8] pt-3 text-sm">
+          <p class="font-bold">© Hak cipta materi milik sumber asli.</p>
+          <p class="text-[#8b7a6a]">Koleksi hanya untuk pembelajaran pribadi.</p>
+        </div>
+        <div class="text-xs bg-[#f7f0e9] p-3 rounded-2xl">
+          <p class="font-semibold mb-1">Didukung oleh Studekasa EduLabs</p>
+          <p>Dikembangkan dari Zam Zam</p>
+          <p class="mt-2 text-[#8b7a6a]">🔗 Sumber gambar: rangkumanmateri, Threads.com, Pinterest.com, Instagram.com, Unplash.com, Skuling.id, Ruangguru.com, Zenius.net, Materi.beelajar.com dan kontributor lainnya.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR SIMPLE -->
+  <nav class="sticky top-0 z-30 bg-white/80 backdrop-blur-md flex items-center justify-between px-5 py-3 border-b border-[#f0e4d8]">
+    <div class="flex items-center gap-3">
+      <button @click.stop="menuOpen = !menuOpen" class="text-[#b8a99a] hover:text-[#f97316] p-2">
+        <i class="ri-menu-line text-2xl"></i>
+      </button>
+      <h1 class="text-xl font-black tracking-tight text-[#f97316]">MaJarTa</h1>
+    </div>
+    <div class="flex gap-1">
+      <button @click="openAddModal" class="text-[#b8a99a] hover:text-[#f97316] p-2">
+        <i class="ri-add-line text-2xl"></i>
+      </button>
+      <button @click="exportVault" class="text-[#b8a99a] hover:text-[#f97316] p-2">
+        <i class="ri-download-2-line text-2xl"></i>
+      </button>
+      <input type="file" id="importFile" accept=".json" class="hidden" @change="importVault">
+      <button @click="$refs.importFile.click()" class="text-[#b8a99a] hover:text-[#f97316] p-2">
+        <i class="ri-upload-2-line text-2xl"></i>
+      </button>
+      <button @click="guideOpen = true" class="text-[#b8a99a] hover:text-[#f97316] p-2">
+        <i class="ri-question-line text-2xl"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MENU FULL SCREEN -->
+  <div x-show="menuOpen" x-transition.opacity class="panel-full">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-black text-[#f97316]">Menu</h2>
+      <button @click="menuOpen = false" class="w-10 h-10 rounded-full bg-[#f7f0e9] flex items-center justify-center">
+        <i class="ri-close-line text-xl"></i>
+      </button>
+    </div>
+    <div class="flex flex-col gap-3">
+      <button class="btn-minimal justify-start" @click="activeMenu='all'; menuOpen=false; searchQuery=''; activeTag=''">
+        <i class="ri-grid-fill"></i> Semua Materi
+      </button>
+      <button class="btn-minimal justify-start" @click="activeMenu='bookmark'; menuOpen=false; searchQuery=''; activeTag=''">
+        <i class="ri-bookmark-fill"></i> Bookmark
+      </button>
+      <a href="/ebook" class="btn-minimal justify-start">
+        <i class="ri-book-open-fill"></i> E-Book
+      </a>
+      <div class="h-px bg-[#f0e4d8] my-2"></div>
+      <span class="text-xs font-bold text-[#b8a99a] ml-2">KATEGORI</span>
+      <button class="tag-kereta w-full justify-start !bg-[#f7f0e9]" @click="activeTag='Matematika'; activeMenu='all'; menuOpen=false">
+        🔢 Matematika
+      </button>
+      <button class="tag-kereta w-full justify-start !bg-[#f7f0e9]" @click="activeTag='IPA'; activeMenu='all'; menuOpen=false">
+        🔬 IPA
+      </button>
+      <button class="tag-kereta w-full justify-start !bg-[#f7f0e9]" @click="activeTag='IPS'; activeMenu='all'; menuOpen=false">
+        🏛️ IPS
+      </button>
+      <button class="tag-kereta w-full justify-start !bg-[#f7f0e9]" @click="activeTag='Geografi'; activeMenu='all'; menuOpen=false">
+        🌍 Geografi
+      </button>
+      <button class="tag-kereta w-full justify-start !bg-[#f7f0e9]" @click="activeTag='Sejarah'; activeMenu='all'; menuOpen=false">
+        📜 Sejarah
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="container max-w-7xl mx-auto px-4 pt-4 pb-28">
+    <!-- SEARCH -->
+    <div class="mb-4 max-w-xl mx-auto">
+      <div class="flex items-center bg-white border border-[#f0e4d8] rounded-full px-5 py-2.5 gap-2 shadow-sm">
+        <i class="ri-search-line text-[#b8a99a]"></i>
+        <input type="text" class="w-full bg-transparent outline-none text-base placeholder-[#b8a99a]" placeholder="Cari judul atau tag..." x-model="searchQuery">
+      </div>
+    </div>
+
+    <!-- TAGS KERETA (horizontal scroll) -->
+    <div class="mb-6" x-show="tagsWithEmoji.length">
+      <div class="tag-carousel">
+        <template x-for="tag in tagsWithEmoji" :key="tag.name">
+          <div class="tag-kereta" :class="{ 'active': activeTag === tag.name }" @click="activeTag = (activeTag === tag.name ? '' : tag.name)">
+            <span x-text="tag.emoji"></span>
+            <span x-text="tag.name"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+      <template x-for="item in displayedItems" :key="item.id">
+        <div class="break-inside-avoid">
+          <div class="card-soft relative" :class="{ 'card-soft-bookmark': item.bookmark }" @click="openViewer(item)">
+            <!-- Gambar -->
+            <div class="w-full bg-[#f7f0e9] flex items-center justify-center p-3" style="min-height: 160px;">
+              <img :src="item.images?.[0] || item.url" :alt="item.title" class="w-full h-auto rounded-2xl object-contain max-h-[280px]">
+            </div>
+            <!-- Badge jumlah gambar -->
+            <div x-show="item.images?.length > 1" class="absolute top-3 left-3 bg-black/50 text-white text-xs font-bold px-3 py-1.5 rounded-full z-10 backdrop-blur-sm">
+              <i class="ri-image-line"></i> <span x-text="item.images.length"></span>
+            </div>
+            <!-- Bookmark button -->
+            <button class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md border border-[#f0e4d8] z-20" @click.stop="toggleBookmark(item)">
+              <i class="ri-bookmark-fill text-xl" :class="item.bookmark ? 'text-[#f97316]' : 'text-[#b8a99a]'"></i>
+            </button>
+            <!-- Konten -->
+            <div class="p-4">
+              <h3 class="font-bold text-lg text-[#4b3b2e]" x-text="item.title"></h3>
+              <!-- Deskripsi dengan baca selengkapnya -->
+              <div x-data="{ expanded: false }">
+                <p class="text-[#8b7a6a] text-sm" :class="!expanded && 'desc-truncate'" x-text="item.desc"></p>
+                <button x-show="item.desc.length > 100" @click.stop="expanded = !expanded" class="text-xs text-[#f97316] font-semibold mt-1" x-text="expanded ? 'tutup' : 'baca selengkapnya...'"></button>
+              </div>
+              <!-- Tags -->
+              <div class="flex flex-wrap gap-1 mt-2">
+                <template x-for="tag in item.tags.slice(0,3)" :key="tag">
+                  <span class="text-xs bg-[#f7f0e9] px-2 py-1 rounded-full font-medium text-[#8b6f50]" x-text="tag"></span>
+                </template>
+                <span x-show="item.tags.length > 3" class="text-xs bg-[#f7f0e9] px-2 py-1 rounded-full font-medium text-[#8b6f50]">+<span x-text="item.tags.length-3"></span></span>
+              </div>
+              <!-- Aksi -->
+              <div class="flex gap-2 mt-4" @click.stop>
+                <button class="btn-minimal !py-1.5 !px-3 text-xs" @click="openEditModal(item)">
+                  <i class="ri-pencil-line"></i> Edit
+                </button>
+                <button class="btn-minimal !py-1.5 !px-3 text-xs !border-red-200 hover:!bg-red-50" @click="confirmDelete(item)">
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Empty state -->
+    <div x-show="displayedItems.length === 0" class="text-center py-16">
+      <i class="ri-folder-open-line text-6xl text-[#e1cbb8]"></i>
+      <p class="text-xl font-bold text-[#b8a99a] mt-4">Belum ada materi</p>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <a href="#" class="nav-item" :class="{ 'active': activeMenu==='all' }" @click.prevent="activeMenu='all'; activeTag=''; searchQuery=''">
+      <i class="ri-grid-fill"></i><span>Semua</span>
+    </a>
+    <a href="#" class="nav-item" :class="{ 'active': activeMenu==='bookmark' }" @click.prevent="activeMenu='bookmark'; activeTag=''; searchQuery=''">
+      <i class="ri-bookmark-fill"></i><span>Bookmark</span>
+    </a>
+    <a href="/ebook" class="nav-item">
+      <i class="ri-book-open-fill"></i><span>E-Book</span>
+    </a>
+  </div>
+
+  <!-- LIGHTBOX VIEWER dengan GESTURE -->
+  <div x-show="viewerOpen" x-transition.opacity class="fixed inset-0 z-50 bg-black viewer-container flex flex-col">
+    <!-- Tombol close -->
+    <button class="absolute top-5 right-5 z-50 w-12 h-12 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center border border-white/20" @click="viewerOpen = false">
+      <i class="ri-close-line text-2xl"></i>
+    </button>
+    
+    <!-- Area slide dengan scroll bebas -->
+    <div class="flex-1 relative w-full overflow-hidden">
+      <!-- Tombol navigasi minimal -->
+      <button class="absolute left-5 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm text-white flex items-center justify-center" @click="prevSlide" :disabled="!hasMultipleImages">
+        <i class="ri-arrow-left-s-line text-2xl"></i>
+      </button>
+      <button class="absolute right-5 top-1/2 -translate-y-1/2 z-40 w-12 h-12 rounded-full bg-black/30 backdrop-blur-sm text-white flex items-center justify-center" @click="nextSlide" :disabled="!hasMultipleImages">
+        <i class="ri-arrow-right-s-line text-2xl"></i>
+      </button>
+      
+      <!-- Slide container dengan snap -->
+      <div class="w-full h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth no-scrollbar" x-ref="slider" @scroll.debounce="syncSlideFromScroll">
+        <div class="flex h-full">
+          <template x-for="(img, idx) in (selectedItem?.images || [selectedItem?.url])" :key="idx">
+            <div class="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-2">
+              <!-- Gambar dengan lightbox zoom -->
+              <div class="relative max-w-full max-h-full" 
+                   @dblclick="toggleZoom"
+                   x-data="{ 
+                     zoomed: false, 
+                     scale: 1, 
+                     panX: 0, 
+                     panY: 0,
+                     isPanning: false,
+                     startX: 0,
+                     startY: 0,
+                     startPanX: 0,
+                     startPanY: 0
+                   }">
+                <img :src="img" 
+                     :alt="selectedItem?.title"
+                     class="max-w-full max-h-full object-contain transition-all duration-200"
+                     :class="{ 'cursor-zoom-in': !zoomed, 'cursor-grab': zoomed }"
+                     :style="{
+                       transform: zoomed ? `scale(${scale}) translate(${panX}px, ${panY}px)` : 'scale(1)',
+                       transition: isPanning ? 'none' : 'all 0.2s'
+                     }"
+                     @wheel.prevent="(e) => {
+                       if (zoomed) {
+                         e.preventDefault();
+                         const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                         scale = Math.max(1, Math.min(3, scale + delta));
+                       }
+                     }"
+                     @mousedown="(e) => {
+                       if (zoomed) {
+                         isPanning = true;
+                         startX = e.clientX;
+                         startY = e.clientY;
+                         startPanX = panX;
+                         startPanY = panY;
+                         e.preventDefault();
+                       }
+                     }"
+                     @mousemove="(e) => {
+                       if (isPanning && zoomed) {
+                         const dx = e.clientX - startX;
+                         const dy = e.clientY - startY;
+                         panX = startPanX + dx;
+                         panY = startPanY + dy;
+                       }
+                     }"
+                     @mouseup="() => { isPanning = false; }"
+                     @mouseleave="() => { isPanning = false; }"
+                     @touchstart="(e) => {
+                       if (zoomed && e.touches.length === 1) {
+                         isPanning = true;
+                         startX = e.touches[0].clientX;
+                         startY = e.touches[0].clientY;
+                         startPanX = panX;
+                         startPanY = panY;
+                         e.preventDefault();
+                       }
+                     }"
+                     @touchmove="(e) => {
+                       if (isPanning && zoomed && e.touches.length === 1) {
+                         const dx = e.touches[0].clientX - startX;
+                         const dy = e.touches[0].clientY - startY;
+                         panX = startPanX + dx;
+                         panY = startPanY + dy;
+                         e.preventDefault();
+                       }
+                     }"
+                     @touchend="() => { isPanning = false; }">
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer info -->
+    <div class="bg-[#2a2a2a] border-t border-[#3a3a3a] p-4">
+      <div class="container mx-auto flex flex-col md:flex-row gap-3 items-start md:items-center">
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-white" x-text="selectedItem?.title"></h2>
+          <p class="text-gray-400 text-sm line-clamp-1" x-text="selectedItem?.desc"></p>
+        </div>
+        <div class="flex gap-2">
+          <!-- Indikator slide -->
+          <div x-show="hasMultipleImages" class="bg-[#3a3a3a] rounded-full px-4 py-2 text-white text-sm font-semibold">
+            <span x-text="currentSlideIndex + 1"></span>/<span x-text="selectedItem?.images?.length || 1"></span>
+          </div>
+          <button class="btn-minimal !bg-[#3a3a3a] !border-0 text-white hover:!bg-[#4a4a4a]" @click="toggleBookmark(selectedItem)">
+            <i class="ri-bookmark-fill" :class="selectedItem?.bookmark ? 'text-[#f97316]' : 'text-white'"></i>
+            <span x-text="selectedItem?.bookmark ? 'Tersimpan' : 'Simpan'"></span>
+          </button>
+          <button class="btn-minimal !bg-[#3a3a3a] !border-0 text-white hover:!bg-[#4a4a4a]" @click="downloadCurrentImage">
+            <i class="ri-download-2-line"></i> Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ADD/EDIT -->
+  <div x-show="modalOpen" x-transition.opacity class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] flex items-center justify-center p-4" @click.self="modalOpen = false">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md border border-[#f0e4d8]">
+      <h3 class="font-black text-2xl mb-4 text-[#f97316]" x-text="modalTitle"></h3>
+      <form @submit.prevent="saveModalItem">
+        <div class="mb-3"><label class="font-semibold text-sm text-[#8b6f50]">Judul</label><input type="text" x-model="modalForm.title" class="w-full border border-[#f0e4d8] rounded-full p-3 text-sm mt-1" required></div>
+        <div class="mb-3"><label class="font-semibold text-sm text-[#8b6f50]">Deskripsi</label><textarea x-model="modalForm.desc" class="w-full border border-[#f0e4d8] rounded-2xl p-3 text-sm mt-1" rows="2" required></textarea></div>
+        <div class="mb-3"><label class="font-semibold text-sm text-[#8b6f50]">Gambar URL (pisahkan koma)</label><input type="text" x-model="modalForm.imagesInput" class="w-full border border-[#f0e4d8] rounded-full p-3 text-sm mt-1" required></div>
+        <div class="mb-4"><label class="font-semibold text-sm text-[#8b6f50]">Tag (koma)</label><input type="text" x-model="modalForm.tagsInput" class="w-full border border-[#f0e4d8] rounded-full p-3 text-sm mt-1" required></div>
+        <div class="flex gap-2 justify-end">
+          <button type="button" class="btn-minimal" @click="modalOpen = false">Batal</button>
+          <button type="submit" class="btn-minimal !bg-[#f97316] !text-white !border-[#f97316]" x-text="modalAction"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM -->
+  <div x-show="deleteConfirm.show" x-transition.opacity class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] flex items-center justify-center p-4" @click.self="deleteConfirm.show = false">
+    <div class="bg-white rounded-3xl p-6 max-w-sm border border-red-200">
+      <div class="flex gap-3 text-red-500 text-2xl font-black mb-4"><i class="ri-alert-line"></i> Hapus Materi?</div>
+      <p class="text-[#6b5a4a] mb-5">Data akan hilang permanen.</p>
+      <div class="flex gap-2 justify-end">
+        <button class="btn-minimal" @click="deleteConfirm.show=false">Batal</button>
+        <button class="btn-minimal !border-red-400 hover:!bg-red-50" @click="performDelete">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER SIMPEL -->
+  <footer class="bg-white border-t border-[#f0e4d8] py-6 text-center relative z-20">
+    <div class="text-sm text-[#b8a99a]">
+      <span>© 2026 MaJarTa · belajar makin asik</span>
+      <span class="mx-2">·</span>
+      <a href="#" class="hover:text-[#f97316]">Tentang</a>
+      <span class="mx-2">·</span>
+      <a href="#" class="hover:text-[#f97316]">Kontak</a>
+    </div>
+  </footer>
+
+  <script>
+    function majartaApp() {
+      return {
+        infographics: [],
+        activeTag: '',
+        searchQuery: '',
+        activeMenu: 'all',
+        menuOpen: false,
+        guideOpen: false,
+
+        viewerOpen: false,
+        selectedItem: null,
+        currentSlideIndex: 0,
+
+        modalOpen: false,
+        modalTitle: '',
+        modalAction: '',
+        modalForm: { id: null, title: '', desc: '', imagesInput: '', tagsInput: '' },
+        editingId: null,
+
+        deleteConfirm: { show: false, id: null },
+
+        alert: { show: false, message: '', type: 'success' },
+
+        tagEmoji: { 'Geografi': '🌍', 'IPS': '🏛️', 'Peta': '🗺️', 'Sejarah': '📜', 'Ekonomi': '💰', 'Matematika': '🔢', 'IPA': '🔬' },
+
+        get tagsWithEmoji() {
+          const tags = [...new Set(this.infographics.flatMap(i => i.tags || []))];
+          return tags.map(t => ({ name: t, emoji: this.tagEmoji[t] || '📌' }));
+        },
+
+        get displayedItems() {
+          let base = [...this.infographics];
+          if (this.activeMenu === 'bookmark') base = base.filter(i => i.bookmark);
+
+          base = base.filter(item => {
+            const tagMatch = !this.activeTag || (item.tags && item.tags.includes(this.activeTag));
+            const searchMatch = !this.searchQuery.trim() ||
+              item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+              item.desc.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+              (item.tags && item.tags.some(t => t.toLowerCase().includes(this.searchQuery.toLowerCase())));
+            return tagMatch && searchMatch;
+          });
+
+          return base.sort((a,b) => (b.bookmark?1:0) - (a.bookmark?1:0));
+        },
+
+        get hasMultipleImages() {
+          return this.selectedItem && (this.selectedItem.images?.length > 1);
+        },
+
+        init() {
+          const stored = localStorage.getItem('majartaV11');
+          if (stored) { try { this.infographics = JSON.parse(stored); } catch { this.loadDefault(); } } else this.loadDefault();
+          this.infographics = this.infographics.map(item => {
+            if (!item.images && item.url) item.images = [item.url];
+            if (item.fav !== undefined) {
+              item.bookmark = item.fav;
+              delete item.fav;
+            }
+            return item;
+          });
+          this.persist();
+        },
+
+        loadDefault() {
+          this.infographics = [
+  {
+    "id": 1,
+    "title": "Transformasi Geometri",
+    "desc": "Materi lengkap tentang transformasi geometri meliputi translasi, refleksi, rotasi, dan dilatasi. Cocok untuk siswa kelas IX dan XI.",
+    "tags": ["Matematika", "Kelas IX", "Kelas XI", "Transformasi Geometri", "Geometri"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/svFx4HbQ/IMG-20260224-061501-125.jpg",
+      "https://i.ibb.co.com/W4fMmbFX/IMG-20260224-061503-636.jpg",
+      "https://i.ibb.co.com/GQqhN4zn/IMG-20260224-061506-386.jpg",
+      "https://i.ibb.co.com/VfsXpwh/IMG-20260224-061509-110.jpg"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Transformasi Geometri by Skuling",
+    "desc": "Poster lengkap transformasi geometri mencakup semua jenis transformasi dalam satu tampilan. Ringkas dan mudah dipahami.",
+    "tags": ["Matematika", "Kelas IX", "Kelas XI", "Transformasi Geometri", "Skuling", "Poster Matematika"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/whvWy1zq/IMG-20260224-062620-824.jpg"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "SPLDV (Sistem Persamaan Linear Dua Variabel)",
+    "desc": "Pembahasan lengkap SPLDV untuk SMP kelas VIII dan SMA kelas XI. Dilengkapi dengan metode substitusi, eliminasi, dan grafik.",
+    "tags": ["Matematika", "Kelas VIII", "Kelas XI", "SPLDV", "Aljabar", "Persamaan Linear"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/4nNJsxBr/IMG-20260131-232945-678.jpg",
+      "https://i.ibb.co.com/0pKHxm21/IMG-20260131-232935-840.jpg",
+      "https://i.ibb.co.com/nq7B7XC6/IMG-20260131-232931-320.jpg"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "SPLTV/SPLDV",
+    "desc": "Materi Sistem Persamaan Linear Tiga Variabel dan Dua Variabel. Fokus pada soal-soal SNBT/UTBK dan pembahasan strategis.",
+    "tags": ["Matematika", "SNBT", "UTBK", "SPLTV", "SPLDV", "Aljabar", "Persamaan Linear"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/xKrhDWL0/IMG-20260131-232656-354.jpg"
+    ]
+  },
+  {
+    "id": 5,
+    "title": "TKA Matematika Wajib",
+    "desc": "Ringkasan materi TKA Matematika Wajib untuk persiapan ujian masuk PTN. Mencakup berbagai topik penting.",
+    "tags": ["Matematika", "TKA", "SNBT", "UTBK", "Matematika Wajib", "SMA"],
+    "bookmark": true,
+    "images": [
+      "https://i.ibb.co.com/yFCqjtDK/IMG-20260131-232549-100.jpg"
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Aljabar (SMP)",
+    "desc": "Konsep dasar aljabar untuk tingkat SMP. Cocok sebagai fondasi untuk menghadapi TKA/SNBT.",
+    "tags": ["Matematika", "Aljabar", "SMP", "TKA", "SNBT", "UTBK"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/6cNZC5fL/IMG-20260131-232310-209.jpg",
+      "https://i.ibb.co.com/4R2LBnFk/IMG-20260131-232308-147.jpg",
+      "https://i.ibb.co.com/WpBqH12L/IMG-20260131-232306-332.jpg",
+      "https://i.ibb.co.com/3mFWcHCX/IMG-20260131-232304-337.jpg"
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Bilangan: Fundamental Dasar Matematika",
+    "desc": "Pemahaman mendalam tentang konsep bilangan, operasi hitung, dan sifat-sifatnya. Fondasi penting untuk semua cabang matematika.",
+    "tags": ["Matematika", "Bilangan", "Operasi Hitung", "SMP", "SMA", "Dasar Matematika"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/dw44dmTp/IMG-20260131-232123-096.jpg",
+      "https://i.ibb.co.com/KxD4mVGs/IMG-20260131-232117-934.jpg"
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Besaran-Satuan, Keliling-Volume",
+    "desc": "Materi SD tentang besaran dan satuan, serta cara menghitung keliling dan volume bangun datar dan ruang.",
+    "tags": ["Matematika", "SD", "Besaran", "Satuan", "Keliling", "Volume", "Geometri"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/rRMbGVBD/IMG-20260131-231536-431.jpg",
+      "https://i.ibb.co.com/FLcX8PS0/IMG-20260131-231531-442.jpg"
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Pertidaksamaan Linear Satu Variabel",
+    "desc": "Pembahasan lengkap tentang pertidaksamaan linear satu variabel. Disertai contoh soal dan penyelesaian untuk TKA & SNBT.",
+    "tags": ["Matematika", "Pertidaksamaan", "Aljabar", "TKA", "SNBT", "UTBK"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/cc0np1BR/IMG-20260131-231448-131.jpg",
+      "https://i.ibb.co.com/xK5tDg3N/IMG-20260131-231450-253.jpg",
+      "https://i.ibb.co.com/0jcn9Bbq/IMG-20260131-231453-646.jpg"
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Luas & Volume Bangun Ruang",
+    "desc": "Kumpulan rumus dan konsep luas permukaan serta volume bangun ruang seperti kubus, balok, tabung, kerucut, dan bola.",
+    "tags": ["Matematika", "Geometri", "Bangun Ruang", "Luas", "Volume", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/gbLS0frp/IMG-20260131-231435-971.jpg",
+      "https://i.ibb.co.com/gZTYvrkc/IMG-20260131-231434-272.jpg",
+      "https://i.ibb.co.com/1tPXY6F1/IMG-20260131-231432-652.jpg",
+      "https://i.ibb.co.com/Q7yj90bj/IMG-20260131-231430-412.jpg"
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Materi Matematika Lengkap",
+    "desc": "Kompendium lengkap matematika SMA: Aljabar, SPLDV, PLDV, SPLV, Eksponen, dan lainnya. Ideal untuk persiapan TKA & SNBT.",
+    "tags": ["Matematika", "SMA", "Aljabar", "SPLDV", "Eksponen", "TKA", "SNBT", "UTBK"],
+    "bookmark": true,
+    "images": [
+      "https://i.ibb.co.com/B5nQGJd6/IMG-20260131-231120-394.jpg",
+      "https://i.ibb.co.com/7twjzXfX/IMG-20260131-231116-446.jpg",
+      "https://i.ibb.co.com/dsbdssBt/IMG-20260131-231111-998.jpg",
+      "https://i.ibb.co.com/27j7Kc4r/IMG-20260131-231108-592.jpg",
+      "https://i.ibb.co.com/k2fdbdhk/IMG-20260131-231104-486.jpg",
+      "https://i.ibb.co.com/chvSDN7G/IMG-20260131-231100-877.jpg",
+      "https://i.ibb.co.com/67yjZ4tR/IMG-20260131-231055-219.jpg",
+      "https://i.ibb.co.com/MdYfqxp/IMG-20260131-231049-018.jpg",
+      "https://i.ibb.co.com/9mPqSx6B/IMG-20260131-231046-598.jpg",
+      "https://i.ibb.co.com/RGt8bpzn/IMG-20260131-231040-124.jpg"
+    ]
+  },
+  {
+    "id": 12,
+    "title": "Lingkaran",
+    "desc": "Konsep lingkaran: jari-jari, diameter, keliling, luas, sudut pusat, sudut keliling, dan garis singgung. Untuk TKA & SNBT.",
+    "tags": ["Matematika", "Geometri", "Lingkaran", "TKA", "SNBT", "UTBK"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/N60yJsvG/IMG-20260131-230950-137.jpg"
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Rumus Umum Matematika",
+    "desc": "Kumpulan rumus umum matematika yang sering digunakan dalam berbagai soal ujian. Cocok untuk hafalan cepat.",
+    "tags": ["Matematika", "Rumus", "TKA", "SNBT", "UTBK", "SMA"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/vvw98tpS/IMG-20260131-231003-961.jpg"
+    ]
+  },
+  {
+    "id": 14,
+    "title": "Kumpulan Rumus Matematika Lengkap",
+    "desc": "Poster kumpulan rumus matematika lengkap untuk jenjang SMA. Sangat membantu dalam persiapan TKA & SNBT.",
+    "tags": ["Matematika", "SMA", "Rumus", "TKA", "SNBT", "UTBK"],
+    "bookmark": true,
+    "images": [
+      "https://i.ibb.co.com/WvSy0X35/IMG-20260131-231012-355.jpg"
+    ]
+  },
+  {
+    "id": 15,
+    "title": "Rumus Umum Matematika: Satuan, Skala, Kecepatan",
+    "desc": "Ringkasan rumus umum matematika mencakup konversi satuan, perhitungan skala, kecepatan, dan aplikasinya dalam soal.",
+    "tags": ["Matematika", "SMA", "Satuan", "Skala", "Kecepatan", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/Wv6ZYjF3/IMG-20260131-231020-966.jpg"
+    ]
+  },
+  {
+    "id": 16,
+    "title": "Suhu dan Kalor (SMP)",
+    "desc": "Materi IPA tentang suhu dan kalor untuk tingkat SMP. Mencakup konversi suhu, pemuaian, kalor jenis, dan perubahan wujud.",
+    "tags": ["IPA", "Fisika", "SMP", "Suhu", "Kalor", "Kalor Jenis"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/LhkCc1hQ/IMG-20260131-232745-739.jpg",
+      "https://i.ibb.co.com/6c6z27L1/IMG-20260131-232749-430.jpg"
+    ]
+  },
+  {
+    "id": 17,
+    "title": "Fisika: Tekanan (SMP)",
+    "desc": "Penjelasan detail tentang tekanan zat padat, cair, dan gas. Dilengkapi dengan rumus tekanan hidrostatis dan hukum Pascal.",
+    "tags": ["IPA", "Fisika", "SMP", "Tekanan", "Hukum Pascal", "Tekanan Hidrostatis"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/JwhdZxH6/IMG-20260131-232408-391.jpg",
+      "https://i.ibb.co.com/VWJvNCGF/IMG-20260131-232410-250.jpg",
+      "https://i.ibb.co.com/vgmj62T/IMG-20260131-232417-990.jpg"
+    ]
+  },
+  {
+    "id": 18,
+    "title": "Menjelajah Sel",
+    "desc": "Materi biologi tentang struktur dan fungsi sel, organel sel, serta perbedaan sel hewan dan sel tumbuhan.",
+    "tags": ["IPA", "Biologi", "Sel", "Organel Sel", "SMP", "SMA"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/Gv7TQfJd/IMG-20260131-232156-069.jpg",
+      "https://i.ibb.co.com/hFFQ6zFT/IMG-20260131-232159-327.jpg"
+    ]
+  },
+  {
+    "id": 19,
+    "title": "Sistem Peredaran Darah",
+    "desc": "Materi lengkap sistem peredaran darah manusia, meliputi jantung, pembuluh darah, dan komponen darah. Untuk Biologi TKA/SNBT.",
+    "tags": ["IPA", "Biologi", "Sistem Peredaran Darah", "Jantung", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/93Cbh4Vq/IMG-20260131-232011-166.jpg",
+      "https://i.ibb.co.com/cKZQJKv1/IMG-20260131-232016-132.jpg",
+      "https://i.ibb.co.com/1tMhQQ11/IMG-20260131-232018-761.jpg"
+    ]
+  },
+  {
+    "id": 20,
+    "title": "Hukum Newton",
+    "desc": "Pembahasan Hukum I, II, dan III Newton beserta contoh penerapannya dalam kehidupan sehari-hari. Untuk Fisika SMP TKA/SNBT.",
+    "tags": ["IPA", "Fisika", "Hukum Newton", "SMP", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/vxh7RhqT/IMG-20260131-231316-239.jpg",
+      "https://i.ibb.co.com/YF4209FF/IMG-20260131-231317-921.jpg"
+    ]
+  },
+  {
+    "id": 21,
+    "title": "Pertumbuhan & Perkembangan",
+    "desc": "Materi biologi tentang pertumbuhan dan perkembangan pada tumbuhan dan hewan. Faktor internal dan eksternal yang mempengaruhi.",
+    "tags": ["IPA", "Biologi", "Pertumbuhan", "Perkembangan", "SMP", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/tpbDh0Lv/IMG-20260131-231207-158.jpg",
+      "https://i.ibb.co.com/5Wn1jQmf/IMG-20260131-231208-994.jpg"
+    ]
+  },
+  {
+    "id": 22,
+    "title": "Tata Surya dan Keplanetan",
+    "desc": "Penjelasan tentang sistem tata surya, karakteristik planet, benda langit lainnya, serta fenomena astronomi terkait.",
+    "tags": ["IPA", "Astronomi", "Tata Surya", "Planet", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/pvNkLRbB/IMG-20260131-231137-995.jpg",
+      "https://i.ibb.co.com/v4zPjNpP/IMG-20260131-231136-200.jpg"
+    ]
+  },
+  {
+    "id": 23,
+    "title": "Perjuangan Menuju Kedaulatan",
+    "desc": "Sejarah perjuangan bangsa Indonesia mempertahankan kemerdekaan dan upaya mendapatkan kedaulatan penuh pasca kemerdekaan.",
+    "tags": ["Sejarah", "Kemerdekaan", "Kedaulatan", "Sejarah Indonesia", "SMA"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/1fXSJvsh/IMG-20260131-232624-931.jpg"
+    ]
+  },
+  {
+    "id": 24,
+    "title": "Sejarah Praaksara, Hindu-Budha, Islam",
+    "desc": "Perjalanan panjang sejarah Indonesia dari masa praaksara, pengaruh Hindu-Budha, hingga masuknya Islam ke Nusantara.",
+    "tags": ["Sejarah", "Praaksara", "Hindu-Budha", "Islam", "Nusantara", "SMA"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/DHqGNHfW/IMG-20260131-231820-108.jpg",
+      "https://i.ibb.co.com/xKqwxbPF/IMG-20260131-231817-560.jpg",
+      "https://i.ibb.co.com/pjhhSWK9/IMG-20260131-231815-278.jpg"
+    ]
+  },
+  {
+    "id": 25,
+    "title": "8 Part of Speech",
+    "desc": "Materi dasar bahasa Inggris tentang 8 kelas kata (noun, pronoun, verb, adjective, adverb, preposition, conjunction, interjection).",
+    "tags": ["Bahasa Inggris", "Part of Speech", "Grammar", "SMP", "SMA"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/jPGjsRbX/IMG-20260131-232449-902.jpg",
+      "https://i.ibb.co.com/yncTDgM8/IMG-20260131-232451-726.jpg"
+    ]
+  },
+  {
+    "id": 26,
+    "title": "Past Tenses, Present Tenses, Future",
+    "desc": "Pembahasan lengkap tentang tenses dalam bahasa Inggris: past, present, dan future. Dilengkapi dengan contoh kalimat. Untuk TKA/SNBT.",
+    "tags": ["Bahasa Inggris", "Tenses", "Past Tense", "Present Tense", "Future Tense", "TKA", "SNBT"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/m57cMqDV/IMG-20260131-231844-619.jpg",
+      "https://i.ibb.co.com/ZzbZCz96/IMG-20260131-231842-087.jpg",
+      "https://i.ibb.co.com/jPY0xrw3/IMG-20260131-231839-741.jpg"
+    ]
+  },
+  {
+    "id": 27,
+    "title": "Catatan Lengkap Bindo SNBT/TKA",
+    "desc": "Kumpulan catatan lengkap Bahasa Indonesia untuk persiapan SNBT/TKA. Mencakup konjungsi subordinatif, huruf kapital, dan penggunaan tanda baca.",
+    "tags": ["Bahasa Indonesia", "SNBT", "TKA", "Konjungsi", "Tanda Baca", "Ejaan"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/XkfdPp7n/IMG-20260131-232253-707.jpg",
+      "https://i.ibb.co.com/zhPVsShN/IMG-20260131-232251-943.jpg",
+      "https://i.ibb.co.com/TDdYNG0F/IMG-20260131-232247-918.jpg",
+      "https://i.ibb.co.com/2m1x3Vn/IMG-20260131-232241-018.jpg",
+      "https://i.ibb.co.com/V0jHBL0Y/IMG-20260131-232239-564.jpg",
+      "https://i.ibb.co.com/s94xXqGL/IMG-20260131-232227-136.jpg",
+      "https://i.ibb.co.com/VPRvgb7/IMG-20260131-232223-137.jpg",
+      "https://i.ibb.co.com/gLfm0zLf/IMG-20260131-232219-866.jpg",
+      "https://i.ibb.co.com/fhdBGDT/IMG-20260131-232218-116.jpg",
+      "https://i.ibb.co.com/k64XNz1t/IMG-20260131-232215-930.jpg",
+      "https://i.ibb.co.com/8RptTG3/IMG-20260131-232213-957.jpg",
+      "https://i.ibb.co.com/Z1hBPyLt/IMG-20260131-232211-683.jpg",
+      "https://i.ibb.co.com/Y4XCcZjg/IMG-20260131-232208-324.jpg"
+    ]
+  },
+  {
+    "id": 28,
+    "title": "Teks Eksposisi",
+    "desc": "Materi tentang teks eksposisi: pengertian, struktur, ciri-ciri, dan contoh. Untuk persiapan TKA & SNBT Bahasa Indonesia.",
+    "tags": ["Bahasa Indonesia", "Teks Eksposisi", "TKA", "SNBT", "Menulis"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/DP1Cnspq/IMG-20260131-231938-628.jpg",
+      "https://i.ibb.co.com/d06QkWkG/IMG-20260131-231930-930.jpg"
+    ]
+  },
+  {
+    "id": 29,
+    "title": "Teks Deskripsi & Cerpen",
+    "desc": "Pemahaman tentang teks deskripsi dan cerpen, mencakup struktur, unsur intrinsik, dan contoh analisis. Untuk TKA/SNBT.",
+    "tags": ["Bahasa Indonesia", "Teks Deskripsi", "Cerpen", "TKA", "SNBT", "Sastra"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/MxPkWVbt/IMG-20260131-231805-119.jpg",
+      "https://i.ibb.co.com/99DkPYbz/IMG-20260131-231801-623.jpg",
+      "https://i.ibb.co.com/fsWWtsn/IMG-20260131-231800-015.jpg",
+      "https://i.ibb.co.com/mVfd6ZTT/IMG-20260131-231743-843.jpg"
+    ]
+  },
+  {
+    "id": 30,
+    "title": "Penggunaan Tanda Baca",
+    "desc": "Panduan lengkap penggunaan tanda baca dalam bahasa Indonesia sesuai EYD. Materi penting untuk TKA & SNBT.",
+    "tags": ["Bahasa Indonesia", "Tanda Baca", "EYD", "TKA", "SNBT", "Menulis"],
+    "bookmark": false,
+    "images": [
+      "https://i.ibb.co.com/zWbzjv2H/IMG-20260131-231326-444.jpg",
+      "https://i.ibb.co.com/cK1nzy4q/IMG-20260131-231328-773.jpg",
+      "https://i.ibb.co.com/k6B45KH7/IMG-20260131-231330-957.jpg",
+      "https://i.ibb.co.com/Wvv1Jqt6/IMG-20260131-231332-893.jpg",
+      "https://i.ibb.co.com/JwZT65cp/IMG-20260131-231341-036.jpg",
+      "https://i.ibb.co.com/GvVkGfJx/IMG-20260131-231334-835.jpg",
+      "https://i.ibb.co.com/60hwCd4q/IMG-20260131-231338-285.jpg"
+    ]
+  }
+];
+        },
+
+        persist() { localStorage.setItem('majartaV11', JSON.stringify(this.infographics)); },
+
+        initOfflineCache() {
+          if ('caches' in window) {
+            caches.open('majarta-cache-v4').then(cache => {
+              this.infographics.flatMap(i => i.images || []).forEach(url => {
+                fetch(url, { mode: 'no-cors' }).catch(() => {});
+              });
+            });
+          }
+        },
+
+        showAlert(msg, type) { this.alert = { show: true, message: msg, type }; setTimeout(() => this.alert.show = false, 2600); },
+
+        toggleBookmark(item) { item.bookmark = !item.bookmark; this.persist(); this.showAlert(item.bookmark ? 'Ditambahkan ke bookmark' : 'Dihapus dari bookmark', 'success'); if (item.bookmark) confetti({particleCount:40, spread:40, origin:{y:0.7}}); },
+
+        openViewer(item) { this.selectedItem = item; this.currentSlideIndex = 0; this.viewerOpen = true; setTimeout(() => { if (this.$refs.slider) this.$refs.slider.scrollLeft = 0; }, 50); },
+
+        prevSlide() { if (!this.hasMultipleImages) return; if (this.currentSlideIndex > 0) this.currentSlideIndex--; else this.currentSlideIndex = this.selectedItem.images.length - 1; this.syncScrollToIndex(); },
+
+        nextSlide() { if (!this.hasMultipleImages) return; if (this.currentSlideIndex < this.selectedItem.images.length - 1) this.currentSlideIndex++; else this.currentSlideIndex = 0; this.syncScrollToIndex(); },
+
+        syncScrollToIndex() {
+          const container = this.$refs.slider;
+          if (container) container.scrollTo({ left: container.clientWidth * this.currentSlideIndex, behavior: 'smooth' });
+        },
+
+        syncSlideFromScroll() {
+          const container = this.$refs.slider;
+          if (container) {
+            const index = Math.round(container.scrollLeft / container.clientWidth);
+            if (index !== this.currentSlideIndex) this.currentSlideIndex = index;
+          }
+        },
+
+        toggleZoom(event) {
+          // Di-handle oleh x-data masing-masing gambar
+        },
+
+        downloadCurrentImage() { 
+          if (!this.selectedItem) return; 
+          const images = this.selectedItem.images || [this.selectedItem.url];
+          const link = document.createElement('a'); 
+          link.href = images[this.currentSlideIndex]; 
+          link.download = this.selectedItem.title.replace(/\s+/g,'_') + '_' + (this.currentSlideIndex+1) + '.jpg'; 
+          link.target = '_blank';
+          link.click(); 
+          this.showAlert('Download dimulai','success'); 
+        },
+
+        openAddModal() { 
+          this.modalTitle='Tambah Materi'; 
+          this.modalAction='Buat'; 
+          this.editingId=null; 
+          this.modalForm={id:null, title:'', desc:'', imagesInput:'', tagsInput:''}; 
+          this.modalOpen=true; 
+        },
+        
+        openEditModal(item) { 
+          this.modalTitle='Edit Materi'; 
+          this.modalAction='Simpan'; 
+          this.editingId=item.id; 
+          this.modalForm={
+            id:item.id, 
+            title:item.title, 
+            desc:item.desc, 
+            imagesInput:(item.images||[item.url]).join(', '), 
+            tagsInput:item.tags.join(', ')
+          }; 
+          this.modalOpen=true; 
+        },
+        
+        saveModalItem() {
+          const imagesArray = this.modalForm.imagesInput.split(',').map(s=>s.trim()).filter(s=>s);
+          const tagsArray = this.modalForm.tagsInput.split(',').map(s=>s.trim()).filter(s=>s);
+          
+          if (!imagesArray.length || !tagsArray.length) { 
+            this.showAlert('Isi gambar & tag', 'error'); 
+            return; 
+          }
+          
+          if (this.editingId) {
+            const idx = this.infographics.findIndex(i => i.id === this.editingId);
+            if (idx !== -1) { 
+              this.infographics[idx] = {
+                ...this.infographics[idx], 
+                title: this.modalForm.title, 
+                desc: this.modalForm.desc, 
+                images: imagesArray, 
+                tags: tagsArray 
+              }; 
+            }
+            this.showAlert('Diperbarui', 'success');
+          } else {
+            this.infographics.push({ 
+              id: Date.now(), 
+              title: this.modalForm.title, 
+              desc: this.modalForm.desc, 
+              images: imagesArray, 
+              tags: tagsArray, 
+              bookmark: false 
+            });
+            this.showAlert('Ditambahkan', 'success');
+          }
+          this.persist(); 
+          this.modalOpen = false;
+        },
+
+        confirmDelete(item) { 
+          this.deleteConfirm = { show: true, id: item.id }; 
+        },
+        
+        performDelete() { 
+          this.infographics = this.infographics.filter(i => i.id !== this.deleteConfirm.id); 
+          this.persist(); 
+          this.deleteConfirm.show = false; 
+          this.showAlert('Dihapus', 'success'); 
+        },
+
+        exportVault() {
+          const dataStr = JSON.stringify(this.infographics, null, 2);
+          const blob = new Blob([dataStr], { type: 'application/json' });
+          const a = document.createElement('a'); 
+          a.href = URL.createObjectURL(blob); 
+          a.download = `majarta_${new Date().toISOString().slice(0,10)}.json`; 
+          a.click(); 
+          this.showAlert('Ekspor berhasil', 'success');
+        },
+
+        importVault(e) {
+          const file = e.target.files[0]; 
+          if (!file) return;
+          
+          const reader = new FileReader();
+          
+          reader.onload = (ev) => {
+            try {
+              const imported = JSON.parse(ev.target.result);
+              
+              if (Array.isArray(imported)) {
+                // Validasi struktur data
+                const fixed = imported.map(item => {
+                  // Pastikan setiap item memiliki properti yang diperlukan
+                  const newItem = {
+                    id: item.id || Date.now() + Math.random(),
+                    title: item.title || 'Tanpa Judul',
+                    desc: item.desc || '',
+                    tags: Array.isArray(item.tags) ? item.tags : [],
+                    bookmark: item.bookmark || false,
+                    images: []
+                  };
+                  
+                  // Handle images/url
+                  if (item.images && Array.isArray(item.images)) {
+                    newItem.images = item.images.filter(url => url && typeof url === 'string');
+                  } else if (item.url && typeof item.url === 'string') {
+                    newItem.images = [item.url];
+                  } else if (item.image && typeof item.image === 'string') {
+                    newItem.images = [item.image];
+                  }
+                  
+                  // Migrasi dari fav ke bookmark
+                  if (item.fav !== undefined) {
+                    newItem.bookmark = Boolean(item.fav);
+                  }
+                  
+                  return newItem;
+                }).filter(item => item.images.length > 0); // Hanya item dengan gambar
+                
+                this.infographics = fixed; 
+                this.persist(); 
+                this.initOfflineCache();
+                this.showAlert(`Berhasil mengimpor ${fixed.length} item`, 'success');
+              } else {
+                throw new Error('Data bukan array');
+              }
+            } catch (error) {
+              console.error('Import error:', error);
+              this.showAlert('File JSON tidak valid', 'error');
+            }
+            
+            // Reset input file
+            e.target.value = '';
+          };
+          
+          reader.onerror = () => {
+            this.showAlert('Gagal membaca file', 'error');
+            e.target.value = '';
+          };
+          
+          reader.readAsText(file);
+        },
+
+        closeAll() { 
+          this.viewerOpen = false; 
+          this.modalOpen = false; 
+          this.deleteConfirm.show = false; 
+          this.menuOpen = false; 
+          this.guideOpen = false; 
+        },
+      }
+    }
+  </script>
+</body>
+</html>
