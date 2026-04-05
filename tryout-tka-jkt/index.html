@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>PoTesKu! • Try Out TKA Matematika 2026</title>
+    
+    <!-- SEO & Social Meta -->
+    <meta name="description" content="Try Out TKA Matematika SMP dari Provinsi DKI Jakarta 2026. Gratis, interaktif, pembahasan lengkap. Simulasi ujian dengan 30 soal & pembahasan.">
+    <meta name="keywords" content="TKA, Try Out Jakarta, Matematika SMP, PoTesKu, simulasi ujian, Dinas Pendidikan DKI">
+    <meta name="author" content="PoTesKu Team">
+    <meta name="theme-color" content="#1cb0f6">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="PoTesKu! - Try Out TKA">
+    <meta property="og:description" content="Latihan soal TKA Matematika 2026. 30 soal, timer, bookmark, dan pembahasan. Coba sekarang!">
+    <meta property="og:image" content="https://i.ibb.co.com/PzWRSyHC/studekasa-20260221-135456-0000.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://potesku-tka.web.app">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PoTesKu TKA - Try Out TKA Matematika">
+    <meta name="twitter:description" content="Gratis & terbuka untuk umum. Soal standar DKI Jakarta + pembahasan lengkap.">
+    <meta name="twitter:image" content="https://i.ibb.co.com/PzWRSyHC/studekasa-20260221-135456-0000.png">
+    
+    <link rel="icon" type="image/png" href="https://i.ibb.co.com/YBp1m1d2/logo-potesku-200x200.webp">
+    <link rel="apple-touch-icon" href="https://i.ibb.co.com/YBp1m1d2/logo-potesku-200x200.webp">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Fallback Lucide + manual icon backup -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        * { font-family: 'Nunito', sans-serif; }
+        .btn-duo {
+            transition: all 0.08s linear;
+            border-bottom-width: 4px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .btn-duo:active { transform: translateY(2px); border-bottom-width: 0px; margin-bottom: 4px; }
+        .btn-green { background: #58cc02; border-color: #46a302; color: white; }
+        .btn-blue { background: #1cb0f6; border-color: #1899d6; color: white; }
+        .btn-orange { background: #ff9600; border-color: #e68700; color: white; }
+        .btn-red { background: #ff4b4b; border-color: #ea2b2b; color: white; }
+        .btn-white { background: white; border-color: #e5e5e5; color: #4b4b4b; border-width: 2px 2px 4px 2px; }
+        .option-card {
+            border: 2px solid #e5e5e5;
+            border-bottom-width: 4px;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        .option-card.selected { border-color: #1cb0f6; background-color: #ddf4ff; }
+        .option-card.correct-review { border-color: #58cc02; background-color: #d7ffb8; }
+        .option-card.wrong-review { border-color: #ff4b4b; background-color: #ffdfe0; }
+        .abc-label {
+            width: 36px; height: 36px; border: 2px solid #e5e5e5; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-weight: 900;
+        }
+        .selected .abc-label { border-color: #1cb0f6; background: #1cb0f6; color: white; }
+        .check-box {
+            width: 26px; height: 26px; border-radius: 8px; border: 2px solid #e5e5e5;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .selected .check-box { background: #1cb0f6; border-color: #1cb0f6; color: white; }
+        .tf-btn {
+            width: 48px; height: 48px; border-radius: 14px; border: 2px solid #e5e5e5;
+            border-bottom-width: 4px; display: flex; align-items: center; justify-content: center;
+        }
+        .tf-btn.active-true { background: #58cc02; border-color: #46a302; color: white; }
+        .tf-btn.active-false { background: #ff4b4b; border-color: #ea2b2b; color: white; }
+        .progress-bar { height: 8px; background: #e5e5e5; border-radius: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: #58cc02; transition: width 0.2s; }
+        .nav-grid-btn { transition: all 0.1s; border-bottom-width: 3px; }
+        /* Fallback icon jika lucide gagal */
+        .icon-fallback {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: invert(0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-sky-50 to-white min-h-screen">
+
+<div id="app" class="relative">
+    
+    <!-- LAYAR LOGIN (TALLY FORM + TOMBOL LANJUT) -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-5">
+        <div class="max-w-md w-full bg-white rounded-[2.5rem] border-2 border-gray-100 overflow-hidden fade-in">
+            <div class="p-6 text-center bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                <img src="https://i.ibb.co.com/Lh07c1Pt/studekasa-20260221-134156-0000.png" class="w-auto h-20 mx-auto rounded-2xl mb-2">
+                <h1 class="text-3xl font-black text-gray-800">PoTesKu TKA</h1>
+                <p class="text-gray-500 font-bold text-sm">Try Out Matematika • DKI Jakarta 2026</p>
+                <p class="text-xs text-gray-400 mt-1">30 Soal + 75 Menit + Pembahasan</p>
+            </div>
+            <div class="p-6">
+                <div class="mb-4 text-sm font-bold text-gray-600 flex items-center gap-2 justify-center">
+                </div>
+                <!-- TALLY FORM -->
+                <div class="tally-wrapper min-h-[200px] rounded-2xl overflow-hidden">
+                    <iframe data-tally-src="https://tally.so/embed/gDZr2M?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="220" frameborder="0" marginheight="0" marginwidth="0" title="Login PoTesKu" class="rounded-xl"></iframe>
+                    <script>
+                        var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};
+                        if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}
+                    </script>
+                </div>
+                <div class="text-center mt-4 text-[11px] text-gray-400">Data hanya untuk dokumentasi internal</div>
+                <button id="force-start-btn" class="btn-duo btn-green w-full py-3 rounded-xl mt-5 text-base shadow-md">🚀 LANJUTKAN TRY OUT</button>
+                <p class="text-[10px] text-center text-gray-400 mt-4">Dengan melanjutkan, Anda menyetujui latihan gratis ini. <br> Sumber: Dinas Pendidikan DKI Jakarta</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN EXAM VIEW (mulanya hidden) -->
+    <div id="exam-container" class="hidden min-h-screen flex flex-col bg-white">
+        <div class="sticky top-0 z-50 bg-white border-b-2 border-gray-100 px-4 py-3 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <img src="https://i.ibb.co.com/YBp1m1d2/logo-potesku-200x200.webp" class="h-9 w-9 rounded-lg">
+                    <span class="text-xs font-black bg-blue-100 text-blue-700 px-3 py-1 rounded-full">MATEMATIKA • TKA</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="bg-red-50 border-2 border-red-100 px-3 py-1.5 rounded-xl font-black text-red-600 flex items-center gap-1 text-sm">
+                        <i data-lucide="timer" class="w-4 h-4"></i>
+                        <span id="timer-display">30:00</span>
+                    </div>
+                    <button id="bookmark-btn" onclick="toggleBookmark()" class="btn-duo btn-white w-10 h-10 rounded-xl p-0">
+                        <i data-lucide="flag" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="openGridModal()" class="btn-duo btn-white w-10 h-10 rounded-xl p-0">
+                        <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2 progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 pb-32">
+            <div class="max-w-3xl mx-auto">
+                <div class="mb-4 flex justify-between items-center">
+                    <div class="flex gap-2 items-center flex-wrap">
+                        <span id="q-tag" class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-[10px] font-black">Soal</span>
+                        <span id="q-counter" class="text-gray-400 font-bold text-sm">1 / 30</span>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="changeFont(-1)" class="bg-gray-100 w-8 h-8 rounded-full font-bold text-sm">A-</button>
+                        <button onclick="changeFont(1)" class="bg-gray-100 w-8 h-8 rounded-full font-bold text-sm">A+</button>
+                    </div>
+                </div>
+                <div id="question-text" class="text-gray-800 font-extrabold text-xl leading-relaxed mb-7"></div>
+                <div id="options-area" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-100 p-3 shadow-lg">
+            <div class="max-w-3xl mx-auto flex gap-3">
+                <button id="prev-btn" onclick="prevQuestion()" class="btn-duo btn-white flex-1 py-3 rounded-xl text-sm">Kembali</button>
+                <button id="next-btn" onclick="nextOrSubmit()" class="btn-duo btn-blue flex-[2] py-3 rounded-xl text-sm">Lanjut</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- RESULT VIEW -->
+    <div id="result-container" class="hidden fixed inset-0 bg-white z-[70] flex flex-col items-center justify-center p-5 text-center overflow-y-auto">
+        <div class="w-24 h-24 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center mb-4"><i data-lucide="trophy" class="w-12 h-12"></i></div>
+        <h2 class="text-3xl font-black mb-1">Try Out Selesai!</h2>
+        <p class="text-gray-500 font-bold mb-5">Terima kasih sudah berlatih 💪</p>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-[2.5rem] border-2 border-blue-200 mb-6 w-full max-w-xs">
+            <p class="text-sm font-black text-blue-500 uppercase">Skor Akhir</p>
+            <h1 id="final-score" class="text-6xl font-black text-blue-600">0</h1>
+            <p id="score-desc" class="text-xs font-bold mt-1">dari 30 soal</p>
+        </div>
+        <div class="space-y-3 w-full max-w-xs">
+            <button onclick="reviewMode()" class="btn-duo btn-orange w-full py-3 rounded-xl">Lihat Pembahasan</button>
+            <button onclick="resetToNewTryout()" class="btn-duo btn-white w-full py-3 rounded-xl">Try Out Ulang</button>
+        </div>
+        <div class="absolute bottom-3 text-center text-[9px] text-gray-400 font-bold px-4">
+            PoTesKu TKA • Platform Tes Kemampuan Akademik Kita<br>
+            <span class="text-[8px]">Gratis dan terbuka untuk umum • Sumber: Dinas Pendidikan Jakarta</span>
+        </div>
+    </div>
+
+    <!-- Modal Navigasi Soal -->
+    <div id="grid-modal" class="hidden fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] max-w-md w-full p-5">
+            <div class="flex justify-between items-center mb-4"><h3 class="font-black text-xl">Navigasi Soal</h3><button onclick="closeGridModal()" class="text-gray-400"><i data-lucide="x" class="w-6 h-6"></i></button></div>
+            <div id="grid-buttons" class="grid grid-cols-5 gap-2 max-h-96 overflow-y-auto pb-2"></div>
+            <button onclick="submitExam()" class="btn-duo btn-red w-full py-3 mt-5 rounded-xl">Kumpulkan Jawaban</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ======================= DATA SOAL 30 (LENGKAP) =======================
+    const questionsData = [
+        { type: "MC", tag: "Perbandingan", text: "Perhatikan pernyataan berikut: <br/> i. 7987 > 21784 <br/> ii. 3298756 > 673568 <br/> iii. 897546 < 896879 <br/> iv. 12366875 < 6934812 <br/> Pernyataan yang benar adalah ....", options: ["i", "ii", "iii", "iv"], correct: 1, explanation: "3.298.756 > 673.568 (benar), yang lain salah." },
+        { type: "MC", tag: "Bilangan Bulat", text: "Suhu di dalam kulkas sebelum dihidupkan adalah 22°C. Setelah dihidupkan selama 4 jam suhunya menjadi -5°C. Perbedaan suhu dalam kulkas sebelum dan sesudah dihidupkan adalah ....", options: ["-27°C", "-17°C", "17°C", "27°C"], correct: 3, explanation: "22 - (-5) = 27°C" },
+        { type: "MC", tag: "Pembulatan", text: "Perkiraan hasil perhitungan dari 412 + 756 dengan pembulatan puluhan terdekat adalah ....", options: ["1.170", "1.169", "1.168", "1.167"], correct: 0, explanation: "410 + 760 = 1.170" },
+        { type: "MC", tag: "FPB", text: "Terdapat 2 bilangan yang dinyatakan dengan (2² × 3² + 8²) dan (1.080 : 3²). FPB dari kedua bilangan tersebut jika dinyatakan dalam bentuk faktorisasi prima adalah ....", options: ["2² × 5", "2² × 3", "2 × 3 × 5", "2² × 3 × 5"], correct: 0, explanation: "100 dan 120 → FPB = 2² × 5" },
+        { type: "MC", tag: "Skala", text: "Jarak antara dua kota sebenarnya adalah 84 km. Skala 1 : 600.000. Jarak pada peta adalah ....", options: ["12 cm", "14 cm", "15 cm", "16 cm"], correct: 1, explanation: "8.400.000 / 600.000 = 14 cm" },
+        { type: "MC", tag: "Laju Perubahan", text: "Dalam perjalanan, jarak 80 km sampai 240 km membutuhkan waktu 4 jam. Laju perubahan kecepatan mobil tersebut adalah ....", options: ["30 km/jam", "35 km/jam", "40 km/jam", "45 km/jam"], correct: 2, explanation: "(240-80)/4 = 40 km/jam" },
+        { type: "TF_SET", tag: "Laju", text: "Perhatikan kasus: <br/> i. Tinggi tanaman 16→39 cm dalam 6 hari <br/> ii. 12→30 cm dalam 5 hari <br/> iii. Suhu 9°C→24°C dalam 4 menit <br/> iv. Suhu 10°C→36°C dalam 8 menit <br/> Tentukan benar/salah pernyataan: Laju terbesar kasus i, laju terkecil kasus iv, laju ii sama dengan iii.", tfItems: ["Laju perubahan terbesar adalah kasus i", "Laju perubahan terkecil adalah kasus iv", "Laju perubahan pada kasus ii sama dengan kasus iii"], correctTf: [true, true, false], explanation: "Laju i≈3,83; ii=3,6; iii=3,75; iv=3,25 → terbesar i, terkecil iv, ii≠iii." },
+        { type: "MC", tag: "Perbandingan", text: "Lima liter bensin cukup untuk 200 km. Banyak bensin untuk 160 km adalah ....", options: ["3 liter", "3,5 liter", "4 liter", "4,5 liter"], correct: 2, explanation: "5/200 = x/160 → x=4 liter" },
+        { type: "MC", tag: "Persamaan", text: "Manakah yang merupakan persamaan linear satu variabel? <br/> i. 2x+3=12–5y <br/> ii. 3p–1 = p+7 <br/> iii. m²+8=24 <br/> iv. a²+b²=12", options: ["i", "ii", "iii", "iv"], correct: 1, explanation: "Hanya ii (3p–1 = p+7) variabel tunggal" },
+        { type: "MC", tag: "Pertidaksamaan", text: "Penyelesaian dari 3(2x+4) ≥ x–3, untuk x bilangan bulat adalah ....", options: ["..., -6,-5,-4,-3", "..., -7,-6,-5,-4", "-3,-2,-1,0,...", "-2,-1,0,1,..."], correct: 2, explanation: "6x+12 ≥ x-3 → 5x ≥ -15 → x ≥ -3" },
+        { type: "MC", tag: "SPLDV", text: "Agus: 5buku+4pensil=38k, Budi: 3buku+6pensil=30k. Harga 4 buku+4 pensil Deni?", options: ["Rp26.000", "Rp28.000", "Rp30.000", "Rp32.000"], correct: 3, explanation: "buku=6.000, pensil=2.000 → 4b+4p=32.000" },
+        { type: "MC", tag: "Aljabar", text: "Hasil dari 2(6x-5)-3(5x+2)+x+7 adalah ....", options: ["-2x+9", "-2x-9", "-2x+23", "-2x-23"], correct: 1, explanation: "12x-10-15x-6+x+7 = -2x-9" },
+        { type: "MC", tag: "Fungsi", text: "f(x)=3x–2, daerah hasil {-8,-5,-2,1,4}. Daerah asal adalah ....", options: ["{-1,0,1,2,3}", "{-2,-1,0,1,2}", "{1,2,3,4,5}", "{2,3,4,5,6}"], correct: 1, explanation: "x = -2,-1,0,1,2" },
+        { type: "TF_SET", tag: "Barisan", text: "Barisan 4,7,10,13,... Pernyataan: suku ke-20=60, beda=4, rumus Un=3n+1", tfItems: ["Suku ke-20 adalah 60", "Beda barisan adalah 4", "Rumus suku ke-n = 3n+1"], correctTf: [false, false, true], explanation: "U20=61, beda=3, Un=3n+1 benar" },
+        { type: "IMG_MC", tag: "Sudut", text: "Besar ∠BCF pada gambar berikut adalah ....", img: "https://i.ibb.co.com/SkcNmhS/soal15-tojkt.jpg", options: ["30°", "40°", "140°", "150°"], correct: 0, explanation: "x=40 → ∠DCF=150°, ∠BCF=30°" },
+        { type: "CMC", tag: "Persegi Panjang", text: "Persegi panjang AB=16, BC=12, E pada CD dengan CE=7. Pilih pernyataan yang benar (bisa lebih dari satu):", options: ["AC = 20 cm", "DE = 9 cm", "AE = 15 cm", "BD = 15 cm"], correctIndices: [0,1,2], explanation: "AC=20, DE=9, AE=15, BD=20" },
+        { type: "MC", tag: "Teorema Pythagoras", text: "Tangga panjang 20 m, jarak bawah ke tiang 12 m. Tinggi tiang listrik adalah ....", options: ["13 m", "14 m", "15 m", "16 m"], correct: 3, explanation: "√(20²-12²)=16 m" },
+        { type: "MC", tag: "Kesebangunan", text: "ΔDEF: DE=9,EF=12,DF=6. ΔPQR: PQ=15,PR=10,QR=20. Perbandingan sisi bersesuaian yang benar?", options: ["DE/PQ = DF/PR = EF/QR", "DE/PR = DF/PQ = EF/QR", "DE/QR = DF/PQ = EF/PR", "DE/PQ = EF/PR = DF/QR"], correct: 0, explanation: "9/15=6/10=12/20 = 3/5" },
+        { type: "IMG_MC", tag: "Tabung", text: "Perhatikan gambar jaring-jaring tabung. Manakah pernyataan BENAR terkait luas permukaan?", img: "https://i.ibb.co.com/B2xzPfKN/soal19-tojkt.jpg", options: ["Luas permukaan = 3.872 cm²", "Jika jari-jari 2x → LP 2x lipat", "Jika tinggi 2x → LP 2x lipat", "Jari & tinggi ½ → LP ¼ semula"], correct: 3, explanation: "Hanya opsi keempat benar: r=7,t=15 → LP=968 = 1/4 × 3872" },
+        { type: "IMG_MC", tag: "Koordinat", text: "Denah posisi pengawas B. Jika B maju 4 ke depan dan 2 ke kiri, posisi di meja murid nomor?", img: "https://i.ibb.co.com/F4HknbB0/soal20-tojkt.jpg", options: ["16", "15", "14", "13"], correct: 3, explanation: "Dari B, maju 4 ke depan = 15, kiri 2 langkah = 13" },
+        { type: "MC", tag: "Refleksi", text: "Layang-layang A(-3,1), B(-1,-1), C(3,1). Refleksi D terhadap x=4 menghasilkan D'?", options: ["(7,3)", "(9,3)", "(-1,3)", "(-1,5)"], correct: 1, explanation: "D(-1,3) → D'(9,3)" },
+        { type: "IMG_MC", tag: "Keliling", text: "Keliling bangun gabungan berikut adalah ...", img: "https://i.ibb.co.com/RkrbYVKS/soal22-tojkt.jpg", options: ["123 cm", "118 cm", "112 cm", "102 cm"], correct: 2, explanation: "Perhitungan keliling = 24+24+21+... total 112 cm" },
+        { type: "MC", tag: "Volume Prisma", text: "Kolam prisma segitiga siku-siku (3m,4m), dalam 1m. Volume air (liter) ?", options: ["12.000 L", "10.000 L", "8.000 L", "6.000 L"], correct: 3, explanation: "La=½×3×4=6 m², V=6×1=6 m³ = 6.000 liter" },
+        { type: "MC", tag: "Volume Bangun", text: "Prisma persegi sisi 30 t=50, Limas sisi 60 t=30, Bola d=21. Manakah benar?", options: ["Prisma paling banyak", "Limas paling banyak", "Bola paling banyak", "Prisma = Limas"], correct: 0, explanation: "V prisma=45.000, limas=36.000, bola≈38.808 cm³ → prisma terbesar" },
+        { type: "IMG_MC", tag: "Diagram Batang", text: "Selisih produksi pupuk bulan Maret dan Mei adalah ....", img: "https://i.ibb.co.com/qF2FV258/soal25-tojkt.jpg", options: ["30 ton", "40 ton", "50 ton", "60 ton"], correct: 1, explanation: "Maret 100, Mei 60 → selisih 40 ton" },
+        { type: "TF_SET", tag: "Diagram Lingkaran", text: "Diagram lingkaran (total 200 murid). Tentukan benar/salah: Persentase SD = 30%, Banyak SMK=50 orang, Selisih SD dan TK = 20 orang.", img: "https://i.ibb.co.com/G4CHhc1c/soal26-tojkt.jpg", tfItems: ["Persentase juring SD adalah 30%", "Banyak murid SMK = 50 orang", "Selisih banyak murid SD dan TK = 20 orang"], correctTf: [true, true, false], explanation: "SD 30% (60 org), SMK 25% =50 org, TK 10% =20 org, selisih SD-TK =40" },
+        { type: "TABLE_MC", tag: "Statistika", text: "Data nilai ulangan: <table class='border-collapse border border-gray-300 w-full text-center text-sm'><tr class='bg-gray-100'><th>Nilai</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr><tr><td class='border p-1'>Frekuensi</td><td>3</td><td>2</td><td>9</td><td>8</td><td>4</td><td>3</td><td>1</td></tr></table> Banyak siswa yang nilainya di atas rata-rata adalah ....", options: ["8 orang", "16 orang", "24 orang", "34 orang"], correct: 1, explanation: "Rata-rata=6,7 → nilai ≥7 : 8+4+3+1=16" },
+        { type: "MC", tag: "Rata-rata", text: "Rata-rata wanita=56, pria=64, kelas=58. Perbandingan wanita:pria?", options: ["1:3", "3:1", "3:4", "4:3"], correct: 1, explanation: "56w+64p=58(w+p) → 2w=6p → w:p=3:1" },
+        { type: "TABLE_MC", tag: "Peluang", text: "Rino melambungkan dadu 200 kali: frekuensi (1:20,2:40,3:30,4:50,5:25,6:35). Pernyataan yang benar?", options: ["Fr relatif mata 2 = 20%", "Fr relatif mata 4 = 30%", "Fr relatif ganjil = 36,5%", "Fr relatif prima = 47,5%"], correct: 3, explanation: "Mata prima (2,3,5)=40+30+25=95 → 47,5%" },
+        { type: "MC", tag: "Peluang Bersyarat", text: "Dalam kantong: merah(1,2,3), kuning(4,5,6,7,8), hijau(9,10,11,12). Pengambilan I: kuning prima, II: hijau genap, III: peluang ganjil?", options: ["1/4", "3/8", "1/2", "5/8"], correct: 2, explanation: "Sisa setelah 2 ambil: total 10 bola, ganjil tersisa 5 → 5/10 = 1/2" }
+    ];
+
+    let currentIndex = 0, userAnswers = new Array(30).fill(null), bookmarks = new Array(30).fill(false);
+    let timeLeft = 1800, timerInterval = null, isReviewMode = false, fontSize = 18;
+    function saveAnswer(idx, val) { if(!isReviewMode) { userAnswers[idx] = val; renderCurrentQuestion(); updateProgress(); } }
+    function getAnswer(idx) { return userAnswers[idx]; }
+    function updateProgress() { let answered = userAnswers.filter(a => a !== null && (Array.isArray(a) ? a.length>0 : (typeof a === 'object' ? Object.keys(a).length>0 : true))).length; document.getElementById('progress-fill').style.width = (answered/30)*100+'%'; }
+    
+    function renderCurrentQuestion() { /* fungsi lengkap seperti sebelumnya */ 
+        const q = questionsData[currentIndex];
+        document.getElementById('q-counter').innerHTML = `${currentIndex+1} / 30`;
+        document.getElementById('q-tag').innerHTML = q.tag;
+        let qHtml = q.text;
+        if(q.img) qHtml += `<div class="my-3"><img src="${q.img}" class="rounded-2xl border max-w-full max-h-56 object-contain"></div>`;
+        document.getElementById('question-text').innerHTML = qHtml;
+        const optsDiv = document.getElementById('options-area'); optsDiv.innerHTML = '';
+        if(q.type === 'MC' || q.type === 'IMG_MC' || q.type === 'TABLE_MC') {
+            q.options.forEach((opt, idx) => { let selected = (getAnswer(currentIndex) === idx); let extra = (isReviewMode && selected) ? (q.correct === idx ? 'correct-review' : 'wrong-review') : ''; if(isReviewMode && !selected && q.correct === idx) extra='correct-review';
+            const card = document.createElement('div'); card.className = `option-card p-4 rounded-2xl flex items-center gap-4 ${selected ? 'selected' : ''} ${extra}`;
+            card.innerHTML = `<div class="abc-label">${String.fromCharCode(65+idx)}</div><div class="flex-1 font-bold text-sm">${opt}</div>`;
+            card.onclick = () => { if(!isReviewMode) saveAnswer(currentIndex, idx); }; optsDiv.appendChild(card); });
+        } else if(q.type === 'CMC') { let curr = getAnswer(currentIndex) || [];
+            q.options.forEach((opt, idx) => { let checked = curr.includes(idx); let card = document.createElement('div'); card.className = `option-card p-4 rounded-2xl flex items-center gap-4 ${checked ? 'selected' : ''}`;
+            card.innerHTML = `<div class="check-box">${checked ? '<i data-lucide="check" class="w-4 h-4"></i>' : ''}</div><div class="flex-1 font-bold text-sm">${opt}</div>`;
+            card.onclick = () => { if(isReviewMode) return; let arr = [...(getAnswer(currentIndex)||[])]; if(arr.includes(idx)) arr=arr.filter(i=>i!==idx); else arr.push(idx); saveAnswer(currentIndex, arr); }; optsDiv.appendChild(card); });
+        } else if(q.type === 'TF_SET') { let currAns = getAnswer(currentIndex) || {}; q.tfItems.forEach((item, idxTF) => { let div = document.createElement('div'); div.className = "bg-white border-2 border-gray-100 rounded-2xl p-3 mb-3";
+            div.innerHTML = `<div class="font-bold text-sm mb-2">${item}</div><div class="flex gap-3"><button data-tf="${idxTF}" data-val="true" class="tf-btn ${currAns[idxTF]===true?'active-true':''}"><i data-lucide="check"></i></button><button data-tf="${idxTF}" data-val="false" class="tf-btn ${currAns[idxTF]===false?'active-false':''}"><i data-lucide="x"></i></button></div>`;
+            optsDiv.appendChild(div); });
+            document.querySelectorAll('[data-tf]').forEach(btn => btn.addEventListener('click',(e)=>{if(isReviewMode) return; let tfIdx=parseInt(btn.dataset.tf), boolVal=btn.dataset.val==='true'; let curr={...(getAnswer(currentIndex)||{})}; if(curr[tfIdx]===boolVal) delete curr[tfIdx]; else curr[tfIdx]=boolVal; saveAnswer(currentIndex,curr); }));
+        }
+        if(isReviewMode && q.explanation) { let expDiv = document.createElement('div'); expDiv.className="mt-6 p-4 bg-blue-50 rounded-2xl border border-blue-200 text-sm"; expDiv.innerHTML=`<span class="font-black text-blue-600">📘 Pembahasan</span><div class="mt-1">${q.explanation}</div>`; optsDiv.appendChild(expDiv); }
+        let nextBtn = document.getElementById('next-btn'); if(currentIndex===29) nextBtn.innerHTML = isReviewMode ? "Selesai" : "Kumpulkan"; else nextBtn.innerHTML="Lanjut";
+        if(window.MathJax) MathJax.typesetPromise(); lucide.createIcons();
+    }
+    function prevQuestion() { if(currentIndex>0) { currentIndex--; renderCurrentQuestion(); } }
+    function nextOrSubmit() { if(currentIndex===29) { if(isReviewMode) showResultScreen(); else submitExam(); } else { currentIndex++; renderCurrentQuestion(); } }
+    function toggleBookmark() { bookmarks[currentIndex]=!bookmarks[currentIndex]; renderCurrentQuestion(); }
+    function changeFont(delta) { fontSize=Math.min(24,Math.max(14,fontSize+delta)); document.getElementById('question-text').style.fontSize=fontSize+'px'; }
+    function submitExam() { if(timerInterval) clearInterval(timerInterval); let correct=0; for(let i=0;i<30;i++){ let q=questionsData[i], ans=userAnswers[i]; if(!ans) continue;
+        if(q.type==='MC'||q.type==='IMG_MC'||q.type==='TABLE_MC'){if(ans===q.correct) correct++;}
+        else if(q.type==='CMC'){if(JSON.stringify([...ans].sort())===JSON.stringify([...q.correctIndices].sort())) correct++;}
+        else if(q.type==='TF_SET'){let ok=true; for(let t=0;t<q.correctTf.length;t++) if(ans?.[t]!==q.correctTf[t]) ok=false; if(ok) correct++;} }
+    let final=Math.round((correct/30)*100); document.getElementById('final-score').innerText=final; document.getElementById('score-desc').innerHTML=`${correct} dari 30 soal benar`; showResultScreen(); canvasConfetti({particleCount:180,spread:70,origin:{y:0.6}}); }
+    function showResultScreen(){ document.getElementById('exam-container').classList.add('hidden'); document.getElementById('result-container').classList.remove('hidden'); lucide.createIcons(); }
+    function reviewMode(){ isReviewMode=true; currentIndex=0; document.getElementById('exam-container').classList.remove('hidden'); document.getElementById('result-container').classList.add('hidden'); renderCurrentQuestion(); }
+    function resetToNewTryout(){ location.reload(); }
+    function openGridModal(){ let grid=document.getElementById('grid-buttons'); grid.innerHTML=''; for(let i=0;i<30;i++){ let status='bg-gray-100 text-gray-500'; if(userAnswers[i]!==null && (Array.isArray(userAnswers[i])?userAnswers[i].length>0:(typeof userAnswers[i]==='object'?Object.keys(userAnswers[i]).length>0:true))) status='bg-blue-500 text-white'; if(bookmarks[i]) status='bg-orange-400 text-white'; grid.innerHTML+=`<button onclick="jumpToQuestion(${i})" class="h-12 rounded-xl border-b-4 font-black ${status}">${i+1}</button>`; } document.getElementById('grid-modal').classList.remove('hidden'); lucide.createIcons(); }
+    function jumpToQuestion(idx){ currentIndex=idx; closeGridModal(); renderCurrentQuestion(); }
+    function closeGridModal(){ document.getElementById('grid-modal').classList.add('hidden'); }
+    function startTimer(){ if(timerInterval) clearInterval(timerInterval); timerInterval=setInterval(()=>{ if(timeLeft<=0){ clearInterval(timerInterval); submitExam(); } else{ timeLeft--; let m=Math.floor(timeLeft/60), s=timeLeft%60; document.getElementById('timer-display').innerText=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; } },1000); }
+    
+    // LOGIC LOGIN: force start setelah klik tombol atau submit form tally (sederhana: tombol bypass)
+    document.getElementById('force-start-btn').addEventListener('click', (e) => {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('exam-container').classList.remove('hidden');
+        startTimer();
+        renderCurrentQuestion();
+        updateProgress();
+        lucide.createIcons();
+    });
+    // juga mendeteksi jika tallny iframe sudah terisi (optional), tapi user bisa klik tombol manual.
+    window.onload = () => { lucide.createIcons(); };
+</script>
+</body>
+</html>
