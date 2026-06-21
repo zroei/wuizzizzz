@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tes Multiple Intelligence • Kelas 10</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            font-family: 'Rubik', sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 1rem;
+            font-weight: 700;
+            color: white;
+            padding: 0.7rem 1.8rem;
+            font-size: 1rem;
+            transition: all 0.15s;
+            cursor: pointer;
+            min-width: 100px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        .btn-glass:active {
+            transform: scale(0.95);
+        }
+        .btn-primary {
+            background: rgba(76, 175, 80, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: rgba(76, 175, 80, 0.95);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .circle-opt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .circle-opt:hover {
+            transform: scale(1.05);
+        }
+        .circle-opt:active {
+            transform: scale(0.9);
+        }
+        .circle-opt .ring {
+            border-radius: 9999px;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .circle-opt.selected .ring {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+        }
+        .circle-opt .label {
+            font-size: 0.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 4px;
+            line-height: 1.1;
+            max-width: 50px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+        .question-text {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: white;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+        }
+        .badge {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            padding: 0.2rem 1rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: white;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        .chart-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .text-white-glow {
+            color: white;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        @media (max-width: 640px) {
+            .glass {
+                padding: 1rem;
+            }
+            .glass-card {
+                padding: 1rem;
+            }
+            .question-text {
+                font-size: 0.9rem;
+            }
+            .btn-glass {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div x-data="miApp()" x-init="init()" class="max-w-2xl mx-auto">
+
+        <!-- Header Glass -->
+        <div class="glass mb-5">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🧠</span>
+                    <h1 class="text-2xl font-black text-white text-shadow">Multiple Intelligence<span class="text-green-300">Test</span></h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span x-show="currentStep > 0 && currentStep <= totalPages" class="badge" x-text="`${currentStep} / ${totalPages}`"></span>
+                    <span x-show="currentStep === 0" class="badge bg-green-500/40 border-green-400/40">🏁 Mulai</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 0: Intro -->
+        <div x-show="currentStep === 0" class="glass-card text-center">
+            <div class="text-7xl mb-3">🌱</div>
+            <h2 class="text-3xl font-black text-white text-shadow">Tes Kecerdasan Ganda</h2>
+            <p class="text-base font-medium text-white/80 mt-2 max-w-sm mx-auto">56 pernyataan · 8 dimensi · Temukan kekuatanmu</p>
+            <button @click="startTest()" class="btn-glass btn-primary mt-6 px-12 py-3 text-xl">Mulai →</button>
+        </div>
+
+        <!-- Step Soal per halaman -->
+        <template x-for="(page, pageIdx) in questionPages" :key="pageIdx">
+            <div x-show="currentStep === pageIdx + 1" class="glass-card">
+                <!-- Header halaman -->
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-2xl font-black text-green-300" x-text="`${pageIdx + 1}`"></span>
+                    <span class="badge">
+                        <span x-text="getAnsweredInPage(pageIdx)"></span>/<span x-text="page.length"></span>
+                    </span>
+                </div>
+
+                <!-- Daftar soal -->
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                    <template x-for="q in page" :key="q.id">
+                        <div class="border-b border-white/10 pb-4 last:border-0">
+                            <p class="question-text" x-text="`${q.id}. ${q.text}`"></p>
+                            <div class="flex items-center justify-between mt-2 max-w-xs mx-auto gap-0.5">
+                                <template x-for="val in [1,2,3,4,5]" :key="val">
+                                    <div class="circle-opt" :class="{'selected': answers[q.id] === val}" @click="setAnswer(q.id, val)">
+                                        <div class="ring" :style="getRingStyle(val)"></div>
+                                        <span class="label" x-text="getLabel(val)"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Navigasi -->
+                <div class="flex justify-between items-center mt-6 gap-2 flex-wrap">
+                    <button @click="prevPage()" class="btn-glass btn-secondary text-sm" x-show="currentStep > 1" :disabled="currentStep <= 1">
+                        ← Kembali
+                    </button>
+                    <span class="text-sm font-bold text-white/70" x-text="`${getTotalAnswered()} / ${totalQuestions}`"></span>
+                    <button @click="nextPage()" class="btn-glass btn-primary text-sm" :disabled="getAnsweredInPage(pageIdx) < page.length">
+                        <span x-text="currentStep === totalPages ? '📊 Lihat Hasil' : 'Lanjut →'"></span>
+                    </button>
+                </div>
+                <div x-show="getAnsweredInPage(pageIdx) < page.length" class="text-xs text-yellow-200/70 mt-2 text-center">
+                    ⚡ Jawab semua soal di halaman ini untuk lanjut
+                </div>
+            </div>
+        </template>
+
+        <!-- Step Hasil -->
+        <div x-show="currentStep === totalPages + 1" class="space-y-5">
+            <div class="glass-card">
+                <div class="flex items-center gap-3 mb-1">
+                    <span class="text-4xl">📊</span>
+                    <h2 class="text-2xl font-black text-white text-shadow">Profil Kecerdasan</h2>
+                </div>
+                <p class="text-sm font-medium text-white/70 mb-4">Skor rata-rata per dimensi (0–100%)</p>
+                <div class="chart-box max-w-xs mx-auto">
+                    <canvas id="radarChart" width="300" height="300"></canvas>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-5">
+                    <template x-for="(item, idx) in categoryLabels" :key="idx">
+                        <div class="bg-white/10 backdrop-blur-sm p-2 rounded-xl border border-white/20 flex justify-between items-center text-sm font-bold text-white">
+                            <span x-text="item.slice(0,4)"></span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded-full border border-white/20" x-text="Math.round(categoryScores[idx]) + '%'"></span>
+                        </div>
+                    </template>
+                </div>
+                <div class="flex justify-center mt-4">
+                    <button @click="resetTest()" class="btn-glass btn-secondary text-sm">🔄 Tes Ulang</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center text-[0.6rem] font-bold text-white/40 mt-6 border-t border-white/10 pt-3">
+            © 2026 MAN 2 Tulungagung | Multiple Intelligence Test Kelas 10
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('miApp', () => ({
+                currentStep: 0,
+                answers: {},
+                questions: [],
+                totalPages: 0,
+                pageSize: 7,
+                categoryLabels: ['Linguistik', 'Musikal', 'Logika', 'Spasial', 'Kinestetik', 'Intrapersonal', 'Interpersonal',
+                    'Naturalis'
+                ],
+                categoryScores: Array(8).fill(0),
+                chartInstance: null,
+
+                get totalQuestions() { return this.questions.length; },
+
+                get questionPages() {
+                    const pages = [];
+                    for (let i = 0; i < this.questions.length; i += this.pageSize) {
+                        pages.push(this.questions.slice(i, i + this.pageSize));
+                    }
+                    return pages;
+                },
+
+                init() {
+                    this.questions = this.buildQuestionBank();
+                    this.totalPages = Math.ceil(this.questions.length / this.pageSize);
+                },
+
+                buildQuestionBank() {
+                    return [
+                        // 1-7: Linguistik
+                        { id: 1, cat: 1,
+                            text: 'Saya berhati-hati dalam mengungkapkan makna tersirat dan tersurat dari kata-kata yang saya gunakan dalam percakapan dan tulisan.' },
+                        { id: 9, cat: 1,
+                            text: 'Saya percaya diri dalam mengekspresikan diri dalam perkataan atau tulisan, secara pribadi ataupun publik.' },
+                        { id: 17, cat: 1,
+                            text: 'Saya akurat secara gramatikal dan sensitif terhadap kesalahan tata bahasa.' },
+                        { id: 25, cat: 1,
+                            text: 'Saya dapat menggunakan kata-kata lisan dan tulisan untuk memengaruhi orang lain secara efektif.' },
+                        { id: 33, cat: 1,
+                            text: 'Saya sensitif terhadap suara, ritme, perubahan nada, dan rima, khususnya yang ditemukan dalam puisi.' },
+                        { id: 41, cat: 1, text: 'Saya senang membaca, di manapun dan kapanpun.' },
+                        { id: 49, cat: 1,
+                            text: 'Saya yakin bahasa tubuh saya merupakan metode yang penting dalam berkomunikasi.' },
+                        // 8-14: Musikal
+                        { id: 2, cat: 2, text: 'Saya menyukai berbagai macam jenis musik.' },
+                        { id: 10, cat: 2,
+                            text: 'Saya memahami pengetahuan dasar musik, seperti ritme, harmoni, dan kunci-kuncinya.' },
+                        { id: 18, cat: 2, text: 'Saya senang mengubah atau membuat musik atau sekadar ritme.' },
+                        { id: 26, cat: 2,
+                            text: 'Saya senang menampilkan musik seperti bernyanyi atau memainkan alat musik di depan orang banyak.' },
+                        { id: 34, cat: 2, text: 'Saya memiliki rasa yang kuat terhadap ritme musik.' },
+                        { id: 42, cat: 2, text: 'Saya memiliki rasa yang kuat terhadap nada musikal.' },
+                        { id: 50, cat: 2,
+                            text: 'Saya terpengaruh secara emosional dan intelektual oleh berbagai jenis musik pada waktu yang berbeda.' },
+                        // 15-21: Logika
+                        { id: 3, cat: 3,
+                            text: 'Teman-teman meminta bantuan saya untuk memecahkan soal matematika atau perhitungan.' },
+                        { id: 11, cat: 3,
+                            text: 'Ketika mempunyai masalah, saya menggunakan logika, analisis, dan proses langkah demi langkah untuk mendapatkan pemecahannya.' },
+                        { id: 19, cat: 3,
+                            text: 'Saya sangat berhati-hati dalam menerima fakta, argumentasi, alasan, dan prinsip dari siapa pun.' },
+                        { id: 27, cat: 3,
+                            text: 'Saya membutuhkan penjelasan ilmiah atau saintifik dari suatu peristiwa.' },
+                        { id: 35, cat: 3,
+                            text: 'Saya sangat ingin menjadi ahli kimia, teknisi, ahli fisika, astronom, atau ahli matematika.' },
+                        { id: 43, cat: 3, text: 'Saya menemukan kepuasan tersendiri terhadap sesuatu yang berhubungan dengan angka.' },
+                        { id: 51, cat: 3,
+                            text: 'Saya lebih menyukai pertanyaan dengan jawaban "benar" dan "salah" secara pasti.' },
+                        // 22-28: Spasial
+                        { id: 4, cat: 4,
+                            text: 'Saya dapat memvisualisasikan gambar dengan jelas, tepat dan tajam.' },
+                        { id: 12, cat: 4,
+                            text: 'Firasat saya sangat kuat dalam menentukan arah utara, selatan dan sebagainya.' },
+                        { id: 20, cat: 4,
+                            text: 'Saya andal dalam menyatukan puzzle dan membaca instruksi, pola, atau cetakan.' },
+                        { id: 28, cat: 4,
+                            text: 'Saya dapat membaca atau menggunakan grafik dan peta dengan mudah dan akurat.' },
+                        { id: 36, cat: 4,
+                            text: 'Saya dapat menghasilkan gambaran visual yang jelas dalam gambar, lukisan, pahatan, sketsa, atau peta.' },
+                        { id: 44, cat: 4,
+                            text: 'Saya dapat melihat pola dan hubungan dengan pikiran. Saya dapat mengingat dan membayangkan sesuatu, atau kemungkinan penerapannya dalam kehidupan nyata.' },
+                        { id: 52, cat: 4, text: 'Saya dapat memperkirakan jarak dan ukuran secara akurat.' },
+                        // 29-35: Kinestetik
+                        { id: 5, cat: 5,
+                            text: 'Saya memiliki keseimbangan tubuh yang terkoordinasi dengan baik.' },
+                        { id: 13, cat: 5,
+                            text: 'Saya memiliki keterampilan dalam menggunakan alat, seperti gunting, palu, kuas cat, jarum rajut, pisau bedah, tang, mainan, dan sebagainya' },
+                        { id: 21, cat: 5,
+                            text: 'Saya ahli dalam aktivitas fisik seperti olahraga, menari, memahami posisi dan arah, mengendarai kuda, bermain, memanjat, dan lainnya.' },
+                        { id: 29, cat: 5,
+                            text: 'Saya terampil layaknya seorang ahli elektronika, penjahit, mekanik, tukang kayu, dan perakit.' },
+                        { id: 37, cat: 5,
+                            text: 'Saya mengurangi stres atau mencari hiburan dengan aktivitas fisik seperti hiking, berjalan santai, berolahraga, atau bersepeda.' },
+                        { id: 45, cat: 5,
+                            text: 'Saya memiliki refleks fisik yang cepat dan akurat serta dapat meresponnya dengan permainan, tarian, dan sebagainya.' },
+                        { id: 53, cat: 5,
+                            text: 'Saya dapat membidik dengan tepat ketika melempar bola, memanah, menembak, golf, bola voli, tenis dan sebagainya.' },
+                        // 36-42: Intrapersonal
+                        { id: 6, cat: 6,
+                            text: 'Saya memahami alasan dari segala hal yang saya percayai dan lakukan.' },
+                        { id: 14, cat: 6,
+                            text: 'Pemahaman diri saya membantu dalam membuat keputusan yang bijak dalam hidup.' },
+                        { id: 22, cat: 6,
+                            text: 'Kemampuan saya untuk memahami emosi diri sangat membantu saya dalam memutuskan atau menyikapi berbagai situasi.' },
+                        { id: 30, cat: 6,
+                            text: 'Saya sadar mengenai kompleksitas perasaan saya sendiri, emosi, dan keyakinan dalam berbagai keadaan.' },
+                        { id: 38, cat: 6,
+                            text: 'Saya percaya bahwa jiwa adalah sumber utama kekuatan, perbaikan, dan motivasi.' },
+                        { id: 46, cat: 6,
+                            text: 'Saya percaya terhadap pendapat diri sendiri dan tidak dapat dengan mudah terpengaruh oleh orang lain.' },
+                        { id: 54, cat: 6,
+                            text: 'Perasaan, keyakinan, sikap, dan emosi saya adalah tanggung jawab saya.' },
+                        // 43-49: Interpersonal
+                        { id: 7, cat: 7,
+                            text: 'Saya memahami suasana hati, watak, nilai,dan niat orang lain, meski mereka menyembunyikannya.' },
+                        { id: 15, cat: 7,
+                            text: 'Saya dapat memengaruhi orang lain untuk memercayai, melakukan, atau menanggapi sesuatu yang sesuai dengan kepercayaan saya.' },
+                        { id: 23, cat: 7,
+                            text: 'Saya sangat ingin terlibat dalam profesi yang berkaitan dengan membantu orang lain, seperti mengajar, terapis atau konseling, atau terlibat dalam politik atau kepemimpinan keagamaan.' },
+                        { id: 31, cat: 7,
+                            text: 'Saya dapat berperan menjadi perantara efektif dalam membantu penyelesaian masalah orang lain.' },
+                        { id: 39, cat: 7,
+                            text: 'Saya memahami apa yang memotivasi orang lain bahkan ketika mereka mencoba menyembunyikan motivasinya.' },
+                        { id: 47, cat: 7,
+                            text: 'Saya nyaman dan yakin dalam bergaul dengan kelompok orang dalam berbagai keadaan.' },
+                        { id: 55, cat: 7, text: 'Saya memiliki banyak teman dekat.' },
+                        // 50-56: Naturalis
+                        { id: 8, cat: 8,
+                            text: 'Saya tertarik dengan sistem pengklasifikasian tanaman, burung, ikan, atau serangga.' },
+                        { id: 16, cat: 8,
+                            text: 'Saya sangat tertarik pada alam, di manapun dan kapanpun yang saya bisa temukan.' },
+                        { id: 24, cat: 8,
+                            text: 'Saya sangat tertarik pada segala hal mengenai ternak, perihal berkebun, dan juga perikanan.' },
+                        { id: 32, cat: 8,
+                            text: 'Saya tertarik pada pelajaran yang berkaitan dengan ilmu kelautan, ilmu tentang tumbuh-tumbuhan, ilmu tentang serangga, ilmu tentang reptile atau amphibi, ilmu tentang burung, dan ilmu tentang hewan.' },
+                        { id: 40, cat: 8,
+                            text: 'Saat saya kecil, saya kagum pada serangga, tanaman, burung, daun, cecak, kumbang, siput, dan sebagainya di alam sekitar saya.' },
+                        { id: 48, cat: 8,
+                            text: 'Saya memiliki keahlian dalam berkebun dan sering menjadi narasumber bagi orang lain yang peduli terhadap lingkungan.' },
+                        { id: 56, cat: 8,
+                            text: 'Saya telah atau ingin menjadi ahli dalam mengenali dan mengklasifikasikan flora serta fauna.' }
+                    ];
+                },
+
+                getLabel(val) {
+                    const map = { 1: 'Sgt Jarang', 2: 'Jarang', 3: 'Cukup', 4: 'Sering', 5: 'Sgt Sering' };
+                    return map[val] || '';
+                },
+                getRingStyle(val) {
+                    const sizeMap = { 1: 'w-8 h-8', 2: 'w-6 h-6', 3: 'w-4 h-4', 4: 'w-6 h-6', 5: 'w-8 h-8' };
+                    const bgMap = { 1: 'rgba(244,67,54,0.6)', 2: 'rgba(255,152,0,0.6)', 3: 'rgba(255,255,255,0.2)',
+                        4: 'rgba(76,175,80,0.6)', 5: 'rgba(0,150,136,0.7)' };
+                    const size = sizeMap[val] || 'w-6 h-6';
+                    const bg = bgMap[val] || 'rgba(255,255,255,0.2)';
+                    return `width:${size.split(' ')[0].replace('w-','')}rem; height:${size.split(' ')[1].replace('h-','')}rem; background:${bg};`;
+                },
+                setAnswer(qId, val) {
+                    this.answers[qId] = val;
+                },
+                getAnsweredInPage(pageIdx) {
+                    const page = this.questionPages[pageIdx] || [];
+                    return page.filter(q => this.answers[q.id]).length;
+                },
+                getTotalAnswered() {
+                    return Object.keys(this.answers).length;
+                },
+
+                startTest() { this.currentStep = 1; },
+                nextPage() {
+                    const pageIdx = this.currentStep - 1;
+                    const page = this.questionPages[pageIdx] || [];
+                    const answered = page.filter(q => this.answers[q.id]).length;
+                    if (answered < page.length) return;
+
+                    if (this.currentStep < this.totalPages) {
+                        this.currentStep++;
+                        // scroll ke atas
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        this.calculateScores();
+                        this.currentStep = this.totalPages + 1;
+                        this.$nextTick(() => this.renderRadarChart());
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                },
+                prevPage() {
+                    if (this.currentStep > 1) {
+                        this.currentStep--;
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                },
+                resetTest() {
+                    this.answers = {};
+                    this.currentStep = 0;
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                        this.chartInstance = null;
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+
+                calculateScores() {
+                    const sums = Array(8).fill(0);
+                    const counts = Array(8).fill(0);
+                    this.questions.forEach(q => {
+                        const val = this.answers[q.id] || 0;
+                        if (val > 0) {
+                            sums[q.cat - 1] += val;
+                            counts[q.cat - 1]++;
+                        }
+                    });
+                    this.categoryScores = sums.map((sum, i) => {
+                        const count = counts[i] || 1;
+                        return Math.min(100, (sum / (count * 5)) * 100);
+                    });
+                },
+
+                renderRadarChart() {
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                        this.chartInstance = null;
+                    }
+                    const ctx = document.getElementById('radarChart');
+                    if (!ctx) return;
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: this.categoryLabels,
+                            datasets: [{
+                                label: 'Skor',
+                                data: this.categoryScores,
+                                backgroundColor: 'rgba(76, 175, 80, 0.25)',
+                                borderColor: '#4CAF50',
+                                borderWidth: 3,
+                                pointBackgroundColor: 'rgba(255,255,255,0.8)',
+                                pointBorderColor: '#4CAF50',
+                                pointRadius: 6,
+                                pointBorderWidth: 2,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                r: {
+                                    min: 0,
+                                    max: 100,
+                                    ticks: {
+                                        stepSize: 20,
+                                        font: { size: 9, weight: 'bold' },
+                                        color: 'rgba(255,255,255,0.7)'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255,255,255,0.15)'
+                                    },
+                                    angleLines: {
+                                        color: 'rgba(255,255,255,0.15)'
+                                    },
+                                    pointLabels: {
+                                        color: 'rgba(255,255,255,0.9)',
+                                        font: { size: 10, weight: 'bold' }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
+</body>
+                  </html>
