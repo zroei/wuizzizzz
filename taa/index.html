@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>SFX Player • Kelompok 1 Taamal 2026</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: linear-gradient(145deg, #0b0e14 0%, #1a1f2a 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .player-wrapper {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(30, 35, 48, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 48px;
+      padding: 28px 24px 36px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+    h1 {
+      color: #f0eae3;
+      font-weight: 500;
+      font-size: 1.8rem;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      padding-left: 8px;
+    }
+    h1 small {
+      font-size: 0.9rem;
+      font-weight: 300;
+      background: #2a3142;
+      padding: 6px 18px;
+      border-radius: 40px;
+      color: #b9c2d4;
+      letter-spacing: 0.3px;
+    }
+    .loop-toggle {
+      margin-left: auto;
+      background: #242b3b;
+      border: 1px solid #3d465a;
+      padding: 10px 24px;
+      border-radius: 60px;
+      color: #d6deec;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+    .loop-toggle.active {
+      background: #3d4b6b;
+      border-color: #8aa3d4;
+      box-shadow: 0 0 16px #4d6a9b66;
+      color: white;
+    }
+    .loop-toggle .indicator {
+      width: 20px;
+      height: 20px;
+      border-radius: 30px;
+      background: #4b556b;
+      transition: 0.2s;
+    }
+    .loop-toggle.active .indicator {
+      background: #a2c2ff;
+      box-shadow: 0 0 12px #6a8fd0;
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .sound-card {
+      background: #202635;
+      border-radius: 28px;
+      padding: 18px 12px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+      border: 1px solid #323b4f;
+      transition: transform 0.1s ease, border-color 0.2s, box-shadow 0.25s;
+      cursor: default;
+    }
+    .sound-card:hover {
+      border-color: #5f6f92;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.7);
+    }
+    .sound-card .label {
+      font-weight: 500;
+      color: #eaeef7;
+      font-size: 0.95rem;
+      line-height: 1.3;
+      margin-bottom: 6px;
+      min-height: 2.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-word;
+    }
+    .sound-card .sub {
+      font-size: 0.7rem;
+      color: #97a3bd;
+      background: #2c3447;
+      padding: 4px 12px;
+      border-radius: 30px;
+      margin-bottom: 14px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .play-btn {
+      background: #2f384e;
+      border: none;
+      border-radius: 60px;
+      padding: 12px 0;
+      width: 100%;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #d1dcee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.15s;
+      box-shadow: inset 0 -3px 0 #12161f;
+      cursor: pointer;
+      border: 1px solid #3f4a62;
+    }
+    .play-btn:active {
+      transform: scale(0.94);
+      box-shadow: inset 0 1px 6px #0b0e14;
+    }
+    .play-btn.playing {
+      background: #3c5a7a;
+      border-color: #7f9fd0;
+      color: white;
+      box-shadow: 0 0 20px #2d4a7a77;
+    }
+    .play-btn i {
+      font-style: normal;
+      font-size: 1.1rem;
+    }
+    .status-bar {
+      margin-top: 32px;
+      padding: 10px 18px;
+      background: #171d27;
+      border-radius: 60px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: #aeb9d0;
+      font-size: 0.9rem;
+      border: 1px solid #30384b;
+    }
+    .status-bar .now-playing {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-bar .now-playing span {
+      color: #dce3f0;
+      font-weight: 500;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status-bar .badge-loop {
+      background: #2a3142;
+      padding: 5px 16px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      border: 1px solid #3f4a62;
+    }
+    .badge-loop.active {
+      background: #2c4066;
+      border-color: #7f9fd0;
+      color: #ceddff;
+    }
+    @media (max-width: 580px) {
+      .player-wrapper { padding: 20px 14px; }
+      h1 { font-size: 1.4rem; }
+      .loop-toggle { padding: 6px 14px; font-size: 0.8rem; gap: 8px; }
+      .grid-container { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    }
+    @media (max-width: 430px) {
+      .grid-container { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .sound-card { padding: 14px 6px; }
+    }
+  </style>
+</head>
+<body>
+<div class="player-wrapper" role="main">
+  <h1>
+    🎭 SFX Teatrikal
+    <small>Komedi</small>
+    <div id="loopToggle" class="loop-toggle" role="button" tabindex="0" aria-label="Toggle loop">
+      <span>🔁 Loop</span>
+      <span class="indicator" id="loopIndicator"></span>
+    </div>
+  </h1>
+
+  <div class="grid-container" id="soundGrid"></div>
+
+  <div class="status-bar">
+    <div class="now-playing">
+      <span>▶</span>
+      <span id="nowPlayingLabel">Belum diputar</span>
+    </div>
+    <div class="badge-loop" id="loopStatusBadge">⏹ loop off</div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // Daftar SFX sesuai urutan (judul + url)
+    const soundList = [
+      { title: "🔴 BACKSOUND UTAMA", subtitle: "instrumen", url: "https://www.cloudsky.biz.id/api/file/backsound-primary-taamal26.mp3" },
+      { title: "🦗 Suasana Garing", subtitle: "Jangkrik", url: "https://www.myinstants.com/media/sounds/awkward-cricket-silence.mp3" },
+      { title: "🐔 Ayam Berkokok", subtitle: "Nge-lag", url: "https://www.myinstants.com/media/sounds/rooster-crow.mp3" },
+      { title: "👊 Gebluk / Punch", subtitle: "🍗 Ayam Geprek", url: "https://www.myinstants.com/media/sounds/punch-sound-effect-meme.mp3" },
+      { title: "🎥 Record Scratch", subtitle: "Pindah topik", url: "https://www.myinstants.com/media/sounds/record-scratch-2.mp3" },
+      { title: "🐮 Sapi / Kambing", subtitle: "Peternakan", url: "https://www.myinstants.com/media/sounds/lamb-mbek-huntswomen.mp3" },
+      { title: "🗣️Desisan Fah", subtitle: "Reaksi jijik", url: "https://www.myinstants.com/media/sounds/fahhhhhhhhhhhhhh.mp3" },
+      { title: "🚨Buzzer Error", subtitle: "Salah konsep", url: "https://www.myinstants.com/media/sounds/erro.mp3" },
+      { title: "🐐Kambing Ngamuk", subtitle: "Kabur", url: "https://www.myinstants.com/media/sounds/goat-sream.mp3" },
+      { title: "👓 Kaca Pecah", subtitle: "Potong keramik", url: "https://www.myinstants.com/media/sounds/glass-smash.mp3" },
+      { title: "💥 Vine Boom", subtitle: "Ledakan kartun", url: "https://www.myinstants.com/media/sounds/vine-boom.mp3" },
+      { title: "🪈 Metal Pipe", subtitle: "Tusuk linggis", url: "https://www.myinstants.com/media/sounds/metal-pipe-clang.mp3" },
+      { title: "💦 Cipratan Air", subtitle: "Mandi sapi", url: "https://www.myinstants.com/media/sounds/water-for-drama.mp3" },
+      { title: "😭 Sad Violin", subtitle: "Adegan tragis", url: "https://www.myinstants.com/media/sounds/tf_nemesis.mp3" },
+      { title: "😶Tamatlah sudah", subtitle: "Closing Punchline", url: "https://www.myinstants.com/media/sounds/tamatlah-sudah.mp3" },
+      { title: "🎭Kocak komedi", subtitle: "Indian song", url: "https://www.myinstants.com/media/sounds/indian-song.mp3" },
+      { title: "🔒Directed by", subtitle: "Robert B. Weide", url: "https://www.myinstants.com/media/sounds/directed-by-robert-b_voI2Z4T.mp3" }
+    ];
+
+    const grid = document.getElementById('soundGrid');
+    const nowPlayingLabel = document.getElementById('nowPlayingLabel');
+    const loopStatusBadge = document.getElementById('loopStatusBadge');
+    const loopToggle = document.getElementById('loopToggle');
+    const loopIndicator = document.getElementById('loopIndicator');
+
+    // State
+    let currentAudio = null;
+    let currentIndex = -1;
+    let isLoop = false;        // default loop off
+
+    // Fungsi update UI loop
+    function updateLoopUI() {
+      if (isLoop) {
+        loopToggle.classList.add('active');
+        loopIndicator.style.background = '#a2c2ff';
+        loopStatusBadge.textContent = '🔁 loop on';
+        loopStatusBadge.classList.add('active');
+      } else {
+        loopToggle.classList.remove('active');
+        loopIndicator.style.background = '#4b556b';
+        loopStatusBadge.textContent = '⏹ loop off';
+        loopStatusBadge.classList.remove('active');
+      }
+    }
+
+    // toggle loop
+    function toggleLoop() {
+      isLoop = !isLoop;
+      updateLoopUI();
+      // jika ada audio yang sedang diputar, set loop property
+      if (currentAudio) {
+        currentAudio.loop = isLoop;
+      }
+    }
+
+    // hentikan audio saat ini (tanpa reset status tombol)
+    function stopCurrentAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio.loop = false; // matikan loop lokal
+        currentAudio = null;
+      }
+      // reset semua tombol ke non-playing
+      document.querySelectorAll('.play-btn').forEach(btn => {
+        btn.classList.remove('playing');
+        btn.innerHTML = '<i>▶</i> Putar';
+      });
+      // reset label
+      nowPlayingLabel.textContent = 'Berhenti';
+    }
+
+    // main play function
+    function playSound(index) {
+      const sound = soundList[index];
+      if (!sound) return;
+
+      // jika audio sama & sedang diputar => pause / stop
+      if (currentAudio && currentIndex === index && !currentAudio.paused) {
+        // pause
+        currentAudio.pause();
+        document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+        nowPlayingLabel.textContent = '⏸ dijeda';
+        return;
+      }
+
+      // jika ada audio lain, stop
+      if (currentAudio) {
+        stopCurrentAudio();
+      }
+
+      // buat audio baru
+      const audio = new Audio(sound.url);
+      audio.preload = 'auto';
+      audio.loop = isLoop;   // ikuti state loop
+
+      // event listener untuk selesai (hanya jika loop mati)
+      audio.addEventListener('ended', function onEnd() {
+        // jika loop off, reset tombol & label
+        if (!isLoop) {
+          document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+          nowPlayingLabel.textContent = 'Selesai';
+          currentAudio = null;
+          currentIndex = -1;
+        } else {
+          // loop on, biarkan audio lanjut (tapi kita tetap update status tombol? tombol tetap playing)
+          // tombol sudah di-set playing, tidak perlu diubah.
+        }
+      });
+
+      // event error handling (misal url gak bisa di-load)
+      audio.addEventListener('error', function(e) {
+        console.warn('Error loading audio:', sound.url);
+        nowPlayingLabel.textContent = '⚠️ Gagal load';
+        document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+        currentAudio = null;
+        currentIndex = -1;
+      });
+
+      // mulai play
+      audio.play().catch(err => {
+        console.warn('Play gagal:', err);
+        nowPlayingLabel.textContent = '⛔ Gagal putar';
+        document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+        currentAudio = null;
+        currentIndex = -1;
+      });
+
+      // simpan referensi
+      currentAudio = audio;
+      currentIndex = index;
+
+      // update tombol: semua nonaktif, tombol ini aktif
+      document.querySelectorAll('.play-btn').forEach((btn, i) => {
+        btn.classList.remove('playing');
+        if (i === index) {
+          btn.classList.add('playing');
+          btn.innerHTML = '<i>⏸</i> Jeda';
+        } else {
+          btn.innerHTML = '<i>▶</i> Putar';
+        }
+      });
+
+      // update label
+      nowPlayingLabel.textContent = `${sound.title} • ${sound.subtitle}`;
+    }
+
+    // render grid
+    function renderGrid() {
+      grid.innerHTML = '';
+      soundList.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'sound-card';
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = item.title;
+
+        const sub = document.createElement('div');
+        sub.className = 'sub';
+        sub.textContent = item.subtitle;
+
+        const btn = document.createElement('button');
+        btn.className = 'play-btn';
+        btn.setAttribute('data-index', idx);
+        btn.innerHTML = '<i>▶</i> Putar';
+
+        // event listener tombol
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const index = parseInt(this.getAttribute('data-index'), 10);
+          playSound(index);
+        });
+
+        card.appendChild(label);
+        card.appendChild(sub);
+        card.appendChild(btn);
+        grid.appendChild(card);
+      });
+    }
+
+    // event listener loop toggle (klik & keyboard)
+    loopToggle.addEventListener('click', toggleLoop);
+    loopToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleLoop();
+      }
+    });
+
+    // inisialisasi
+    renderGrid();
+    updateLoopUI();
+
+    // (optional) reset jika klik di luar card? tidak perlu.
+    // cleanup audio saat halaman di-unload
+    window.addEventListener('beforeunload', function() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+    });
+
+    // handler untuk tombol jika ada error / pause tidak sengaja
+    // tambahkan juga tombol stop all? cukup dengan memencet tombol yang sedang diputar.
+
+    // Helper: jika pengguna menekan tombol yang sama, toggle pause (sudah di handle di playSound)
+
+    // tambahan: jika loop mati dan audio selesai, tombol berubah (via event ended)
+    // tapi jika loop aktif, tombol tetap "Jeda"
+    // kita override ended event listener di atas sudah handle.
+
+    // tambahan: tombol pause diubah menjadi "Jeda" saat playing, dan "Putar" saat tidak.
+    // sudah diatur di playSound
+
+    // jika audio di-pause oleh user (klik tombol yang sama), tombol akan berubah jadi "Putar"
+    // namun di playSound kita pause dan ubah semua tombol tidak playing, label pause
+    // lalu jika user klik tombol lain, stop yang lama dan play yang baru.
+
+    console.log('🎵 SFX Player siap!');
+  })();
+</script>
+</body>
+  </html>
