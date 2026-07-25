@@ -1,0 +1,520 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>SFX Player • Kelompok 1 Taamal 2026</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: radial-gradient(circle at 20% 30%, #121824, #070a10 90%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .player-wrapper {
+      max-width: 1400px;
+      width: 100%;
+      background: rgba(18, 22, 35, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 60px;
+      padding: 36px 32px 44px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.03);
+      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+    h1 {
+      color: #f0edea;
+      font-weight: 400;
+      font-size: 2.1rem;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+      padding-left: 6px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    h1 small {
+      font-size: 0.85rem;
+      font-weight: 400;
+      background: rgba(44, 52, 75, 0.7);
+      backdrop-filter: blur(4px);
+      padding: 6px 22px;
+      border-radius: 60px;
+      color: #bdc8e3;
+      letter-spacing: 0.4px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .loop-toggle {
+      margin-left: auto;
+      background: rgba(34, 42, 62, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid #3d4866;
+      padding: 10px 30px;
+      border-radius: 60px;
+      color: #d6deec;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: 0.25s;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+    .loop-toggle.active {
+      background: #334a75;
+      border-color: #8aa3d4;
+      box-shadow: 0 0 28px #3f65a066;
+      color: white;
+    }
+    .loop-toggle .indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 30px;
+      background: #4f5a78;
+      transition: 0.25s;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .loop-toggle.active .indicator {
+      background: #aac4ff;
+      box-shadow: 0 0 20px #6a8fd0, inset 0 2px 4px rgba(255,255,255,0.2);
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 8px;
+    }
+    .sound-card {
+      background: rgba(26, 32, 50, 0.7);
+      backdrop-filter: blur(4px);
+      border-radius: 36px;
+      padding: 22px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.6);
+      border: 1px solid #2d3652;
+      transition: transform 0.18s ease, border-color 0.25s, box-shadow 0.3s;
+      cursor: default;
+    }
+    .sound-card:hover {
+      border-color: #6a7da5;
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      background: rgba(30, 38, 60, 0.8);
+    }
+    .sound-card .label {
+      font-weight: 600;
+      color: #f0f4ff;
+      font-size: 1.05rem;
+      line-height: 1.3;
+      margin-bottom: 2px;
+      min-height: 2.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-word;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .sound-card .sub {
+      font-size: 0.7rem;
+      color: #a3b1d0;
+      background: rgba(35, 44, 66, 0.7);
+      backdrop-filter: blur(2px);
+      padding: 4px 16px;
+      border-radius: 40px;
+      margin-bottom: 18px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid #36405e;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 2px;
+    }
+    .ctrl-btn {
+      background: rgba(36, 45, 68, 0.8);
+      backdrop-filter: blur(4px);
+      border: 1px solid #3f4a62;
+      border-radius: 60px;
+      padding: 12px 0;
+      flex: 1;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #d1dcee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: 0.15s;
+      box-shadow: inset 0 -3px 0 #0f131f;
+      cursor: pointer;
+      min-width: 56px;
+    }
+    .ctrl-btn:active {
+      transform: scale(0.94);
+      box-shadow: inset 0 2px 8px #0b0e14;
+    }
+    .ctrl-btn.play-btn.playing {
+      background: #3e5d83;
+      border-color: #7f9fd0;
+      color: white;
+      box-shadow: 0 0 24px #2d4a7a77, inset 0 -2px 0 #1f314a;
+    }
+    .ctrl-btn.loop-btn {
+      flex: 0.5;
+      background: rgba(30, 39, 60, 0.8);
+      border-color: #3b455e;
+      font-size: 1.2rem;
+      min-width: 44px;
+    }
+    .ctrl-btn.loop-btn.active-loop {
+      background: #3a507a;
+      border-color: #7f9fd0;
+      color: #d4e2ff;
+      box-shadow: 0 0 18px #3b5f8a66, inset 0 -2px 0 #1f314a;
+    }
+    .ctrl-btn i {
+      font-style: normal;
+      font-size: 1rem;
+    }
+    .status-bar {
+      margin-top: 38px;
+      padding: 14px 26px;
+      background: rgba(20, 26, 42, 0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 60px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: #b2bed9;
+      font-size: 0.9rem;
+      border: 1px solid #2a3450;
+    }
+    .status-bar .now-playing {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-bar .now-playing span {
+      color: #e3eafb;
+      font-weight: 500;
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status-bar .badge-loop {
+      background: rgba(30, 40, 62, 0.7);
+      padding: 6px 22px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      border: 1px solid #3f4a62;
+    }
+    .badge-loop.active {
+      background: #2c4066;
+      border-color: #7f9fd0;
+      color: #ceddff;
+    }
+    @media (max-width: 720px) {
+      .player-wrapper { padding: 24px 18px; }
+      h1 { font-size: 1.6rem; }
+      .loop-toggle { padding: 6px 18px; font-size: 0.8rem; gap: 8px; }
+      .grid-container { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); }
+    }
+    @media (max-width: 500px) {
+      .grid-container { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .sound-card { padding: 16px 10px; }
+      .ctrl-btn { font-size: 0.7rem; padding: 10px 0; }
+      .ctrl-btn.loop-btn { flex: 0.5; font-size: 1rem; }
+      .status-bar .now-playing span { max-width: 140px; }
+    }
+  </style>
+</head>
+<body>
+<div class="player-wrapper" role="main">
+  <h1>
+    🎭 SFX Teatrikal
+    <small>Kelompok 1 • Taamal 2026</small>
+    <div id="loopToggle" class="loop-toggle" role="button" tabindex="0" aria-label="Toggle loop global">
+      <span>🔁 Global Loop</span>
+      <span class="indicator" id="loopIndicator"></span>
+    </div>
+  </h1>
+
+  <div class="grid-container" id="soundGrid"></div>
+
+  <div class="status-bar">
+    <div class="now-playing">
+      <span>▶</span>
+      <span id="nowPlayingLabel">Belum diputar</span>
+    </div>
+    <div class="badge-loop" id="loopStatusBadge">⏹ loop off</div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // Daftar SFX lengkap sesuai permintaan (14 + tambahan dari list sebelumnya)
+    const soundList = [
+      { title: "🦗 Suasana Garing", subtitle: "Awalan • Jangkrik", url: "https://www.myinstants.com/media/sounds/cricket-sound-effect.mp3" },
+      { title: "🐔 Ayam Berkokok", subtitle: "Opening • Fales/Nge-lag", url: "https://www.myinstants.com/media/sounds/rooster-crowing_2.mp3" },
+      { title: "👊 Gebluk / Punch", subtitle: "Transisi • Ayam Geprek", url: "https://www.myinstants.com/media/sounds/punch-sound-86161.mp3" },
+      { title: "🎥 Record Scratch", subtitle: "Pindah Topik • Nge-lag", url: "https://www.myinstants.com/media/sounds/record-scratch-08.mp3" },
+      { title: "🐮 Sapi / Kambing", subtitle: "Suasana Peternakan", url: "https://www.myinstants.com/media/sounds/lamb-mbek-huntswomen-28801.mp3" },
+      { title: "🗣️ Desisan Fah", subtitle: "Reaksi Jijik • Bau", url: "https://www.myinstants.com/media/sounds/fahhhhhhhhhhhhhh-3525.mp3" },
+      { title: "🚨 Buzzer Error", subtitle: "Salah Konsep • Cor Beton", url: "https://www.myinstants.com/media/sounds/erro.mp3" },
+      { title: "🐐 Kambing Ngamuk", subtitle: "Kambing Kabur • Scream", url: "https://www.myinstants.com/media/sounds/goat-scream.mp3" },
+      { title: "👓 Kaca Pecah", subtitle: "Potong Keramik • Glass", url: "https://www.myinstants.com/media/sounds/glass-smash.mp3" },
+      { title: "💥 Vine Boom", subtitle: "Ulek Batu • Ledakan", url: "https://www.myinstants.com/media/sounds/vine-boom-sound-70972.mp3" },
+      { title: "🪈 Metal Pipe", subtitle: "Tusuk Linggis • Nyaring", url: "https://www.myinstants.com/media/sounds/metal-pipe-meme-but-louder-42845.mp3" },
+      { title: "💦 Cipratan Air", subtitle: "Mandi Sapi • Water", url: "https://www.myinstants.com/media/sounds/water-splash-1.mp3" },
+      { title: "😭 Sad Violin", subtitle: "Adegan Tragis • Tamu Dicor", url: "https://www.myinstants.com/media/sounds/sad-violin-the-meme-one.mp3" },
+      { title: "🔒 Directed by", subtitle: "Ending • Robert B. Weide", url: "https://www.myinstants.com/media/sounds/meme-de-creditos-finales_qHtIjyQ.mp3" },
+      // tambahan dari list sebelumnya (biar lebih lengkap)
+      { title: "🔴 BACKSOUND UTAMA", subtitle: "Instrumen • Taamal", url: "https://www.cloudsky.biz.id/api/file/backsound-primary-taamal26.mp3" },
+      { title: "🔴 KING NASIR", subtitle: "CLOSING • Taamal", url: "https://www.cloudsky.biz.id/api/file/kingnasir.mp3" },
+      { title: "🔴 PITHEK MBENGOK", subtitle: "TMBHN • Suara Ayam", url: "https://www.myinstants.com/media/sounds/chicken-on-tree-screaming.mp3" },
+      { title: "😶 Tamatlah sudah", subtitle: "Closing Punchline", url: "https://www.myinstants.com/media/sounds/tamatlah-sudah.mp3" },
+      { title: "🎭 Kocak komedi", subtitle: "Indian song • Lucu", url: "https://www.myinstants.com/media/sounds/indian-song.mp3" }
+    ];
+
+    const grid = document.getElementById('soundGrid');
+    const nowPlayingLabel = document.getElementById('nowPlayingLabel');
+    const loopStatusBadge = document.getElementById('loopStatusBadge');
+    const loopToggle = document.getElementById('loopToggle');
+    const loopIndicator = document.getElementById('loopIndicator');
+
+    // ----- state -----
+    let currentAudio = null;
+    let currentIndex = -1;
+    let isGlobalLoop = false;
+    const audioCache = new Map();
+
+    // ----- fungsi update UI global loop -----
+    function updateGlobalLoopUI() {
+      if (isGlobalLoop) {
+        loopToggle.classList.add('active');
+        loopIndicator.style.background = '#aac4ff';
+        loopStatusBadge.textContent = '🔁 loop on';
+        loopStatusBadge.classList.add('active');
+      } else {
+        loopToggle.classList.remove('active');
+        loopIndicator.style.background = '#4f5a78';
+        loopStatusBadge.textContent = '⏹ loop off';
+        loopStatusBadge.classList.remove('active');
+      }
+      if (currentAudio) {
+        currentAudio.loop = isGlobalLoop;
+      }
+      document.querySelectorAll('.loop-btn').forEach((btn) => {
+        if (isGlobalLoop) {
+          btn.classList.add('active-loop');
+          btn.textContent = '🔁';
+        } else {
+          btn.classList.remove('active-loop');
+          btn.textContent = '↺';
+        }
+      });
+    }
+
+    function toggleGlobalLoop() {
+      isGlobalLoop = !isGlobalLoop;
+      updateGlobalLoopUI();
+      if (currentAudio) {
+        currentAudio.loop = isGlobalLoop;
+      }
+    }
+
+    // ----- stop audio saat ini -----
+    function stopCurrentAudio() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio.loop = false;
+        currentAudio = null;
+        currentIndex = -1;
+      }
+      document.querySelectorAll('.play-btn').forEach(btn => {
+        btn.classList.remove('playing');
+        btn.innerHTML = '▶ Play';
+      });
+      nowPlayingLabel.textContent = 'Berhenti';
+    }
+
+    // ----- main play dengan cache -----
+    function playSound(index) {
+      const sound = soundList[index];
+      if (!sound) return;
+
+      if (currentAudio && currentIndex === index && !currentAudio.paused) {
+        currentAudio.pause();
+        document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+        nowPlayingLabel.textContent = '⏸ dijeda';
+        const playBtn = document.querySelector(`.play-btn[data-index="${index}"]`);
+        if (playBtn) {
+          playBtn.classList.remove('playing');
+          playBtn.innerHTML = '▶ Play';
+        }
+        return;
+      }
+
+      if (currentAudio) {
+        stopCurrentAudio();
+      }
+
+      let cached = audioCache.get(index);
+      let audio;
+
+      if (cached) {
+        audio = cached.audio;
+        audio.pause();
+        audio.currentTime = 0;
+        audio.loop = isGlobalLoop;
+      } else {
+        audio = new Audio(sound.url);
+        audio.preload = 'auto';
+        audio.loop = isGlobalLoop;
+        audioCache.set(index, { audio, loaded: false });
+        audio.addEventListener('loadeddata', function() {
+          const entry = audioCache.get(index);
+          if (entry) entry.loaded = true;
+        });
+        audio.addEventListener('error', function(e) {
+          audioCache.delete(index);
+          console.warn('Error load/cache audio:', sound.url);
+        });
+      }
+
+      audio.removeEventListener('ended', handleEnded);
+      audio.addEventListener('ended', handleEnded);
+
+      function handleEnded() {
+        if (!isGlobalLoop) {
+          document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+          nowPlayingLabel.textContent = 'Selesai';
+          currentAudio = null;
+          currentIndex = -1;
+        }
+      }
+
+      audio.play().catch(err => {
+        console.warn('Play gagal:', err);
+        nowPlayingLabel.textContent = '⛔ Gagal putar';
+        document.querySelectorAll('.play-btn').forEach(btn => btn.classList.remove('playing'));
+        currentAudio = null;
+        currentIndex = -1;
+        audioCache.delete(index);
+      });
+
+      currentAudio = audio;
+      currentIndex = index;
+
+      document.querySelectorAll('.play-btn').forEach((btn, i) => {
+        btn.classList.remove('playing');
+        if (i === index) {
+          btn.classList.add('playing');
+          btn.innerHTML = '⏸ Pause';
+        } else {
+          btn.innerHTML = '▶ Play';
+        }
+      });
+
+      nowPlayingLabel.textContent = `${sound.title} • ${sound.subtitle}`;
+    }
+
+    // ----- render grid -----
+    function renderGrid() {
+      grid.innerHTML = '';
+      soundList.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'sound-card';
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = item.title;
+
+        const sub = document.createElement('div');
+        sub.className = 'sub';
+        sub.textContent = item.subtitle;
+
+        const controls = document.createElement('div');
+        controls.className = 'controls';
+
+        const playBtn = document.createElement('button');
+        playBtn.className = 'ctrl-btn play-btn';
+        playBtn.setAttribute('data-index', idx);
+        playBtn.innerHTML = '▶ Play';
+
+        const loopBtn = document.createElement('button');
+        loopBtn.className = 'ctrl-btn loop-btn';
+        loopBtn.setAttribute('data-index', idx);
+        loopBtn.textContent = isGlobalLoop ? '🔁' : '↺';
+        if (isGlobalLoop) loopBtn.classList.add('active-loop');
+
+        playBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const index = parseInt(this.getAttribute('data-index'), 10);
+          playSound(index);
+        });
+
+        loopBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleGlobalLoop();
+        });
+
+        controls.appendChild(playBtn);
+        controls.appendChild(loopBtn);
+        card.appendChild(label);
+        card.appendChild(sub);
+        card.appendChild(controls);
+        grid.appendChild(card);
+      });
+    }
+
+    // ----- event global loop -----
+    loopToggle.addEventListener('click', toggleGlobalLoop);
+    loopToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleGlobalLoop();
+      }
+    });
+
+    // ----- init -----
+    renderGrid();
+    updateGlobalLoopUI();
+
+    window.addEventListener('beforeunload', function() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      audioCache.clear();
+    });
+
+    console.log('🎵 SFX Player dengan cache & kontrol per kartu siap!');
+  })();
+</script>
+</body>
+</html>
