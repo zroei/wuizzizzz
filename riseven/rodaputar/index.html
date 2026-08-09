@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SPINWHELL X-7 AMBIS</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js">
+    </script>
+
+    <!-- Twemoji favicon -->
+    <link rel="icon" href="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/72x72/1f989.png" type="image/png" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            padding-bottom: 90px;
+        }
+
+        #app {
+            max-width: 520px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            padding: 16px 16px 20px 16px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .header .logo {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .sub {
+            font-size: 10px;
+            font-weight: 600;
+            color: #999;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+
+        /* Canvas wrapper */
+        .canvas-wrapper {
+            position: relative;
+            margin: 12px 0 8px 0;
+            aspect-ratio: 1/1;
+            width: 100%;
+            touch-action: none;
+        }
+
+        #wheelCanvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            border-radius: 50%;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10), inset 0 2px 8px rgba(255, 255, 255, 0.3);
+            background: #e8e8e8;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        /* Pointer */
+        .pointer-wrap {
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+        }
+
+        .pointer-dot {
+            width: 16px;
+            height: 16px;
+            background: #1a1a1a;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .pointer-triangle {
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 22px solid #1a1a1a;
+            margin-top: -4px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+        }
+
+        /* Result Box */
+        .result-box {
+            background: #f0f0f0;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin: 8px 0 12px 0;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .result-box .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .result-box .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: right;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .result-box .value.winner {
+            color: #2563eb;
+            font-size: 20px;
+        }
+
+        /* Group chips */
+        .group-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 4px 0 12px 0;
+            max-height: 160px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .group-chip {
+            background: white;
+            border-radius: 12px;
+            padding: 8px 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #eaeaea;
+            font-size: 12px;
+            font-weight: 500;
+            color: #222;
+            animation: popIn 0.3s ease forwards;
+            opacity: 0;
+            transform: scale(0.9);
+            flex: 0 1 auto;
+            min-width: 80px;
+        }
+
+        .group-chip .group-title {
+            font-weight: 700;
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 0.2px;
+            margin-bottom: 2px;
+        }
+
+        .group-chip .group-names {
+            font-size: 12px;
+            color: #1a1a1a;
+            line-height: 1.4;
+        }
+
+        .group-chip .group-stats {
+            font-size: 10px;
+            color: #888;
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .group-chip.animate {
+            animation: popIn 0.3s ease forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(8px);
+            }
+            60% {
+                transform: scale(1.02) translateY(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+            padding: 8px 12px 12px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            flex-wrap: wrap;
+            z-index: 100;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #777;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .nav-btn.active {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .nav-btn.primary {
+            background: #1a1a1a;
+            color: white;
+            padding: 6px 16px;
+        }
+
+        .nav-btn.primary:hover {
+            background: #333;
+        }
+
+        .nav-btn.primary:disabled {
+            opacity: 0.5;
+        }
+
+        .nav-btn.secondary {
+            background: #e8e8e8;
+            color: #333;
+            padding: 6px 14px;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #ddd;
+        }
+
+        .nav-select {
+            background: #f0f0f0;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-width: 52px;
+        }
+
+        .nav-select:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .nav-divider {
+            color: #ccc;
+            font-weight: 300;
+            font-size: 16px;
+            user-select: none;
+        }
+
+        /* Popup Overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .popup-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-card {
+            background: white;
+            border-radius: 32px;
+            padding: 40px 32px 32px 32px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            opacity: 0;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+        }
+
+        .popup-overlay.open .popup-card {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .popup-card .trophy {
+            font-size: 52px;
+            margin-bottom: 4px;
+        }
+
+        .popup-card .popup-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .popup-card .popup-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin: 8px 0 4px 0;
+            line-height: 1.2;
+        }
+
+        .popup-card .popup-sub {
+            font-size: 14px;
+            color: #777;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .popup-card .popup-close {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s ease;
+        }
+
+        .popup-card .popup-close:hover {
+            background: #333;
+        }
+
+        /* Input Mode - Custom */
+        .input-mode-container {
+            display: none;
+            margin: 8px 0 12px 0;
+            padding: 12px;
+            background: #f8f8f8;
+            border-radius: 16px;
+            border: 1px solid #eaeaea;
+        }
+
+        .input-mode-container.active {
+            display: block;
+        }
+
+        .input-mode-container textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            transition: border-color 0.2s ease;
+            background: white;
+        }
+
+        .input-mode-container textarea:focus {
+            border-color: #1a1a1a;
+        }
+
+        .input-mode-container .input-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-mode-container .input-actions button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.15s ease;
+        }
+
+        .input-mode-container .input-actions .btn-apply {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .input-mode-container .input-actions .btn-apply:hover {
+            background: #333;
+        }
+
+        .input-mode-container .input-actions .btn-reset-default {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .input-mode-container .input-actions .btn-reset-default:hover {
+            background: #ddd;
+        }
+
+        .input-mode-container .input-info {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .input-mode-container .input-info strong {
+            color: #333;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            #app {
+                padding: 12px 12px 16px 12px;
+                border-radius: 20px;
+            }
+            .header h1 {
+                font-size: 15px;
+            }
+            .header .sub {
+                font-size: 8px;
+            }
+            .result-box .value {
+                font-size: 15px;
+            }
+            .nav-btn {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            .nav-select {
+                font-size: 10px;
+                padding: 5px 8px;
+                min-width: 44px;
+            }
+            .bottom-nav {
+                padding: 6px 8px 10px 8px;
+                gap: 4px;
+            }
+            .popup-card {
+                padding: 28px 20px 24px 20px;
+            }
+            .popup-card .popup-name {
+                font-size: 26px;
+            }
+            .group-chip {
+                font-size: 10px;
+                padding: 6px 10px;
+                min-width: 60px;
+            }
+            .group-chip .group-names {
+                font-size: 10px;
+            }
+            .group-chips {
+                max-height: 120px;
+            }
+            .input-mode-container textarea {
+                font-size: 13px;
+                min-height: 60px;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .nav-btn {
+                font-size: 9px;
+                padding: 4px 8px;
+            }
+            .nav-select {
+                font-size: 9px;
+                padding: 4px 6px;
+                min-width: 38px;
+            }
+            .nav-divider {
+                font-size: 12px;
+            }
+        }
+
+        /* Scrollbar */
+        .group-chips::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .group-chips::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .group-chips::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== MAIN APP ===== -->
+    <div id="app">
+
+        <!-- HEADER -->
+        <div class="header">
+            <span class="logo">🦉</span>
+            <h1>SPINWHELL X-7</h1>
+            <span class="sub">⚡ RISET</span>
+        </div>
+
+        <!-- CANVAS -->
+        <div class="canvas-wrapper">
+            <canvas id="wheelCanvas" width="600" height="600"></canvas>
+            <!-- Pointer -->
+            <div class="pointer-wrap">
+                <div class="pointer-dot"></div>
+                <div class="pointer-triangle"></div>
+            </div>
+        </div>
+
+        <!-- RESULT BOX -->
+        <div class="result-box" id="resultBox">
+            <span class="label">🎯 Hasil</span>
+            <span class="value" id="resultValue">Siap spin!</span>
+        </div>
+
+        <!-- INPUT MODE CONTAINER -->
+        <div class="input-mode-container" id="inputModeContainer">
+            <textarea id="inputNames" placeholder="Masukkan nama, pisahkan dengan koma&#10;Contoh: Andi, Budi, Cici, Dodi, Elsa">Andi, Budi, Cici, Dodi, Elsa, Fani, Gilang, Hani, Indra, Joko</textarea>
+            <div class="input-actions">
+                <button class="btn-apply" id="applyCustomNames">✅ Terapkan</button>
+                <button class="btn-reset-default" id="resetDefaultNames">↺ Reset Default</button>
+            </div>
+            <div class="input-info">
+                💡 <strong id="nameCount">0</strong> nama terdaftar • Pisahkan dengan koma (,)
+            </div>
+        </div>
+
+        <!-- GROUP CHIPS -->
+        <div class="group-chips" id="groupChips"></div>
+
+        <!-- BOTTOM NAV (sticky via fixed position) -->
+    </div>
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <div class="bottom-nav" id="bottomNav">
+        <div class="nav-group">
+            <button class="nav-btn active" data-mode="solo" id="modeSolo">Solo</button>
+            <span class="nav-divider">•</span>
+            <button class="nav-btn" data-mode="kelompok" id="modeKelompok">Kelompok</button>
+            <span class="nav-divider">•</span>
+            <button class="nav-btn" data-mode="rata" id="modeRata">Rata</button>
+            <span class="nav-divider">•</span>
+            <button class="nav-btn" data-mode="input" id="modeInput">✏️ Input</button>
+        </div>
+
+        <div class="nav-group">
+            <select class="nav-select" id="groupCountSelect" disabled>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6" selected>6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="12">12</option>
+                <option value="18">18</option>
+                <option value="24">24</option>
+                <option value="36">36</option>
+            </select>
+        </div>
+
+        <div class="nav-group">
+            <button class="nav-btn primary" id="spinBtn">🔄 Putar</button>
+            <button class="nav-btn secondary" id="resetBtn">⟲ Reset</button>
+        </div>
+    </div>
+
+    <!-- ===== POPUP OVERLAY ===== -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-card">
+            <div class="trophy">🏆</div>
+            <div class="popup-label">Pemenang</div>
+            <div class="popup-name" id="popupName">—</div>
+            <div class="popup-sub" id="popupSub">Selamat! 🎉</div>
+            <button class="popup-close" id="popupClose">Tutup</button>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- DATA ----------
+            const DEFAULT_NAMES = [
+                'Elfandra', 'Husin', 'Nayla', 'Agatha', 'Anisa', 'Louisa',
+                'Sabilu', 'Ucup', 'Dyah', 'Reyra', 'Adinda', 'Farica',
+                'Arkan', 'Zam Zam', 'Ariyanti', 'Rahma', 'Echa', 'Jeje',
+                'Arya', 'Rozik', 'Jeniar', 'Liantyra', 'Astagina', 'Phalosa',
+                'Sulton', 'Rafi', 'Hanum', 'Abel', 'Khansa', 'Kirana',
+                'Diarta', 'Adam', 'Keyla', 'Anin', 'Amel', 'Dinar'
+            ];
+
+            const COWOK = ['Adam', 'Arya', 'Sulton', 'Ucup', 'Sabilu', 'Diarta', 'Arkan', 'Rozik', 'Rafi', 'Zam Zam', 'Husin',
+                'Elfandra'
+            ];
+            const CEWEK = ['Nayla', 'Agatha', 'Anisa', 'Louisa', 'Dyah', 'Reyra', 'Adinda', 'Farica', 'Ariyanti', 'Rahma',
+                'Echa', 'Jeje', 'Jeniar', 'Liantyra', 'Astagina', 'Phalosa', 'Hanum', 'Abel', 'Khansa', 'Kirana', 'Keyla',
+                'Anin', 'Amel', 'Dinar'
+            ];
+
+            // Warna segmen (palet cerah)
+            const COLORS = [
+                '#FF6B6B', '#FF9F43', '#FECA57', '#48DBFB', '#0ABDE3', '#10AC84',
+                '#EE5A24', '#5F27CD', '#341F97', '#FF6FB7', '#F368E0', '#00D2D3',
+                '#54A0FF', '#5F6DEC', '#FF9FF3', '#FFC8DD', '#A29BFE', '#FD79A8',
+                '#FDCB6E', '#E17055', '#00CEC9', '#0984E3', '#6C5CE7', '#FD79A8',
+                '#FF7675', '#74B9FF', '#55EFC4', '#81ECEC', '#FAB1A0', '#DDA0DD',
+                '#FFB347', '#FF6F61', '#6B5B95', '#88B04B', '#F7CAC9', '#92A8D1'
+            ];
+
+            // ---------- DOM REFS ----------
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const resultValue = document.getElementById('resultValue');
+            const groupChips = document.getElementById('groupChips');
+            const spinBtn = document.getElementById('spinBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const modeSolo = document.getElementById('modeSolo');
+            const modeKelompok = document.getElementById('modeKelompok');
+            const modeRata = document.getElementById('modeRata');
+            const modeInput = document.getElementById('modeInput');
+            const groupSelect = document.getElementById('groupCountSelect');
+            const popupOverlay = document.getElementById('popupOverlay');
+            const popupName = document.getElementById('popupName');
+            const popupSub = document.getElementById('popupSub');
+            const popupClose = document.getElementById('popupClose');
+            const resultBox = document.getElementById('resultBox');
+
+            // Input mode elements
+            const inputModeContainer = document.getElementById('inputModeContainer');
+            const inputNames = document.getElementById('inputNames');
+            const applyCustomNames = document.getElementById('applyCustomNames');
+            const resetDefaultNames = document.getElementById('resetDefaultNames');
+            const nameCount = document.getElementById('nameCount');
+
+            // ---------- STATE ----------
+            let currentMode = 'solo'; // 'solo' | 'kelompok' | 'rata' | 'input'
+            let isSpinning = false;
+            let currentAngle = 0;
+            let velocity = 0;
+            let animationId = null;
+            let spinStartTime = 0;
+            const SPIN_DURATION = 5000;
+            let currentResult = null;
+            let groupResult = null;
+
+            // Nama yang digunakan (bisa custom)
+            let currentNames = [...DEFAULT_NAMES];
+            let shuffledNames = shuffleArray([...currentNames]);
+
+            // Flag untuk mode input (untuk grouping)
+            let isInputMode = false;
+
+            // ---------- HELPERS ----------
+            function shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            // Parse input names dari textarea
+            function parseNames(text) {
+                return text.split(',')
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0);
+            }
+
+            // Update nama dari input
+            function updateNamesFromInput() {
+                const raw = inputNames.value;
+                const parsed = parseNames(raw);
+                if (parsed.length === 0) {
+                    alert('⚠️ Masukkan minimal 1 nama!');
+                    return false;
+                }
+                currentNames = parsed;
+                shuffledNames = shuffleArray([...currentNames]);
+                isInputMode = true;
+                updateNameCount();
+                resetAll();
+                return true;
+            }
+
+            // Reset ke default names
+            function resetToDefaultNames() {
+                currentNames = [...DEFAULT_NAMES];
+                shuffledNames = shuffleArray([...currentNames]);
+                isInputMode = false;
+                inputNames.value = DEFAULT_NAMES.join(', ');
+                updateNameCount();
+                resetAll();
+            }
+
+            // Update counter
+            function updateNameCount() {
+                const count = currentNames.length;
+                nameCount.textContent = count;
+            }
+
+            // ---------- DRAW WHEEL ----------
+            function drawWheel(angle = 0) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const radius = Math.min(w, h) / 2 - 8;
+
+                ctx.clearRect(0, 0, w, h);
+
+                const total = shuffledNames.length;
+                if (total === 0) {
+                    // Tampilkan pesan jika tidak ada nama
+                    ctx.fillStyle = '#999';
+                    ctx.font = '20px Inter, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Tidak ada nama', cx, cy);
+                    return;
+                }
+
+                const sliceAngle = (2 * Math.PI) / total;
+
+                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'transparent';
+
+                for (let i = 0; i < total; i++) {
+                    const start = i * sliceAngle + angle;
+                    const end = start + sliceAngle;
+
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, radius, start, end);
+                    ctx.closePath();
+                    ctx.fillStyle = COLORS[i % COLORS.length];
+                    ctx.fill();
+
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    const midAngle = start + sliceAngle / 2;
+                    const textRadius = radius * 0.68;
+                    const x = cx + Math.cos(midAngle) * textRadius;
+                    const y = cy + Math.sin(midAngle) * textRadius;
+
+                    const name = shuffledNames[i];
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(midAngle + (midAngle > Math.PI / 2 ? Math.PI : 0));
+
+                    // Ukuran font adaptif
+                    let fontSize = 13;
+                    if (total > 30) fontSize = 11;
+                    if (total > 40) fontSize = 9;
+                    if (total > 50) fontSize = 8;
+                    ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    ctx.shadowBlur = 6;
+                    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(name, 0, 0);
+
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+
+                    ctx.restore();
+                }
+
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 14, 0, 2 * Math.PI);
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // ---------- GET WINNER INDEX ----------
+            function getWinnerIndex(angle) {
+                const total = shuffledNames.length;
+                if (total === 0) return -1;
+                const sliceAngle = (2 * Math.PI) / total;
+                let pointerAngle = -Math.PI / 2;
+                let raw = (pointerAngle - angle) % (2 * Math.PI);
+                if (raw < 0) raw += 2 * Math.PI;
+                let idx = Math.floor(raw / sliceAngle);
+                if (idx >= total) idx = 0;
+                return idx;
+            }
+
+            // ---------- SPIN LOGIC ----------
+            function startSpin() {
+                if (isSpinning) return;
+                if (shuffledNames.length === 0) {
+                    alert('⚠️ Tidak ada nama! Masukkan nama terlebih dahulu.');
+                    return;
+                }
+
+                groupChips.innerHTML = '';
+                groupResult = null;
+                currentResult = null;
+
+                isSpinning = true;
+                spinBtn.disabled = true;
+                spinBtn.textContent = '🌀 Memutar...';
+                resetBtn.disabled = true;
+                groupSelect.disabled = true;
+                modeSolo.disabled = true;
+                modeKelompok.disabled = true;
+                modeRata.disabled = true;
+                modeInput.disabled = true;
+
+                velocity = 0.25 + Math.random() * 0.20;
+
+                spinStartTime = performance.now();
+                if (animationId) cancelAnimationFrame(animationId);
+                animateSpin();
+            }
+
+            function animateSpin() {
+                const elapsed = performance.now() - spinStartTime;
+                const progress = Math.min(elapsed / SPIN_DURATION, 1);
+
+                const ease = 1 - Math.pow(1 - progress, 2.5);
+                const currentVel = velocity * (1 - ease * 0.95);
+                currentAngle += currentVel;
+
+                drawWheel(currentAngle);
+
+                if (progress < 1) {
+                    animationId = requestAnimationFrame(animateSpin);
+                } else {
+                    const idx = getWinnerIndex(currentAngle);
+                    if (idx === -1) {
+                        // Tidak ada nama
+                        isSpinning = false;
+                        spinBtn.disabled = false;
+                        spinBtn.textContent = '🔄 Putar';
+                        resetBtn.disabled = false;
+                        groupSelect.disabled = (currentMode === 'solo' || currentMode === 'input');
+                        modeSolo.disabled = false;
+                        modeKelompok.disabled = false;
+                        modeRata.disabled = false;
+                        modeInput.disabled = false;
+                        animationId = null;
+                        return;
+                    }
+                    const winner = shuffledNames[idx];
+                    currentResult = { name: winner, index: idx };
+
+                    if (currentMode === 'solo' || currentMode === 'input') {
+                        showSoloResult(winner);
+                    } else {
+                        doGrouping();
+                    }
+
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = '🔄 Putar';
+                    resetBtn.disabled = false;
+                    groupSelect.disabled = (currentMode === 'solo' || currentMode === 'input');
+                    modeSolo.disabled = false;
+                    modeKelompok.disabled = false;
+                    modeRata.disabled = false;
+                    modeInput.disabled = false;
+                    animationId = null;
+                }
+            }
+
+            // ---------- SOLO RESULT ----------
+            function showSoloResult(winner) {
+                resultValue.textContent = '🏆 ' + winner;
+                resultValue.className = 'value winner';
+
+                popupName.textContent = winner;
+                popupSub.textContent = '🎉 Selamat! Keren banget!';
+                popupOverlay.classList.add('open');
+
+                fireConfetti();
+                groupChips.innerHTML = '';
+            }
+
+            // ---------- GROUPING ----------
+            function doGrouping() {
+                const numGroups = parseInt(groupSelect.value, 10);
+                if (numGroups < 2 || numGroups > 36) return;
+
+                const shuffled = shuffleArray([...currentNames]);
+                const total = shuffled.length;
+                const perGroup = Math.floor(total / numGroups);
+                const remainder = total % numGroups;
+
+                let groups = [];
+                let start = 0;
+                for (let i = 0; i < numGroups; i++) {
+                    let size = perGroup + (i < remainder ? 1 : 0);
+                    let group = shuffled.slice(start, start + size);
+                    groups.push(group);
+                    start += size;
+                }
+
+                groupResult = groups;
+
+                resultValue.textContent = `👥 ${numGroups} kelompok`;
+                resultValue.className = 'value';
+
+                groupChips.innerHTML = '';
+                groups.forEach((group, i) => {
+                    const chip = document.createElement('div');
+                    chip.className = 'group-chip';
+                    const namesStr = group.join(', ');
+                    let stats = '';
+                    if (currentMode === 'rata' && !isInputMode) {
+                        stats = getGroupStats(group);
+                    } else if (currentMode === 'rata' && isInputMode) {
+                        // Untuk input mode, tidak ada statistik cowok/cewek
+                        stats = '';
+                    }
+                    chip.innerHTML = `
+                        <div class="group-title">Kelompok ${i + 1}</div>
+                        <div class="group-names">${namesStr}</div>
+                        ${stats ? `<div class="group-stats">${stats}</div>` : ''}
+                    `;
+                    groupChips.appendChild(chip);
+                    setTimeout(() => {
+                        chip.classList.add('animate');
+                    }, i * 120);
+                });
+
+                fireConfetti();
+                popupOverlay.classList.remove('open');
+                resultValue.textContent = `👥 ${numGroups} kelompok • ${total} siswa`;
+            }
+
+            function getGroupStats(group) {
+                let cowok = 0,
+                    cewek = 0;
+                group.forEach(name => {
+                    if (COWOK.includes(name)) cowok++;
+                    else if (CEWEK.includes(name)) cewek++;
+                });
+                return `♂${cowok} ♀${cewek}`;
+            }
+
+            // ---------- RESET ----------
+            function resetAll() {
+                if (isSpinning) return;
+
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                isSpinning = false;
+                spinBtn.disabled = false;
+                spinBtn.textContent = '🔄 Putar';
+                resetBtn.disabled = false;
+                groupSelect.disabled = (currentMode === 'solo' || currentMode === 'input');
+                modeSolo.disabled = false;
+                modeKelompok.disabled = false;
+                modeRata.disabled = false;
+                modeInput.disabled = false;
+
+                currentAngle = 0;
+                drawWheel(0);
+
+                resultValue.textContent = 'Siap spin!';
+                resultValue.className = 'value';
+                groupChips.innerHTML = '';
+                currentResult = null;
+                groupResult = null;
+                popupOverlay.classList.remove('open');
+
+                shuffledNames = shuffleArray([...currentNames]);
+                drawWheel(0);
+                updateNameCount();
+            }
+
+            // ---------- CONFETTI ----------
+            function fireConfetti() {
+                if (typeof confetti !== 'undefined') {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.5 },
+                        colors: ['#FF6B6B', '#FF9F43', '#FECA57', '#48DBFB', '#0ABDE3', '#FF6FB7', '#A29BFE']
+                    });
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 60,
+                            spread: 50,
+                            origin: { y: 0.4, x: 0.3 },
+                            colors: ['#FFC8DD', '#FF9FF3', '#FD79A8', '#FDCB6E']
+                        });
+                    }, 300);
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 50,
+                            spread: 40,
+                            origin: { y: 0.5, x: 0.7 },
+                            colors: ['#55EFC4', '#81ECEC', '#74B9FF', '#0984E3']
+                        });
+                    }, 600);
+                }
+            }
+
+            // ---------- MODE SWITCH ----------
+            function setMode(mode) {
+                if (isSpinning) return;
+                if (mode === currentMode) return;
+
+                currentMode = mode;
+
+                [modeSolo, modeKelompok, modeRata, modeInput].forEach(btn => btn.classList.remove('active'));
+                if (mode === 'solo') modeSolo.classList.add('active');
+                else if (mode === 'kelompok') modeKelompok.classList.add('active');
+                else if (mode === 'rata') modeRata.classList.add('active');
+                else if (mode === 'input') modeInput.classList.add('active');
+
+                // Tampilkan/sembunyikan input container
+                if (mode === 'input') {
+                    inputModeContainer.classList.add('active');
+                    groupSelect.disabled = true;
+                } else {
+                    inputModeContainer.classList.remove('active');
+                    groupSelect.disabled = (mode === 'solo');
+                }
+
+                resetAll();
+
+                let msg = '';
+                if (mode === 'solo') msg = 'Mode Solo • 1 pemenang';
+                else if (mode === 'kelompok') msg = 'Mode Kelompok • bagi acak';
+                else if (mode === 'rata') msg = 'Mode Rata • cowok rata';
+                else if (mode === 'input') msg = 'Mode Input • custom names';
+                resultValue.textContent = msg;
+                resultValue.className = 'value';
+                groupChips.innerHTML = '';
+            }
+
+            // ---------- CLICK ON CANVAS ----------
+            canvas.addEventListener('click', (e) => {
+                if (!isSpinning) {
+                    startSpin();
+                }
+            });
+
+            // ---------- EVENT LISTENERS ----------
+            spinBtn.addEventListener('click', startSpin);
+            resetBtn.addEventListener('click', resetAll);
+
+            modeSolo.addEventListener('click', () => setMode('solo'));
+            modeKelompok.addEventListener('click', () => setMode('kelompok'));
+            modeRata.addEventListener('click', () => setMode('rata'));
+            modeInput.addEventListener('click', () => setMode('input'));
+
+            // Input mode events
+            applyCustomNames.addEventListener('click', () => {
+                if (updateNamesFromInput()) {
+                    // Switch ke mode input jika belum
+                    if (currentMode !== 'input') {
+                        setMode('input');
+                    } else {
+                        resetAll();
+                    }
+                }
+            });
+
+            resetDefaultNames.addEventListener('click', () => {
+                resetToDefaultNames();
+                if (currentMode === 'input') {
+                    setMode('solo');
+                }
+            });
+
+            // Live update counter
+            inputNames.addEventListener('input', () => {
+                const parsed = parseNames(inputNames.value);
+                nameCount.textContent = parsed.length;
+            });
+
+            popupClose.addEventListener('click', () => {
+                popupOverlay.classList.remove('open');
+            });
+
+            popupOverlay.addEventListener('click', (e) => {
+                if (e.target === popupOverlay) {
+                    popupOverlay.classList.remove('open');
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    popupOverlay.classList.remove('open');
+                }
+            });
+
+            // ---------- INIT ----------
+            function init() {
+                inputNames.value = DEFAULT_NAMES.join(', ');
+                updateNameCount();
+                drawWheel(0);
+                resultValue.textContent = 'Siap spin!';
+                groupSelect.value = '6';
+                groupSelect.disabled = true;
+                modeSolo.classList.add('active');
+                currentMode = 'solo';
+                inputModeContainer.classList.remove('active');
+            }
+
+            function handleResize() {
+                drawWheel(currentAngle);
+            }
+
+            window.addEventListener('resize', handleResize);
+
+            init();
+
+            console.log('🦉 SPINWHELL X-7 AMBIS siap!');
+            console.log(`📊 ${currentNames.length} siswa terdaftar`);
+
+        })();
+    </script>
+
+</body>
+</html>
