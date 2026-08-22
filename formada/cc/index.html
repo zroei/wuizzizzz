@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Kuis Cerdas Cermat Jurnalistik • 50 Soal</title>
+  <!-- Tailwind + Nunito Font -->
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js">
+  </script>
+  <style>
+    * {
+      font-family: 'Nunito', sans-serif;
+    }
+    body {
+      background: #fef3c7;
+    }
+    .bouncy-btn {
+      transition: all 0.15s ease;
+      box-shadow: 0 8px 0 #b45309, 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .bouncy-btn:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #b45309, 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .option-btn {
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 0 #9ca3af, 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .option-btn:active {
+      transform: scale(0.97);
+    }
+    .option-btn.correct {
+      background: #22c55e !important;
+      border-color: #16a34a !important;
+      box-shadow: 0 4px 0 #15803d !important;
+      color: white !important;
+    }
+    .option-btn.wrong {
+      background: #ef4444 !important;
+      border-color: #dc2626 !important;
+      box-shadow: 0 4px 0 #b91c1c !important;
+      color: white !important;
+    }
+    .card-juicy {
+      border-radius: 2rem;
+      background: white;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.2), 0 8px 24px -6px rgba(234, 88, 12, 0.2);
+    }
+    .progress-bar-bg {
+      background: #fcd34d;
+      border-radius: 999px;
+      height: 12px;
+    }
+    .progress-fill {
+      background: #f97316;
+      border-radius: 999px;
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .shake {
+      animation: shake 0.25s ease-in-out;
+    }
+    @keyframes shake {
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+      25% {
+        transform: translateX(-6px);
+      }
+      75% {
+        transform: translateX(6px);
+      }
+    }
+    .bounce-in {
+      animation: bounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes bounceIn {
+      0% {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div x-data="quizApp()" x-init="init()" class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Card -->
+    <div class="w-full max-w-xl card-juicy p-6 md:p-8 transition-all duration-300" :class="{ 'bounce-in': true }">
+
+      <!-- ===== WELCOME SCREEN ===== -->
+      <div x-show="screen === 'welcome'" x-transition.duration.300>
+        <div class="text-center space-y-6">
+          <div class="flex justify-center">
+            <span class="text-6xl">📰</span>
+          </div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-orange-600 leading-tight">
+            Simulasi Cerdas Cermat Jurnalistik
+          </h1>
+          <p class="text-lg font-semibold text-gray-700 bg-orange-100 inline-block px-4 py-1 rounded-full">
+            Formagz & Madcrew • 50 Soal
+          </p>
+          <p class="text-gray-500 text-sm max-w-xs mx-auto">
+            Uji pengetahuan jurnalistikmu! 50 soal pilihan ganda dari berbagai topik.
+          </p>
+          <button @click="startQuiz()" class="bouncy-btn w-full md:w-3/4 mx-auto bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xl py-4 px-8 rounded-3xl transition-all duration-150">
+            🚀 Mulai Kuis
+          </button>
+          <div class="text-xs text-gray-400 mt-2" x-show="highScore > 0">
+            🏆 Skor terbaik: <span x-text="highScore" class="font-bold text-orange-500"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== QUIZ SCREEN ===== -->
+      <div x-show="screen === 'quiz'" x-transition.duration.300>
+        <!-- Progress & Skor -->
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="flex-1">
+            <div class="flex justify-between text-sm font-bold text-gray-600 mb-1">
+              <span>Progress</span>
+              <span x-text="`${currentIndex + 1} / ${questions.length}`"></span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-fill" :style="`width: ${((currentIndex + 1) / questions.length) * 100}%`"></div>
+            </div>
+          </div>
+          <div class="bg-orange-100 text-orange-700 font-extrabold px-4 py-2 rounded-full text-sm flex items-center gap-1">
+            <span>⭐</span> <span x-text="score"></span>
+          </div>
+        </div>
+
+        <!-- Pertanyaan -->
+        <div class="bg-gray-50 rounded-2xl p-4 md:p-6 mb-6 shadow-inner">
+          <h2 class="text-xl md:text-2xl font-bold text-gray-800 leading-snug" x-text="questions[currentIndex].question"></h2>
+        </div>
+
+        <!-- Opsi jawaban -->
+        <div class="space-y-3">
+          <template x-for="(option, idx) in questions[currentIndex].options" :key="idx">
+            <button @click="selectOption(idx)" :disabled="answered"
+            class="option-btn w-full text-left font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl px-5 py-3 md:py-4 transition-all duration-150 flex items-center gap-3 hover:border-orange-300 hover:bg-orange-50"
+            :class="{
+              'correct': answered && idx === correctIndex,
+              'wrong': answered && idx === selectedIndex && idx !== correctIndex,
+              'opacity-60': answered && idx !== selectedIndex && idx !== correctIndex
+            }">
+            <span class="inline-block w-7 h-7 rounded-full bg-gray-100 text-center leading-7 font-bold text-gray-500" x-text="String.fromCharCode(65 + idx)"></span>
+            <span x-text="option"></span>
+          </button>
+        </template>
+      </div>
+
+      <!-- Tombol next (muncul setelah jawab) -->
+      <div class="mt-6 text-right">
+        <button x-show="answered" @click="nextQuestion()"
+        class="bouncy-btn bg-orange-500 hover:bg-orange-600 text-white font-extrabold px-8 py-3 rounded-3xl transition-all duration-150">
+        Lanjut ➜
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== RESULT SCREEN ===== -->
+  <div x-show="screen === 'result'" x-transition.duration.300>
+    <div class="text-center space-y-5">
+      <div class="text-6xl" x-text="score >= 40 ? '🎉' : score >= 25 ? '😊' : '📚'"></div>
+      <h2 class="text-3xl font-extrabold text-gray-800">Hasil Kuis</h2>
+      <div class="bg-orange-50 rounded-3xl p-5 shadow-inner">
+        <div class="text-5xl font-black text-orange-500" x-text="`${score} / ${questions.length}`"></div>
+        <div class="flex justify-center gap-6 mt-2 text-sm font-bold text-gray-600">
+          <span>✅ Benar: <span x-text="correctCount" class="text-green-500"></span></span>
+          <span>❌ Salah: <span x-text="wrongCount" class="text-red-400"></span></span>
+        </div>
+      </div>
+      <p class="text-gray-600 font-semibold" x-html="resultMessage()"></p>
+      <div x-show="highScore > 0" class="text-sm text-gray-400">
+        🏆 Skor terbaikmu: <span x-text="highScore" class="font-bold text-orange-500"></span>
+      </div>
+      <button @click="resetQuiz()" class="bouncy-btn bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-xl py-4 px-10 rounded-3xl transition-all duration-150">
+        🔄 Ulangi Kuis
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  function quizApp() {
+    return {
+      screen: 'welcome',
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      selectedIndex: null,
+      answered: false,
+      correctIndex: 0,
+      highScore: 0,
+      correctCount: 0,
+      wrongCount: 0,
+
+      init() {
+        // 50 soal dari data yang diberikan
+        this.questions = [{
+            question: 'Undang-Undang yang mengatur tentang Pers di Indonesia adalah...',
+            options: ['A. UU No. 32 Tahun 2002', 'B. UU No. 40 Tahun 1999',
+              'C. UU No. 11 Tahun 2008', 'D. UU No. 14 Tahun 2008'
+            ],
+            correct: 1
+          }, {
+            question: 'Kemerdekaan pers dijamin sebagai hak asasi warga negara. Hal ini tercantum dalam UU Pers No. 40 Tahun 1999 pada...',
+            options: ['A. Pasal 2', 'B. Pasal 4 ayat (3)', 'C. Pasal 6', 'D. Pasal 18'],
+            correct: 1
+          }, {
+            question: 'Hak wartawan untuk menolak mengungkapkan nama atau identitas narasumber yang minta dirahasiakan disebut...',
+            options: ['A. Hak Jawab', 'B. Hak Koreksi', 'C. Hak Tolak', 'D. Hak Imun'],
+            correct: 2
+          }, {
+            question: 'Hak masyarakat untuk memberikan tanggapan atau sanggahan terhadap pemberitaan yang merugikan nama baiknya disebut...',
+            options: ['A. Hak Jawab', 'B. Hak Tolak', 'C. Hak Koreksi', 'D. Hak Publikasi'],
+            correct: 0
+          }, {
+            question: 'Hak setiap orang untuk membetulkan kekeliruan informasi yang diberitakan oleh pers disebut...',
+            options: ['A. Hak Jawab', 'B. Hak Koreksi', 'C. Hak Tolak', 'D. Hak Uji'],
+            correct: 1
+          }, {
+            question: 'Dewan Pers dibentuk berdasarkan ketentuan dalam UU Pers No. 40 Tahun 1999 pada pasal...',
+            options: ['A. Pasal 9', 'B. Pasal 12', 'C. Pasal 15', 'D. Pasal 20'],
+            correct: 2
+          }, {
+            question: 'Berdasarkan Kode Etik Jurnalistik (KEJ), wartawan Indonesia wajib bersikap...',
+            options: ['A. Memihak salah satu golongan', 'B. Independen', 'C. Subyektif',
+              'D. Spekulatif'
+            ],
+            correct: 1
+          }, {
+            question: 'Dalam Kode Etik Jurnalistik, uji informasi (cover both sides) berkaitan erat dengan prinsip...',
+            options: ['A. Akurat dan berimbang', 'B. Cepat dan eksklusif',
+              'C. Sensasional dan menarik', 'D. Opini pribadi penulis'
+            ],
+            correct: 0
+          }, {
+            question: 'Wartawan Indonesia dilarang menyiarkan karya jurnalistik yang bersifat...',
+            options: ['A. Edukatif', 'B. Cabul, sadis, dan bernuansa pornografi',
+              'C. Investigatif', 'D. Inspiratif'
+            ],
+            correct: 1
+          }, {
+            question: 'Lembaga independen yang berfungsi mengembangkan kemerdekaan pers dan meningkatkan kualitas kehidupan pers di Indonesia adalah...',
+            options: ['A. PWI (Persatuan Wartawan Indonesia)', 'B. AJI (Asosiasi Jurnalis Independen)',
+              'C. Dewan Pers', 'D. KPI (Komisi Penyiaran Indonesia)'
+            ],
+            correct: 2
+          },
+          // B. Unsur Berita & Struktur Penulisan (5W+1H)
+          {
+            question: 'Unsur utama dalam berita yang merujuk pada "apa yang terjadi" adalah...',
+            options: ['A. Who', 'B. What', 'C. Where', 'D. Why'],
+            correct: 1
+          }, {
+            question: 'Unsur berita yang menjawab pertanyaan mengenai "siapa yang terlibat" adalah...',
+            options: ['A. When', 'B. Who', 'C. Why', 'D. How'],
+            correct: 1
+          }, {
+            question: 'Struktur penulisan berita standar pada media massa umumnya menggunakan model...',
+            options: ['A. Piramida Terbalik', 'B. Piramida Terbalik (Lead di atas, informasi pendukung di bawah)',
+              'C. Kronologis', 'D. Naratif bebas'
+            ],
+            correct: 0
+          }, {
+            question: 'Bagian awal atau teras berita yang paling menentukan menarik atau tidaknya suatu berita disebut...',
+            options: ['A. Headline', 'B. Lead', 'C. Body', 'D. Byline'],
+            correct: 1
+          }, {
+            question: 'Judul utama berita yang biasanya dicetak dengan ukuran huruf besar dan mencolok disebut...',
+            options: ['A. Headline', 'B. Sub-headline', 'C. Byline', 'D. Tail'],
+            correct: 0
+          }, {
+            question: 'Baris keterangan yang menunjukkan nama penulis atau wartawan yang membuat berita disebut...',
+            options: ['A. Dateline', 'B. Byline', 'C. Credit line', 'D. Headline'],
+            correct: 1
+          }, {
+            question: 'Keterangan waktu dan tempat peristiwa terjadi di awal berita disebut...',
+            options: ['A. Dateline (Teras waktu/lokasi)', 'B. Lead', 'C. Body', 'D. Cutline'],
+            correct: 0
+          }, {
+            question: 'Piramida terbalik dalam penulisan berita menempatkan informasi yang paling penting di bagian...',
+            options: ['A. Awal / Puncak', 'B. Tengah', 'C. Akhir', 'D. Bebas'],
+            correct: 0
+          }, {
+            question: 'Unsur 5W+1H yang menjelaskan alasan mengapa suatu peristiwa bisa terjadi adalah...',
+            options: ['A. How', 'B. What', 'C. Why', 'D. Where'],
+            correct: 2
+          }, {
+            question: 'Bagian penutup dari sebuah berita dalam struktur piramida terbalik biasanya berisi informasi yang sifatnya...',
+            options: ['A. Paling krusial', 'B. Pelengkap / Tambahan', 'C. Kesimpulan opini penulis',
+              'D. Perintah langsung kepada pembaca'
+            ],
+            correct: 1
+          },
+          // C. Jenis-Jenis Karya Jurnalistik & Berita
+          {
+            question: 'Berita yang menyajikan informasi mengenai peristiwa aktual, hangat, dan terjadi secara mendadak disebut...',
+            options: ['A. Feature', 'B. Straight News (Berita Lempang)', 'C. In-depth News',
+              'D. Opinion'
+            ],
+            correct: 1
+          }, {
+            question: 'Jenis berita mendalam yang menggali latar belakang suatu peristiwa secara lebih komprehensif disebut...',
+            options: ['A. Straight News', 'B. In-depth News (Berita Mendalam)', 'C. Spot News',
+              'D. Press Release'
+            ],
+            correct: 1
+          }, {
+            question: 'Karya jurnalistik yang menggabungkan unsur berita dengan unsur sastra/human interest, serta tidak harus terikat aktualitas ketat disebut...',
+            options: ['A. Feature', 'B. Editorial', 'C. Kolom', 'D. Straight News'],
+            correct: 0
+          }, {
+            question: 'Tulisan yang mencerminkan pendapat resmi dari suatu lembaga pers (redaksi) mengenai isu hangat disebut...',
+            options: ['A. Editorial / Tajuk Rencana', 'B. Opini', 'C. Resensi',
+              'D. Laporan Utama'
+            ],
+            correct: 0
+          }, {
+            question: 'Tulisan bebas berdasarkan sudut pandang pribadi penulis atau pakar yang dimuat di rubrik khusus disebut...',
+            options: ['A. Tajuk Rencana', 'B. Kolom / Opini', 'C. Straight News',
+              'D. Advertorial'
+            ],
+            correct: 1
+          }, {
+            question: 'Wawancara yang dilakukan secara khusus oleh wartawan dengan seorang tokoh untuk mengupas tuntas profil atau pandangannya disebut...',
+            options: ['A. Wawancara Doorstop', 'B. Exclusive Interview', 'C. Press Conference',
+              'D. Vox Pop'
+            ],
+            correct: 1
+          }, {
+            question: 'Teknik wawancara singkat yang dilakukan wartawan dengan mencegat narasumber secara mendadak di jalan atau koridor disebut...',
+            options: ['A. Doorstop Interview', 'B. Special Report', 'C. In-depth Interview',
+              'D. Phone Patch'
+            ],
+            correct: 0
+          }, {
+            question: 'Iklan yang dikemas dalam bentuk gaya bahasa atau format jurnalistik (berita/artikel) disebut...',
+            options: ['A. Native Advertising / Advertorial', 'B. Display Ad', 'C. Classified Ad',
+              'D. Public Service Announcement'
+            ],
+            correct: 0
+          }, {
+            question: 'Jurnalistik yang dilakukan melalui jaringan internet dan memanfaatkan platform digital disebut...',
+            options: ['A. Jurnalistik Cetak', 'B. Jurnalistik Radio', 'C. Jurnalistik Online / Siber',
+              'D. Jurnalistik Tradisional'
+            ],
+            correct: 2
+          }, {
+            question: 'Liputan investigasi (investigative journalism) mengandalkan hal utama berupa...',
+            options: ['A. Data rahasia, investigasi mendalam, dan temuan eksklusif',
+              'B. Rilis resmi dari humas instansi', 'C. Pendapat umum di media sosial',
+              'D. Salinan berita dari media lain'
+            ],
+            correct: 0
+          },
+          // D. Istilah Teknis dalam Dunia Pers & Media
+          {
+            question: 'Orang yang bertugas meliput berita di lapangan dan menulisnya untuk media disebut...',
+            options: ['A. Redaktur', 'B. Wartawan / Jurnalis', 'C. Layout artist', 'D. Produser'],
+            correct: 1
+          }, {
+            question: 'Orang yang bertanggung jawab menyunting, memperbaiki, dan menentukan layak tidaknya naskah berita diterbitkan disebut...',
+            options: ['A. Editor / Redaktur', 'B. Reporter', 'C. Fotografer', 'D. Korlip'],
+            correct: 0
+          }, {
+            question: 'Pemimpin tertinggi dalam struktur redaksi media massa yang bertanggung jawab penuh atas isi pemberitaan adalah...',
+            options: ['A. General Manager', 'B. Pemimpin Redaksi (Pimred)', 'C. Direktur Utama',
+              'D. Redaktur Pelaksana'
+            ],
+            correct: 1
+          }, {
+            question: 'Kegiatan peliputan langsung ke lapangan untuk mencari data, fakta, dan narasumber disebut...',
+            options: ['A. Reportase (Reporting)', 'B. Editing', 'C. Broadcasting', 'D. Layouting'],
+            correct: 0
+          }, {
+            question: 'Istilah untuk ralat atau perbaikan terhadap informasi yang keliru yang sudah terlanjur dipublikasikan adalah...',
+            options: ['A. Plagiasi', 'B. Ralat / Koreksi', 'C. Censorship', 'D. Blacklist'],
+            correct: 1
+          }, {
+            question: 'Pengambilan atau penyalinan karya tulisan orang lain tanpa mencantumkan sumber aslinya disebut...',
+            options: ['A. Verifikasi', 'B. Plagiasi (Plagiat)', 'C. Sitasi', 'D. Sindikasi'],
+            correct: 1
+          }, {
+            question: 'Proses pengecekan kebenaran informasi sebelum berita disiarkan atau diterbitkan disebut...',
+            options: ['A. Verifikasi (Check and Recheck)', 'B. Publisitas', 'C. Editing',
+              'D. Sensasi'
+            ],
+            correct: 0
+          }, {
+            question: 'Kode etik atau pedoman yang mengatur penulisan berita terkait anak di bawah umur diatur secara khusus dalam...',
+            options: ['A. UU ITE', 'B. UU Penyiaran', 'C. Pedoman Pemberitaan Ramah Anak (PPRA)',
+              'D. UU Hak Cipta'
+            ],
+            correct: 2
+          }, {
+            question: 'Istilah "Off the Record" saat wawancara berarti...',
+            options: ['A. Informasi boleh disiarkan secara luas', 'B. Informasi tidak boleh dikutip atau disiarkan ke publik',
+              'C. Wawancara direkam menggunakan kamera video', 'D. Wawancara dibatalkan'
+            ],
+            correct: 1
+          }, {
+            question: 'Istilah "Embargo" dalam dunia pers berarti...',
+            options: ['A. Berita dilarang terbit selamanya', 'B. Berita baru boleh dipublikasikan setelah waktu atau tanggal tertentu yang disepakati',
+              'C. Berita harus segera disebarkan detik itu juga', 'D. Narasumber menolak diwawancarai'
+            ],
+            correct: 1
+          },
+          // E. Sejarah Pers, Organisasi, & Pengetahuan Umum Jurnalistik
+          {
+            question: 'Surat kabar pertama di Indonesia pada masa kolonial Belanda dikenal dengan nama...',
+            options: ['A. Bataviasche Nouvelles', 'B. De Locomotief', 'C. Medan Prijaji',
+              'D. Sin Po'
+            ],
+            correct: 0
+          }, {
+            question: 'Tokoh pers nasional yang dikenal sebagai Bapak Pers Indonesia sekaligus pelopor surat kabar Medan Prijaji adalah...',
+            options: ['A. H.O.S. Tjokroaminoto', 'B. Tirto Adhi Soerjo', 'C. Ki Hajar Dewantara',
+              'D. Adam Malik'
+            ],
+            correct: 1
+          }, {
+            question: 'Organisasi profesi wartawan tertua dan terbesar di Indonesia adalah...',
+            options: ['A. PWI (Persatuan Wartawan Indonesia)', 'B. AJI (Asosiasi Jurnalis Independen)',
+              'C. IJTI (Ikatan Jurnalis Televisi Indonesia)', 'D. PFI (Pewarta Foto Indonesia)'
+            ],
+            correct: 0
+          }, {
+            question: 'Hari Pers Nasional (HPN) diperingati setiap tahun pada tanggal...',
+            options: ['A. 20 Mei', 'B. 1 Oktober', 'C. 9 Februari', 'D. 28 Oktober'],
+            correct: 2
+          }, {
+            question: 'Tanggal peringatan Hari Pers Nasional (9 Februari) bertepatan dengan hari lahir organisasi...',
+            options: ['A. AJI', 'B. PWI (Persatuan Wartawan Indonesia)', 'C. Dewan Pers',
+              'D. Serikat Penerbit Surat Kabar (SPS)'
+            ],
+            correct: 1
+          }, {
+            question: 'Media jurnalistik yang dikelola oleh pelajar di lingkungan sekolah lazim disebut sebagai...',
+            options: ['A. Buletin Komersial', 'B. Pers Sekolah / Majalah Dinding (Mading) / Pers Siswa',
+              'C. Jurnal Akademik Kampus', 'D. Buletin Instansi'
+            ],
+            correct: 1
+          }, {
+            question: 'Apa fungsi utama pers sekolah bagi para siswa di lingkungan sekolah?',
+            options: ['A. Sebagai sarana penyalur informasi, edukasi, kreativitas, dan pelatihan literasi menulis',
+              'B. Sebagai alat politik internal sekolah', 'C. Sebagai media promosi bisnis luar sekolah',
+              'D. Sebagai pengganti buku pelajaran resmi'
+            ],
+            correct: 0
+          }, {
+            question: 'Tulisan opini yang ditulis oleh pembaca atau siswa yang dikirimkan ke rubrik khusus di majalah sekolah disebut...',
+            options: ['A. Laporan Utama', 'B. Surat Pembaca / Opini Siswa', 'C. Wawancara Eksklusif',
+              'D. Tajuk Rencana'
+            ],
+            correct: 1
+          }, {
+            question: 'Dalam proses kerja redaksi, apa tugas utama seorang fotografer jurnalistik?',
+            options: ['A. Menulis teks berita panjang', 'B. Mengabadikan momen peristiwa secara akurat, etis, dan bercerita (visual storytelling)',
+              'C. Mengatur tata letak halaman koran', 'D. Mewawancarai narasumber utama'
+            ],
+            correct: 1
+          }, {
+            question: 'Manakah nilai berita (news values) yang paling utama membuat suatu peristiwa layak diangkat menjadi berita hangat?',
+            options: ['A. Kedekatan, keunikan, dan rekayasa', 'B. Aktualitas, kedekatan, keterkenalan, magnitude, dan akibat (impact)',
+              'C. Panjang tulisan dan jumlah halaman', 'D. Jumlah narasumber yang hadir'
+            ],
+            correct: 1
+          }
+        ];
+
+        // Load high score
+        const saved = localStorage.getItem('journalismQuizHighScore');
+        this.highScore = saved ? parseInt(saved, 10) : 0;
+      },
+
+      startQuiz() {
+        this.currentIndex = 0;
+        this.score = 0;
+        this.correctCount = 0;
+        this.wrongCount = 0;
+        this.answered = false;
+        this.selectedIndex = null;
+        this.screen = 'quiz';
+        this.setCorrectIndex();
+      },
+
+      setCorrectIndex() {
+        this.correctIndex = this.questions[this.currentIndex].correct;
+      },
+
+      selectOption(idx) {
+        if (this.answered) return;
+        this.selectedIndex = idx;
+        this.answered = true;
+
+        const isCorrect = (idx === this.correctIndex);
+        if (isCorrect) {
+          this.score += 1;
+          this.correctCount += 1;
+        } else {
+          this.wrongCount += 1;
+        }
+
+        if (!isCorrect) {
+          const el = document.querySelectorAll('.option-btn')[idx];
+          if (el) el.classList.add('shake');
+        }
+      },
+
+      nextQuestion() {
+        if (this.currentIndex + 1 < this.questions.length) {
+          this.currentIndex++;
+          this.answered = false;
+          this.selectedIndex = null;
+          this.setCorrectIndex();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          this.screen = 'result';
+          if (this.score > this.highScore) {
+            this.highScore = this.score;
+            localStorage.setItem('journalismQuizHighScore', String(this.highScore));
+          }
+        }
+      },
+
+      resetQuiz() {
+        this.screen = 'welcome';
+        this.currentIndex = 0;
+        this.score = 0;
+        this.correctCount = 0;
+        this.wrongCount = 0;
+        this.answered = false;
+        this.selectedIndex = null;
+      },
+
+      resultMessage() {
+        const s = this.score;
+        if (s >= 45) return '🏆 JURNALIS UTAMA! Kamu luar biasa!';
+        if (s >= 35) return '🌟 Bintang jurnalistik! Terus asah kemampuanmu.';
+        if (s >= 25) return '📰 Lumayan! Pelajari lagi UU Pers dan KEJ.';
+        return '📖 Semangat! Perbanyak baca dan latihan lagi.';
+      }
+    }
+  }
+</script>
+</body>
+  </html>
