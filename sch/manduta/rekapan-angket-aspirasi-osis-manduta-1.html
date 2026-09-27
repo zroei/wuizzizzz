@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumen Asli Kumpulan Aspirasi Kelas Usulan Progja OSIS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: #202124;
+            color: #e8eaed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Toolbar */
+        .drive-header {
+            height: 64px;
+            background-color: #292a2d;
+            border-bottom: 1px solid #3c4043;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .file-icon {
+            color: #ea4335;
+            font-size: 24px;
+        }
+
+        .file-title-wrapper h1 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #e8eaed;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 400px;
+        }
+
+        .file-title-wrapper span {
+            font-size: 12px;
+            color: #9aa0a6;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: #bdc1c6;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+
+        .icon-btn:hover, .icon-btn.active {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .icon-btn.active {
+            color: #8ab4f8;
+        }
+
+        /* Editing Toolbar (Smallpdf Style Sub-menu) */
+        .edit-toolbar {
+            height: 48px;
+            background-color: #323639;
+            border-bottom: 1px solid #3c4043;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 0 16px;
+            z-index: 90;
+            font-size: 14px;
+        }
+
+        .tool-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-btn {
+            background: #3c4043;
+            border: none;
+            color: #e8eaed;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #5f6368;
+        }
+
+        .tool-btn.active {
+            background: #8ab4f8;
+            color: #202124;
+            font-weight: 500;
+        }
+
+        .color-picker {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        /* Main Workspace */
+        .drive-body {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #525659;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        /* Canvas Overlay untuk Corat-coret & Catatan */
+        #drawCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Default non-aktif kalau tool edit mati */
+            z-index: 50;
+        }
+
+        #drawCanvas.active-draw {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        /* Panel Catatan / Notes */
+        .note-sticky {
+            position: absolute;
+            background: #fef08a;
+            color: #1f2937;
+            padding: 12px;
+            border-radius: 6px;
+            width: 200px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 60;
+            font-size: 13px;
+            cursor: move;
+            border-left: 5px solid #eab308;
+        }
+
+        .note-sticky textarea {
+            width: 100%;
+            height: 70px;
+            background: transparent;
+            border: none;
+            resize: none;
+            outline: none;
+            font-family: 'Roboto', sans-serif;
+            color: #1f2937;
+            font-size: 13px;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 11px;
+            color: #854d0e;
+        }
+
+        .note-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #854d0e;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Drive Toolbar -->
+    <div class="drive-header">
+        <div class="header-left">
+            <i class="fa-solid fa-file-pdf file-icon"></i>
+            <div class="file-title-wrapper">
+                <h1>Rekap Angket Referensi Progja OSIS.docx</h1>
+                <span>Online Docs Viewer</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="https://zfile.web.id/svGuxmJ.pdf" target="_blank" class="icon-btn" title="Buka di tab baru">
+                <i class="fa-solid fa-external-link-alt"></i>
+            </a>
+            <a href="https://zfile.web.id/svGuxmJ.pdf" download class="icon-btn" title="Download">
+                <i class="fa-solid fa-download"></i>
+            </a>
+            <button class="icon-btn" onclick="toggleFullScreen()" title="Full Screen">
+                <i class="fa-solid fa-expand" id="fsIcon"></i>
+            </button>
+            <button class="icon-btn" onclick="window.print()" title="Cetak">
+                <i class="fa-solid fa-print"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Smallpdf / Edit Toolbar -->
+    <div class="edit-toolbar">
+        <div class="tool-group">
+            <button class="tool-btn" id="btnPen" onclick="setTool('pen')">
+                <i class="fa-solid fa-pen"></i> Corat-coret
+            </button>
+            <button class="tool-btn" id="btnNote" onclick="setTool('note')">
+                <i class="fa-solid fa-note-sticky"></i> Tambah Catatan
+            </button>
+            <button class="tool-btn" onclick="clearCanvas()">
+                <i class="fa-solid fa-trash-can"></i> Bersihkan Coretan
+            </button>
+        </div>
+        <div class="tool-group" id="penOptions" style="display: none;">
+            <label style="font-size: 12px; color: #9aa0a6;">Warna:</label>
+            <input type="color" id="penColor" value="#ea4335" class="color-picker">
+            <label style="font-size: 12px; color: #9aa0a6; margin-left: 8px;">Ketebalan:</label>
+            <input type="range" id="penSize" min="1" max="10" value="3" style="cursor: pointer;">
+        </div>
+    </div>
+
+    <!-- Viewer Body Area -->
+    <div class="drive-body" id="workspace">
+        <!-- PDF Iframe Embed -->
+        <iframe id="pdfViewer" src="https://docs.google.com/gview?url=https://zfile.web.id/svGuxmJ.pdf&embedded=true"></iframe>
+        
+        <!-- Canvas untuk corat-coret bebas di atas PDF -->
+        <canvas id="drawCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentTool = null;
+        let isDrawing = false;
+
+        // Sesuaikan ukuran canvas dengan area workspace
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        function setTool(tool) {
+            currentTool = (currentTool === tool) ? null : tool;
+            
+            // Reset active states
+            document.getElementById('btnPen').classList.remove('active');
+            document.getElementById('btnNote').classList.remove('active');
+            document.getElementById('penOptions').style.display = 'none';
+            canvas.classList.remove('active-draw');
+
+            if (currentTool === 'pen') {
+                document.getElementById('btnPen').classList.add('active');
+                document.getElementById('penOptions').style.display = 'flex';
+                canvas.classList.add('active-draw');
+            } else if (currentTool === 'note') {
+                document.getElementById('btnNote').classList.add('active');
+            }
+        }
+
+        // Logika Corat-coret (Pen)
+        canvas.addEventListener('mousedown', (e) => {
+            if (currentTool !== 'pen') return;
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing || currentTool !== 'pen') return;
+            ctx.strokeStyle = document.getElementById('penColor').value;
+            ctx.lineWidth = document.getElementById('penSize').value;
+            ctx.lineCap = 'round';
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('mouseup', () => { isDrawing = false; });
+        canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+        // Logika Tambah Catatan (Sticky Notes) di Workspace
+        document.getElementById('workspace').addEventListener('click', (e) => {
+            if (currentTool !== 'note') return;
+            // Jangan buat note jika klik tombol atau note itu sendiri
+            if (e.target.closest('.note-sticky') || e.target.closest('.edit-toolbar') || e.target.closest('.drive-header')) return;
+
+            const rect = document.getElementById('workspace').getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            createStickyNote(x, y);
+            setTool(null); // Reset tool setelah pasang note
+        });
+
+        function createStickyNote(x, y) {
+            const note = document.createElement('div');
+            note.className = 'note-sticky';
+            note.style.left = `${x}px`;
+            note.style.top = `${y}px`;
+
+            note.innerHTML = `
+                <div class="note-header">
+                    <span>Catatan</span>
+                    <button class="note-close" onclick="this.parentElement.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <textarea placeholder="Tulis catatan di sini..."></textarea>
+            `;
+
+            // Fitur geser catatan (Drag & Drop sederhana)
+            let isDraggingNote = false;
+            let startX, startY;
+
+            note.addEventListener('mousedown', (e) => {
+                if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'I') return;
+                isDraggingNote = true;
+                startX = e.clientX - note.offsetLeft;
+                startY = e.clientY - note.offsetTop;
+                e.stopPropagation();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDraggingNote) return;
+                note.style.left = `${e.clientX - startX}px`;
+                note.style.top = `${e.clientY - startY}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDraggingNote = false;
+            });
+
+            document.getElementById('workspace').appendChild(note);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Fitur Full Screen
+        function toggleFullScreen() {
+            const fsIcon = document.getElementById('fsIcon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                fsIcon.classList.replace('fa-expand', 'fa-compress');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fsIcon.classList.replace('fa-compress', 'fa-expand');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
