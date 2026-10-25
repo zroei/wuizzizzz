@@ -1,0 +1,936 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+   <title>Kuis Kata Baku Tactile</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <style>
+       @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+
+       :root {
+           --bg-color: #F7F9FC;
+           --text-main: #3C4043;
+           --text-muted: #8392A5;
+           --surface: #FFFFFF;
+           --border-color: #E2E8F0;
+           
+           --primary-color: #1CB0F6;
+           --primary-shadow: #1899D6;
+           
+           --correct-bg: #E8F5E9;
+           --correct-color: #2E7D32;
+           --correct-shadow: #1B5E20;
+           
+           --wrong-bg: #FFEBEE;
+           --wrong-color: #C62828;
+           --wrong-shadow: #8E0000;
+           
+           --accent-yellow: #FFC800;
+           --accent-yellow-shadow: #E5B200;
+       }
+
+       * {
+           box-sizing: border-box;
+           margin: 0;
+           padding: 0;
+           user-select: none;
+           -webkit-tap-highlight-color: transparent;
+       }
+
+       body {
+           font-family: 'Nunito', sans-serif;
+           background-color: var(--bg-color);
+           color: var(--text-main);
+           display: flex;
+           flex-direction: column;
+           height: 100vh;
+           height: 100dvh;
+           overflow: hidden;
+       }
+
+       /* HEADER */
+       header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 12px 16px;
+           background-color: var(--surface);
+           border-bottom: 2px solid var(--border-color);
+           z-index: 10;
+       }
+
+       .header-left, .header-right {
+           display: flex;
+           align-items: center;
+           gap: 8px;
+       }
+
+       .btn-icon {
+           background: var(--surface);
+           border: 2px solid var(--border-color);
+           border-bottom-width: 4px;
+           color: var(--text-muted);
+           font-size: 1.1rem;
+           cursor: pointer;
+           width: 42px;
+           height: 42px;
+           border-radius: 12px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           transition: all 0.1s;
+       }
+       .btn-icon:active {
+           border-bottom-width: 2px;
+           transform: translateY(2px);
+       }
+       .btn-icon.active {
+           color: var(--primary-color);
+           border-color: var(--primary-color);
+       }
+
+       .timer-badge {
+           background-color: #FFF3E0;
+           color: #E65100;
+           border: 2px solid #FFE0B2;
+           padding: 6px 12px;
+           border-radius: 12px;
+           font-weight: 900;
+           font-size: 0.95rem;
+           display: flex;
+           align-items: center;
+           gap: 6px;
+       }
+
+       .stats {
+           display: flex;
+           gap: 12px;
+           font-size: 1.1rem;
+           font-weight: 900;
+       }
+       .stat-item.correct { color: #4CAF50; }
+       .stat-item.wrong { color: #F44336; }
+
+       /* CONTROL PANEL (Difficulty & Mode) */
+       .control-bar {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 10px 16px;
+           background-color: var(--surface);
+           border-bottom: 1px solid var(--border-color);
+       }
+
+       .select-custom {
+           background: var(--bg-color);
+           border: 2px solid var(--border-color);
+           border-radius: 10px;
+           padding: 6px 10px;
+           font-family: inherit;
+           font-weight: 800;
+           color: var(--text-main);
+           outline: none;
+           font-size: 0.85rem;
+       }
+
+       .btn-marathon {
+           background: var(--accent-yellow);
+           border: none;
+           border-bottom: 3px solid var(--accent-yellow-shadow);
+           color: #4A3B00;
+           padding: 6px 12px;
+           border-radius: 10px;
+           font-weight: 900;
+           font-size: 0.85rem;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           gap: 6px;
+       }
+       .btn-marathon:active {
+           border-bottom-width: 1px;
+           transform: translateY(2px);
+       }
+
+       /* MAIN CONTAINER */
+       main {
+           flex: 1;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+           padding: 20px;
+           text-align: center;
+           padding-bottom: 220px; 
+       }
+
+       .question-title {
+           font-size: 1.6rem;
+           font-weight: 900;
+           margin-bottom: 4px;
+       }
+
+       .subtitle {
+           font-size: 0.95rem;
+           color: var(--text-muted);
+           font-weight: 700;
+           margin-bottom: 20px;
+       }
+
+       .feedback-box {
+           min-height: 80px;
+           width: 100%;
+           max-width: 400px;
+           border-radius: 16px;
+           padding: 12px 16px;
+           font-size: 1.1rem;
+           font-weight: 900;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           opacity: 0;
+           transform: scale(0.95);
+           transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+           pointer-events: none;
+       }
+       .feedback-box.show {
+           opacity: 1;
+           transform: scale(1);
+       }
+       .feedback-box.correct {
+           background-color: var(--correct-bg);
+           color: var(--correct-shadow);
+           border: 2px solid #A5D6A7;
+       }
+       .feedback-box.wrong {
+           background-color: var(--wrong-bg);
+           color: var(--wrong-shadow);
+           border: 2px solid #EF9A9A;
+       }
+
+       /* BOTTOM ANCHORED BUTTONS (ONE-HANDED FRIENDLY) */
+       .action-area {
+           position: fixed;
+           bottom: 0;
+           left: 50%;
+           transform: translateX(-50%);
+           width: 100%;
+           max-width: 480px;
+           padding: 16px 20px calc(20px + env(safe-area-inset-bottom)) 20px;
+           background: linear-gradient(to top, var(--bg-color) 85%, transparent);
+           display: flex;
+           flex-direction: column;
+           gap: 12px;
+           z-index: 5;
+       }
+
+       .btn-choice {
+           background-color: var(--surface);
+           color: var(--primary-color);
+           border: 2px solid var(--border-color);
+           border-bottom: 6px solid var(--border-color);
+           border-radius: 16px;
+           padding: 18px;
+           font-size: 1.3rem;
+           font-family: inherit;
+           font-weight: 900;
+           cursor: pointer;
+           transition: all 0.08s ease-in-out;
+           width: 100%;
+           text-align: center;
+           box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+       }
+       .btn-choice:active {
+           border-bottom-width: 2px;
+           transform: translateY(4px);
+       }
+       .btn-choice.correct-click {
+           background-color: var(--correct-bg);
+           color: var(--correct-color);
+           border-color: #81C784;
+           border-bottom-color: var(--correct-shadow);
+       }
+       .btn-choice.wrong-click {
+           background-color: var(--wrong-bg);
+           color: var(--wrong-color);
+           border-color: #E57373;
+           border-bottom-color: var(--wrong-shadow);
+       }
+
+       /* MODAL STYLES */
+       .modal-overlay {
+           position: fixed;
+           top: 0; left: 0; width: 100%; height: 100%;
+           background: rgba(0,0,0,0.5);
+           display: flex;
+           justify-content: center;
+           align-items: flex-end;
+           z-index: 100;
+           opacity: 0;
+           pointer-events: none;
+           transition: opacity 0.25s ease;
+       }
+       .modal-overlay.active {
+           opacity: 1;
+           pointer-events: auto;
+       }
+       .modal-card {
+           background: var(--surface);
+           width: 100%;
+           max-width: 480px;
+           max-height: 82vh;
+           border-top-left-radius: 24px;
+           border-top-right-radius: 24px;
+           padding: 24px;
+           display: flex;
+           flex-direction: column;
+           transform: translateY(100%);
+           transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+       }
+       .modal-overlay.active .modal-card {
+           transform: translateY(0);
+       }
+
+       .modal-header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           margin-bottom: 16px;
+       }
+       .modal-header h2 { font-size: 1.3rem; font-weight: 900; }
+
+       .modal-body {
+           flex: 1;
+           overflow-y: auto;
+           display: flex;
+           flex-direction: column;
+           gap: 10px;
+           padding-right: 4px;
+       }
+
+       .history-item {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 12px 14px;
+           background-color: var(--bg-color);
+           border-radius: 12px;
+           border: 1px solid var(--border-color);
+       }
+       .history-pair { display: flex; flex-direction: column; }
+       .word-baku-text { font-weight: 900; color: var(--correct-color); }
+       .word-tidak-baku-text { font-size: 0.85rem; color: var(--wrong-color); text-decoration: line-through; }
+       .err-count-tag {
+           background-color: var(--wrong-bg);
+           color: var(--wrong-color);
+           padding: 4px 10px;
+           border-radius: 12px;
+           font-size: 0.8rem;
+           font-weight: 900;
+       }
+
+       .modal-footer {
+           margin-top: 16px;
+           display: flex;
+           gap: 10px;
+       }
+
+       .btn-modal-action {
+           flex: 1;
+           padding: 12px;
+           border-radius: 12px;
+           font-family: inherit;
+           font-weight: 900;
+           border: none;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           gap: 6px;
+       }
+       .btn-share { background-color: var(--primary-color); color: white; }
+       .btn-reset { background-color: var(--wrong-bg); color: var(--wrong-color); }
+   </style>
+</head>
+<body>
+
+   <header>
+       <div class="header-left">
+           <button class="btn-icon active" id="btn-sound" aria-label="Suara"><i class="fa-solid fa-volume-up"></i></button>
+           <button class="btn-icon" id="btn-history" aria-label="Riwayat"><i class="fa-solid fa-clock-rotate-left"></i></button>
+       </div>
+       <div id="timer-container" class="timer-badge" style="display: none;">
+           <i class="fa-solid fa-stopwatch"></i> <span id="timer-text">10:00</span>
+       </div>
+       <div class="header-right">
+           <div class="stats">
+               <div class="stat-item correct"><i class="fa-solid fa-check"></i> <span id="correct-count">0</span></div>
+               <div class="stat-item wrong"><i class="fa-solid fa-xmark"></i> <span id="wrong-count">0</span></div>
+           </div>
+       </div>
+   </header>
+
+   <div class="control-bar">
+       <div>
+           <select id="difficulty-select" class="select-custom">
+               <option value="all">Kesulitan: Semua</option>
+               <option value="easy">Mudah (Dasar)</option>
+               <option value="medium">Sedang (Sering Keliru)</option>
+               <option value="hard">Sulit (Tingkat Tinggi)</option>
+           </select>
+       </div>
+       <button id="btn-marathon-toggle" class="btn-marathon">
+           <i class="fa-solid fa-bolt"></i> <span id="marathon-label">Mulai Marathon 10M</span>
+       </button>
+   </div>
+
+   <main>
+       <div class="question-title">Mana Kata yang Baku?</div>
+       <div class="subtitle">Pilih penulisan kata resmi menurut KBBI</div>
+       
+       <div id="feedback" class="feedback-box"></div>
+   </main>
+
+   <div class="action-area">
+       <button class="btn-choice" id="btn-1">Option A</button>
+       <button class="btn-choice" id="btn-2">Option B</button>
+   </div>
+
+   <!-- MODAL RIWAYAT & HASIL MARATHON -->
+   <div class="modal-overlay" id="modal-overlay">
+       <div class="modal-card">
+           <div class="modal-header">
+               <h2 id="modal-title">Riwayat & Evaluasi</h2>
+               <button class="btn-icon" id="btn-close-modal" style="border:none;"><i class="fa-solid fa-xmark"></i></button>
+           </div>
+           <div class="modal-body" id="modal-body-content">
+               <!-- Content via JS -->
+           </div>
+           <div class="modal-footer">
+               <button class="btn-modal-action btn-share" id="btn-share-result">
+                   <i class="fa-solid fa-share-nodes"></i> Bagikan Hasil
+               </button>
+               <button class="btn-modal-action btn-reset" id="btn-reset-history">
+                   <i class="fa-solid fa-trash"></i> Reset
+               </button>
+           </div>
+       </div>
+   </div>
+
+   <script>
+       // DATASET TERKUNCI (ARRAY OF OBJECTS - MENGELIMINASI BUG TERTIUKAR)
+       const wordDatabase = [
+           { baku: 'akta', tidakBaku: 'akte', level: 'easy' },
+           { baku: 'esai', tidakBaku: 'esay', level: 'easy' },
+           { baku: 'frasa', tidakBaku: 'frase', level: 'easy' },
+           { baku: 'kendaraan', tidakBaku: 'kenderaan', level: 'easy' },
+           { baku: 'masjid', tidakBaku: 'mesjid', level: 'easy' },
+           { baku: 'saksama', tidakBaku: 'seksama', level: 'medium' },
+           { baku: 'sekadar', tidakBaku: 'sekedar', level: 'easy' },
+           { baku: 'amendemen', tidakBaku: 'amandemen', level: 'medium' },
+           { baku: 'aritmetika', tidakBaku: 'aritmatika', level: 'medium' },
+           { baku: 'kalender', tidakBaku: 'kalendar', level: 'easy' },
+           { baku: 'kategori', tidakBaku: 'katagori', level: 'easy' },
+           { baku: 'meterai', tidakBaku: 'materai', level: 'easy' },
+           { baku: 'metode', tidakBaku: 'metoda', level: 'easy' },
+           { baku: 'parlemen', tidakBaku: 'parlamen', level: 'easy' },
+           { baku: 'antre', tidakBaku: 'antri', level: 'easy' },
+           { baku: 'apotek', tidakBaku: 'apotik', level: 'easy' },
+           { baku: 'atlet', tidakBaku: 'atlit', level: 'easy' },
+           { baku: 'atmosfer', tidakBaku: 'atmosfir', level: 'easy' },
+           { baku: 'desain', tidakBaku: 'disain', level: 'easy' },
+           { baku: 'deskripsi', tidakBaku: 'diskripsi', level: 'easy' },
+           { baku: 'kredit', tidakBaku: 'kridit', level: 'easy' },
+           { baku: 'personel', tidakBaku: 'personil', level: 'medium' },
+           { baku: 'teoretis', tidakBaku: 'teoritis', level: 'medium' },
+           { baku: 'hakikat', tidakBaku: 'hakekat', level: 'medium' },
+           { baku: 'intelijen', tidakBaku: 'intelejen', level: 'medium' },
+           { baku: 'nasihat', tidakBaku: 'nasehat', level: 'easy' },
+           { baku: 'praktik', tidakBaku: 'praktek', level: 'easy' },
+           { baku: 'risiko', tidakBaku: 'resiko', level: 'easy' },
+           { baku: 'ritsleting', tidakBaku: 'retsleting', level: 'medium' },
+           { baku: 'bujet', tidakBaku: 'budget', level: 'medium' },
+           { baku: 'brankas', tidakBaku: 'brangkas', level: 'easy' },
+           { baku: 'biseps', tidakBaku: 'bisep', level: 'hard' },
+           { baku: 'feri', tidakBaku: 'ferri', level: 'easy' },
+           { baku: 'eksem', tidakBaku: 'eksim', level: 'hard' },
+           { baku: 'ekstrem', tidakBaku: 'ekstrim', level: 'medium' },
+           { baku: 'sistem', tidakBaku: 'sistim', level: 'easy' },
+           { baku: 'debit', tidakBaku: 'debet', level: 'medium' },
+           { baku: 'dekret', tidakBaku: 'dekrit', level: 'medium' },
+           { baku: 'komplet', tidakBaku: 'komplit', level: 'easy' },
+           { baku: 'konkret', tidakBaku: 'konkrit', level: 'medium' },
+           { baku: 'objek', tidakBaku: 'obyek', level: 'easy' },
+           { baku: 'objektif', tidakBaku: 'obyektif', level: 'easy' },
+           { baku: 'subjek', tidakBaku: 'subyek', level: 'easy' },
+           { baku: 'subjektif', tidakBaku: 'subyektif', level: 'easy' },
+           { baku: 'aktif', tidakBaku: 'aktip', level: 'easy' },
+           { baku: 'foto', tidakBaku: 'photo', level: 'easy' },
+           { baku: 'hafal', tidakBaku: 'hapal', level: 'easy' },
+           { baku: 'konferensi', tidakBaku: 'konperensi', level: 'easy' },
+           { baku: 'negatif', tidakBaku: 'negatip', level: 'easy' },
+           { baku: 'pasif', tidakBaku: 'pasip', level: 'easy' },
+           { baku: 'positif', tidakBaku: 'positip', level: 'easy' },
+           { baku: 'sertifikat', tidakBaku: 'sertipikat', level: 'easy' },
+           { baku: 'tarif', tidakBaku: 'tarip', level: 'easy' },
+           { baku: 'paham', tidakBaku: 'faham', level: 'easy' },
+           { baku: 'pikir', tidakBaku: 'fikir', level: 'easy' },
+           { baku: 'telepon', tidakBaku: 'telpon', level: 'easy' },
+           { baku: 'napas', tidakBaku: 'nafas', level: 'easy' },
+           { baku: 'permak', tidakBaku: 'vermak', level: 'medium' },
+           { baku: 'aktivis', tidakBaku: 'aktifis', level: 'medium' },
+           { baku: 'kreativitas', tidakBaku: 'kreatifitas', level: 'medium' },
+           { baku: 'provinsi', tidakBaku: 'propinsi', level: 'easy' },
+           { baku: 'universitas', tidakBaku: 'unipersitas', level: 'easy' },
+           { baku: 'asas', tidakBaku: 'azas', level: 'medium' },
+           { baku: 'bus', tidakBaku: 'bis', level: 'easy' },
+           { baku: 'guncang', tidakBaku: 'goncang', level: 'easy' },
+           { baku: 'gua', tidakBaku: 'goa', level: 'easy' },
+           { baku: 'lubang', tidakBaku: 'lobang', level: 'easy' },
+           { baku: 'mabuk', tidakBaku: 'mabok', level: 'easy' },
+           { baku: 'mangkuk', tidakBaku: 'mangkok', level: 'easy' },
+           { baku: 'surga', tidakBaku: 'syurga', level: 'easy' },
+           { baku: 'sirop', tidakBaku: 'sirup', level: 'medium' },
+           { baku: 'sopir', tidakBaku: 'supir', level: 'easy' },
+           { baku: 'petai', tidakBaku: 'pete', level: 'easy' },
+           { baku: 'tapai', tidakBaku: 'tape', level: 'easy' },
+           { baku: 'frekuensi', tidakBaku: 'frekwensi', level: 'medium' },
+           { baku: 'konsekuensi', tidakBaku: 'konsekwensi', level: 'medium' },
+           { baku: 'kuantitas', tidakBaku: 'kwantitas', level: 'medium' },
+           { baku: 'kuitansi', tidakBaku: 'kwitansi', level: 'medium' },
+           { baku: 'jadwal', tidakBaku: 'jadual', level: 'easy' },
+           { baku: 'proyek', tidakBaku: 'projek', level: 'easy' },
+           { baku: 'izin', tidakBaku: 'ijin', level: 'easy' },
+           { baku: 'rezeki', tidakBaku: 'rejeki', level: 'easy' },
+           { baku: 'zaman', tidakBaku: 'jaman', level: 'easy' },
+           { baku: 'ijazah', tidakBaku: 'ijasah', level: 'easy' },
+           { baku: 'hierarki', tidakBaku: 'hirarki', level: 'hard' },
+           { baku: 'karier', tidakBaku: 'karir', level: 'medium' },
+           { baku: 'jenderal', tidakBaku: 'jendral', level: 'easy' },
+           { baku: 'menteri', tidakBaku: 'mentri', level: 'easy' },
+           { baku: 'kesatria', tidakBaku: 'ksatria', level: 'medium' },
+           { baku: 'terampil', tidakBaku: 'trampil', level: 'easy' },
+           { baku: 'istri', tidakBaku: 'isteri', level: 'easy' },
+           { baku: 'samudra', tidakBaku: 'samudera', level: 'medium' },
+           { baku: 'khawatir', tidakBaku: 'kuatir', level: 'easy' },
+           { baku: 'khotbah', tidakBaku: 'kotbah', level: 'easy' },
+           { baku: 'makhluk', tidakBaku: 'mahluk', level: 'easy' },
+           { baku: 'nakhoda', tidakBaku: 'nahkoda', level: 'medium' },
+           { baku: 'takhta', tidakBaku: 'tahta', level: 'medium' },
+           { baku: 'teknik', tidakBaku: 'tekhnik', level: 'easy' },
+           { baku: 'teknologi', tidakBaku: 'tehnologi', level: 'easy' },
+           { baku: 'ekspor', tidakBaku: 'eksport', level: 'easy' },
+           { baku: 'kompleks', tidakBaku: 'komplek', level: 'easy' },
+           { baku: 'taksi', tidakBaku: 'taxi', level: 'easy' },
+           { baku: 'analisis', tidakBaku: 'analisa', level: 'easy' },
+           { baku: 'diagnosis', tidakBaku: 'diagnosa', level: 'medium' },
+           { baku: 'sintesis', tidakBaku: 'sintesa', level: 'medium' },
+           { baku: 'realitas', tidakBaku: 'realita', level: 'medium' },
+           { baku: 'selebritas', tidakBaku: 'selebriti', level: 'medium' },
+           { baku: 'mengubah', tidakBaku: 'merubah', level: 'medium' },
+           { baku: 'doa', tidakBaku: "do'a", level: 'easy' },
+           { baku: 'jumat', tidakBaku: "jum'at", level: 'easy' },
+           { baku: 'andal', tidakBaku: 'handal', level: 'medium' },
+           { baku: 'azan', tidakBaku: 'adzan', level: 'easy' },
+           { baku: 'embus', tidakBaku: 'hembus', level: 'medium' },
+           { baku: 'gladi', tidakBaku: 'geladi', level: 'hard' },
+           { baku: 'imbau', tidakBaku: 'himbau', level: 'medium' },
+           { baku: 'kanker', tidakBaku: 'kangker', level: 'easy' },
+           { baku: 'magrib', tidakBaku: 'maghrib', level: 'easy' },
+           { baku: 'mi', tidakBaku: 'mie', level: 'easy' },
+           { baku: 'peduli', tidakBaku: 'perduli', level: 'easy' },
+           { baku: 'ramadan', tidakBaku: 'ramadhan', level: 'easy' },
+           { baku: 'salat', tidakBaku: 'shalat', level: 'easy' },
+           { baku: 'silakan', tidakBaku: 'silahkan', level: 'easy' },
+           { baku: 'standar', tidakBaku: 'standard', level: 'easy' },
+           { baku: 'sumatra', tidakBaku: 'sumatera', level: 'easy' },
+           { baku: 'telantar', tidakBaku: 'terlantar', level: 'medium' },
+           { baku: 'telanjur', tidakBaku: 'terlanjur', level: 'medium' },
+           { baku: 'bakso', tidakBaku: 'baso', level: 'easy' },
+           { baku: 'karena', tidakBaku: 'karna', level: 'easy' },
+           { baku: 'respons', tidakBaku: 'respon', level: 'medium' },
+           { baku: 'lembap', tidakBaku: 'lembab', level: 'medium' },
+           { baku: 'nekat', tidakBaku: 'nekad', level: 'easy' },
+           { baku: 'persen', tidakBaku: 'prosen', level: 'easy' },
+           { baku: 'sekretaris', tidakBaku: 'sekertaris', level: 'easy' },
+           { baku: 'sontek', tidakBaku: 'contek', level: 'easy' },
+           { baku: 'olahraga', tidakBaku: 'olah raga', level: 'easy' },
+           { baku: 'kacamata', tidakBaku: 'kaca mata', level: 'easy' },
+           { baku: 'kosakata', tidakBaku: 'kosa kata', level: 'easy' },
+           { baku: 'kerja sama', tidakBaku: 'kerjasama', level: 'medium' },
+           { baku: 'tanda tangan', tidakBaku: 'tandatangan', level: 'medium' },
+           { baku: 'tanggung jawab', tidakBaku: 'tanggungjawab', level: 'medium' },
+           { baku: 'wali kota', tidakBaku: 'walikota', level: 'medium' },
+           { baku: 'baut', tidakBaku: 'baud', level: 'hard' },
+           { baku: 'mesti', tidakBaku: 'musti', level: 'easy' },
+           { baku: 'film', tidakBaku: 'filem', level: 'easy' },
+           { baku: 'hipotesis', tidakBaku: 'hipotesa', level: 'medium' },
+           { baku: 'manajer', tidakBaku: 'manager', level: 'easy' },
+           { baku: 'manajemen', tidakBaku: 'managemen', level: 'easy' },
+           { baku: 'stasiun', tidakBaku: 'stasion', level: 'easy' },
+           { baku: 'survei', tidakBaku: 'survey', level: 'easy' },
+           { baku: 'syukur', tidakBaku: 'sukur', level: 'easy' },
+           { baku: 'ambulans', tidakBaku: 'ambulan', level: 'easy' },
+           { baku: 'baterai', tidakBaku: 'batere', level: 'easy' },
+           { baku: 'cedera', tidakBaku: 'cidera', level: 'medium' },
+           { baku: 'cokelat', tidakBaku: 'coklat', level: 'easy' },
+           { baku: 'detail', tidakBaku: 'detil', level: 'easy' },
+           { baku: 'elite', tidakBaku: 'elit', level: 'medium' },
+           { baku: 'hektare', tidakBaku: 'hektar', level: 'medium' },
+           { baku: 'kaus', tidakBaku: 'kaos', level: 'easy' },
+           { baku: 'lemari', tidakBaku: 'almari', level: 'easy' },
+           { baku: 'miliar', tidakBaku: 'milyar', level: 'easy' },
+           { baku: 'nomor', tidakBaku: 'nomer', level: 'easy' },
+           { baku: 'omzet', tidakBaku: 'omset', level: 'medium' },
+           { baku: 'perkedel', tidakBaku: 'pergedel', level: 'easy' },
+           { baku: 'saraf', tidakBaku: 'syaraf', level: 'easy' },
+           { baku: 'telur', tidakBaku: 'telor', level: 'easy' },
+           { baku: 'utang', tidakBaku: 'hutang', level: 'easy' },
+           { baku: 'vila', tidakBaku: 'villa', level: 'easy' },
+           { baku: 'video', tidakBaku: 'vidio', level: 'easy' },
+           { baku: 'tampak', tidakBaku: 'nampak', level: 'easy' },
+           { baku: 'afdal', tidakBaku: 'afdol', level: 'medium' },
+           { baku: 'amfibi', tidakBaku: 'ampibi', level: 'easy' },
+           { baku: 'astronaut', tidakBaku: 'astronot', level: 'medium' },
+           { baku: 'asyik', tidakBaku: 'asik', level: 'easy' },
+           { baku: 'autentik', tidakBaku: 'otentik', level: 'medium' },
+           { baku: 'bolpoin', tidakBaku: 'bolpen', level: 'easy' },
+           { baku: 'cecak', tidakBaku: 'cicak', level: 'medium' },
+           { baku: 'dasbor', tidakBaku: 'dasbord', level: 'medium' },
+           { baku: 'durian', tidakBaku: 'duren', level: 'easy' },
+           { baku: 'fondasi', tidakBaku: 'pondasi', level: 'medium' },
+           { baku: 'fotokopi', tidakBaku: 'foto kopi', level: 'easy' },
+           { baku: 'genius', tidakBaku: 'jenius', level: 'medium' },
+           { baku: 'isap', tidakBaku: 'hisap', level: 'medium' },
+           { baku: 'jemaah', tidakBaku: 'jamaah', level: 'easy' },
+           { baku: 'kedaluwarsa', tidakBaku: 'kadaluwarsa', level: 'medium' },
+           { baku: 'rapor', tidakBaku: 'raport', level: 'easy' },
+           { baku: 'rezim', tidakBaku: 'resim', level: 'medium' },
+           { baku: 'roh', tidakBaku: 'ruh', level: 'easy' },
+           { baku: 'sahih', tidakBaku: 'sohih', level: 'easy' },
+           { baku: 'seprai', tidakBaku: 'seprei', level: 'medium' },
+           { baku: 'setrika', tidakBaku: 'seterika', level: 'easy' },
+           { baku: 'tobat', tidakBaku: 'taubat', level: 'easy' },
+           { baku: 'tripleks', tidakBaku: 'triplek', level: 'easy' },
+           { baku: 'trofi', tidakBaku: 'tropi', level: 'easy' },
+           { baku: 'ustaz', tidakBaku: 'ustadz', level: 'easy' },
+           { baku: 'nahas', tidakBaku: 'naas', level: 'medium' },
+           { baku: 'ikhlas', tidakBaku: 'iklas', level: 'easy' },
+           { baku: 'filsuf', tidakBaku: 'filosof', level: 'hard' },
+           { baku: 'hidraulis', tidakBaku: 'hidraulik', level: 'hard' },
+           { baku: 'makin', tidakBaku: 'semakin', level: 'medium' },
+           { baku: 'neto', tidakBaku: 'netto', level: 'medium' },
+           { baku: 'orisinal', tidakBaku: 'orisinil', level: 'medium' },
+           { baku: 'tekad', tidakBaku: 'tekat', level: 'easy' },
+           { baku: 'selawat', tidakBaku: 'salawat', level: 'medium' },
+           { baku: 'rida', tidakBaku: 'ridho', level: 'medium' },
+           { baku: 'zalim', tidakBaku: 'zolim', level: 'easy' },
+           { baku: 'takwa', tidakBaku: 'taqwa', level: 'easy' },
+           { baku: 'dividen', tidakBaku: 'deviden', level: 'hard' },
+           { baku: 'familier', tidakBaku: 'familiar', level: 'medium' },
+           { baku: 'kanguru', tidakBaku: 'kangguru', level: 'easy' },
+           { baku: 'strok', tidakBaku: 'stroke', level: 'medium' },
+           { baku: 'diskotek', tidakBaku: 'diskotik', level: 'easy' },
+           { baku: 'tolok ukur', tidakBaku: 'tolak ukur', level: 'hard' },
+           { baku: 'serdawa', tidakBaku: 'sendawa', level: 'hard' }
+       ];
+
+       // ELEMENT REFERENCES
+       const btn1 = document.getElementById('btn-1');
+       const btn2 = document.getElementById('btn-2');
+       const correctStat = document.getElementById('correct-count');
+       const wrongStat = document.getElementById('wrong-count');
+       const feedbackEl = document.getElementById('feedback');
+       const soundBtn = document.getElementById('btn-sound');
+       const historyBtn = document.getElementById('btn-history');
+       const modal = document.getElementById('modal-overlay');
+       const closeModalBtn = document.getElementById('btn-close-modal');
+       const resetHistoryBtn = document.getElementById('btn-reset-history');
+       const shareResultBtn = document.getElementById('btn-share-result');
+       const modalBodyContent = document.getElementById('modal-body-content');
+       const modalTitle = document.getElementById('modal-title');
+       const difficultySelect = document.getElementById('difficulty-select');
+       const marathonBtn = document.getElementById('btn-marathon-toggle');
+       const marathonLabel = document.getElementById('marathon-label');
+       const timerContainer = document.getElementById('timer-container');
+       const timerText = document.getElementById('timer-text');
+
+       // STATE VARIABLES
+       let currentItem = null;
+       let correctCount = 0;
+       let wrongCount = 0;
+       let soundEnabled = true;
+       let isAnimating = false;
+       
+       // MARATHON TIMER STATE
+       let isMarathonMode = false;
+       let marathonTimer = null;
+       let timerSeconds = 600; // 10 Menit
+
+       // WEB AUDIO SYNTHESIS FOR AUDIO FEEDBACK
+       const AudioCtx = window.AudioContext || window.webkitAudioContext;
+       let audioCtx = null;
+
+       function initAudio() {
+           if (!audioCtx) audioCtx = new AudioCtx();
+       }
+
+       function playSound(isCorrect) {
+           if (!soundEnabled) return;
+           initAudio();
+           if (audioCtx.state === 'suspended') audioCtx.resume();
+
+           const osc = audioCtx.createOscillator();
+           const gain = audioCtx.createGain();
+           osc.connect(gain);
+           gain.connect(audioCtx.destination);
+
+           if (isCorrect) {
+               osc.type = 'sine';
+               osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+               osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+               gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+               gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+               osc.start();
+               osc.stop(audioCtx.currentTime + 0.3);
+           } else {
+               osc.type = 'sawtooth';
+               osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+               osc.frequency.setValueAtTime(110, audioCtx.currentTime + 0.15);
+               gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+               gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+               osc.start();
+               osc.stop(audioCtx.currentTime + 0.35);
+           }
+       }
+
+       // LOCAL STORAGE - SPACED REPETITION ENGINE
+       function getErrorHistory() {
+           const data = localStorage.getItem('kataBaku_errors');
+           return data ? JSON.parse(data) : {};
+       }
+
+       function recordError(item) {
+           const history = getErrorHistory();
+           if (history[item.baku]) {
+               history[item.baku].count += 1;
+           } else {
+               history[item.baku] = {
+                   baku: item.baku,
+                   tidakBaku: item.tidakBaku,
+                   count: 1
+               };
+           }
+           localStorage.setItem('kataBaku_errors', JSON.stringify(history));
+       }
+
+       // GET FILTERED DATASET BASED ON DIFFICULTY
+       function getFilteredDataset() {
+           const diff = difficultySelect.value;
+           if (diff === 'all') return wordDatabase;
+           return wordDatabase.filter(w => w.level === diff);
+       }
+
+       // QUESTION GENERATOR (SPACED REPETITION ENHANCED)
+       function nextQuestion() {
+           const dataset = getFilteredDataset();
+           const history = getErrorHistory();
+           const errKeys = Object.keys(history);
+
+           // 35% Chance to pull from previously failed words (if applicable)
+           let selectedItem = null;
+           if (errKeys.length > 0 && Math.random() < 0.35) {
+               const randomErrKey = errKeys[Math.floor(Math.random() * errKeys.length)];
+               selectedItem = wordDatabase.find(w => w.baku === randomErrKey);
+           }
+
+           if (!selectedItem || (difficultySelect.value !== 'all' && selectedItem.level !== difficultySelect.value)) {
+               selectedItem = dataset[Math.floor(Math.random() * dataset.length)];
+           }
+
+           // Mencegah soal persis sama muncul 2x berturut-turut
+           if (currentItem && selectedItem.baku === currentItem.baku && dataset.length > 1) {
+               return nextQuestion();
+           }
+
+           currentItem = selectedItem;
+
+           // Randomize position A or B
+           const isBakuBtn1 = Math.random() < 0.5;
+           btn1.textContent = isBakuBtn1 ? currentItem.baku : currentItem.tidakBaku;
+           btn2.textContent = isBakuBtn1 ? currentItem.tidakBaku : currentItem.baku;
+
+           btn1.className = 'btn-choice';
+           btn2.className = 'btn-choice';
+           isAnimating = false;
+       }
+
+       // ANSWER HANDLER
+       function handleAnswer(e) {
+           if (isAnimating) return;
+           isAnimating = true;
+
+           const selectedBtn = e.currentTarget;
+           const chosenWord = selectedBtn.textContent;
+           const isCorrect = (chosenWord === currentItem.baku);
+
+           if (isCorrect) {
+               selectedBtn.classList.add('correct-click');
+               correctCount++;
+               correctStat.textContent = correctCount;
+               feedbackEl.textContent = "Tepat Sekali!";
+               feedbackEl.className = "feedback-box show correct";
+               playSound(true);
+           } else {
+               selectedBtn.classList.add('wrong-click');
+               wrongCount++;
+               wrongStat.textContent = wrongCount;
+               recordError(currentItem);
+
+               feedbackEl.innerHTML = `Kurang Tepat!<br>Yang Baku: <b>${currentItem.baku}</b>`;
+               feedbackEl.className = "feedback-box show wrong";
+               playSound(false);
+           }
+
+           setTimeout(() => {
+               feedbackEl.classList.remove('show');
+               setTimeout(nextQuestion, 120);
+           }, 1000);
+       }
+
+       // MARATHON TIMER LOGIC
+       function toggleMarathon() {
+           if (isMarathonMode) {
+               stopMarathon();
+           } else {
+               startMarathon();
+           }
+       }
+
+       function startMarathon() {
+           isMarathonMode = true;
+           timerSeconds = 600; // 10 menit
+           correctCount = 0;
+           wrongCount = 0;
+           correctStat.textContent = '0';
+           wrongStat.textContent = '0';
+           
+           marathonLabel.textContent = "Hentikan Marathon";
+           timerContainer.style.display = 'flex';
+           updateTimerDisplay();
+
+           marathonTimer = setInterval(() => {
+               timerSeconds--;
+               updateTimerDisplay();
+               if (timerSeconds <= 0) {
+                   stopMarathon();
+                   showMarathonFinishedModal();
+               }
+           }, 1000);
+
+           nextQuestion();
+       }
+
+       function stopMarathon() {
+           isMarathonMode = false;
+           clearInterval(marathonTimer);
+           timerContainer.style.display = 'none';
+           marathonLabel.textContent = "Mulai Marathon 10M";
+       }
+
+       function updateTimerDisplay() {
+           const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+           const s = (timerSeconds % 60).toString().padStart(2, '0');
+           timerText.textContent = `${m}:${s}`;
+       }
+
+       // MODAL & SHARE RESULT
+       function showHistoryModal() {
+           modalTitle.textContent = "Riwayat Kata Sering Salah";
+           const history = getErrorHistory();
+           const items = Object.values(history).sort((a,b) => b.count - a.count);
+
+           if (items.length === 0) {
+               modalBodyContent.innerHTML = `<div style="text-align:center; padding: 30px 0; color: var(--text-muted); font-weight:800;">Belum ada kata yang salah. Luar biasa!</div>`;
+           } else {
+               let html = '';
+               items.forEach(item => {
+                   html += `
+                       <div class="history-item">
+                           <div class="history-pair">
+                               <span class="word-baku-text">${item.baku}</span>
+                               <span class="word-tidak-baku-text">${item.tidakBaku}</span>
+                           </div>
+                           <span class="err-count-tag">Salah ${item.count}x</span>
+                       </div>
+                   `;
+               });
+               modalBodyContent.innerHTML = html;
+           }
+           modal.classList.add('active');
+       }
+
+       function showMarathonFinishedModal() {
+           modalTitle.textContent = "Marathon 10 Menit Selesai!";
+           const total = correctCount + wrongCount;
+           const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+           modalBodyContent.innerHTML = `
+               <div style="text-align: center; padding: 20px 0;">
+                   <div style="font-size: 3rem; color: var(--primary-color); font-weight: 900;">${correctCount}</div>
+                   <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-muted);">Kata Baku Dikuasai</div>
+                   <div style="margin-top: 16px; font-weight: 800; font-size: 1rem;">
+                       Akurasi: <span style="color:var(--correct-color);">{correctCount} Benar / ${wrongCount} Salah)
+                   </div>
+               </div>
+           `;
+           modal.classList.add('active');
+       }
+
+       function shareResults() {
+           const total = correctCount + wrongCount;
+           const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+           const text = `🏆 Hasil Kuis Kata Baku KBBI:\n` +
+                        `✅ Benar: ${correctCount}\n` +
+                        `❌ Salah: ${wrongCount}\n` +
+                        `🎯 Akurasi: ${accuracy}%\n` +
+                        `⚡ Mode: ${isMarathonMode ? 'Marathon 10 Menit' : 'Latihan Bebas'}\n\n` +
+                        `Asah pemahaman Bahasa Indonesia kamu sekarang!`;
+
+           if (navigator.share) {
+               navigator.share({ title: 'Hasil Kuis Kata Baku', text: text }).catch(() => {});
+           } else {
+               navigator.clipboard.writeText(text).then(() => {
+                   alert('Hasil kuis berhasil disalin ke clipboard!');
+               });
+           }
+       }
+
+       // EVENT LISTENERS
+       btn1.addEventListener('click', handleAnswer);
+       btn2.addEventListener('click', handleAnswer);
+       soundBtn.addEventListener('click', () => {
+           soundEnabled = !soundEnabled;
+           soundBtn.classList.toggle('active', soundEnabled);
+           soundBtn.querySelector('i').className = soundEnabled ? 'fa-solid fa-volume-up' : 'fa-solid fa-volume-xmark';
+       });
+       historyBtn.addEventListener('click', showHistoryModal);
+       closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+       modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+       resetHistoryBtn.addEventListener('click', () => {
+           if (confirm('Hapus seluruh riwayat kata yang pernah salah?')) {
+               localStorage.removeItem('kataBaku_errors');
+               showHistoryModal();
+           }
+       });
+       shareResultBtn.addEventListener('click', shareResults);
+       difficultySelect.addEventListener('change', nextQuestion);
+       marathonBtn.addEventListener('click', toggleMarathon);
+
+       // INITIALIZE
+       nextQuestion();
+   </script>
+</body>
+</html>
