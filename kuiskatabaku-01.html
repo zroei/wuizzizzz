@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+   <title>Kuis Kata Baku - Tactile Edition</title>
+   <!-- Font Awesome Icons -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <style>
+       @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+
+       :root {
+           --bg-color: #F7F9FC;
+           --text-main: #4B4B4B;
+           --text-muted: #AFB0B6;
+           --surface: #FFFFFF;
+           
+           --btn-border: #E5E5E5;
+           
+           --correct-bg: #D7FFB8;
+           --correct-color: #58CC02;
+           --correct-shadow: #58A700;
+           
+           --wrong-bg: #FFDFE0;
+           --wrong-color: #FF4B4B;
+           --wrong-shadow: #EA2B2B;
+           
+           --primary-color: #1CB0F6;
+           --primary-shadow: #1899D6;
+       }
+
+       * {
+           box-sizing: border-box;
+           margin: 0;
+           padding: 0;
+           user-select: none;
+           -webkit-tap-highlight-color: transparent;
+       }
+
+       body {
+           font-family: 'Nunito', sans-serif;
+           background-color: var(--bg-color);
+           color: var(--text-main);
+           display: flex;
+           flex-direction: column;
+           height: 100vh;
+           height: 100dvh;
+           overflow: hidden;
+           overscroll-behavior-y: contain;
+       }
+
+       /* HEADER & STATISTIK */
+       header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 16px 20px;
+           background-color: var(--surface);
+           border-bottom: 2px solid var(--btn-border);
+           z-index: 10;
+       }
+
+       .header-actions {
+           display: flex;
+           gap: 12px;
+           align-items: center;
+       }
+
+       .stats {
+           display: flex;
+           gap: 16px;
+           font-size: 1.1rem;
+           font-weight: 800;
+       }
+
+       .stat-item.correct { color: var(--correct-color); }
+       .stat-item.wrong { color: var(--wrong-color); }
+
+       .btn-icon {
+           background: none;
+           border: none;
+           color: var(--text-muted);
+           font-size: 1.3rem;
+           cursor: pointer;
+           transition: color 0.2s, transform 0.1s;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           width: 40px;
+           height: 40px;
+           border-radius: 12px;
+       }
+       .btn-icon:active { transform: scale(0.9); }
+       .btn-icon.active { color: var(--primary-color); }
+
+       /* KONTEN UTAMA */
+       main {
+           flex: 1;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+           padding: 20px;
+           text-align: center;
+           padding-bottom: 230px; 
+       }
+
+       h1 {
+           font-size: 1.75rem;
+           font-weight: 900;
+           margin-bottom: 6px;
+           color: var(--text-main);
+       }
+
+       p.subtitle {
+           font-size: 0.95rem;
+           color: var(--text-muted);
+           font-weight: 700;
+           margin-bottom: 20px;
+       }
+
+       /* UMPAN BALIK (FEEDBACK) */
+       .feedback-container {
+           min-height: 85px;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           width: 100%;
+           max-width: 400px;
+           border-radius: 16px;
+           padding: 12px 16px;
+           font-size: 1.15rem;
+           font-weight: 800;
+           opacity: 0;
+           transform: scale(0.9);
+           transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+           pointer-events: none;
+       }
+
+       .feedback-container.show {
+           opacity: 1;
+           transform: scale(1);
+       }
+
+       .feedback-container.correct {
+           background-color: var(--correct-bg);
+           color: var(--correct-shadow);
+       }
+
+       .feedback-container.wrong {
+           background-color: var(--wrong-bg);
+           color: var(--wrong-shadow);
+       }
+
+       /* AREA TOMBOL (Bottom-Anchored One-Handed Layout) */
+       .action-area {
+           position: fixed;
+           bottom: 0;
+           left: 0;
+           width: 100%;
+           padding: 16px 20px calc(24px + env(safe-area-inset-bottom)) 20px;
+           background: linear-gradient(to top, var(--bg-color) 85%, transparent);
+           display: flex;
+           flex-direction: column;
+           gap: 14px;
+           z-index: 5;
+           max-width: 500px;
+           left: 50%;
+           transform: translateX(-50%);
+       }
+
+       /* GAYA TACTILE / CLAYMORPHISM */
+       .btn-choice {
+           background-color: var(--surface);
+           color: var(--primary-color);
+           border: 2px solid var(--btn-border);
+           border-bottom: 6px solid var(--btn-border);
+           border-radius: 16px;
+           padding: 18px;
+           font-size: 1.35rem;
+           font-family: 'Nunito', sans-serif;
+           font-weight: 800;
+           cursor: pointer;
+           transition: all 0.1s ease-in-out;
+           width: 100%;
+           text-align: center;
+           box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+       }
+
+       .btn-choice:active {
+           border-bottom-width: 2px;
+           transform: translateY(4px);
+           background-color: #F9F9F9;
+       }
+
+       .btn-choice.correct-click {
+           background-color: var(--correct-bg);
+           color: var(--correct-shadow);
+           border-color: var(--correct-color);
+           border-bottom-color: var(--correct-shadow);
+       }
+
+       .btn-choice.wrong-click {
+           background-color: var(--wrong-bg);
+           color: var(--wrong-shadow);
+           border-color: var(--wrong-color);
+           border-bottom-color: var(--wrong-shadow);
+       }
+
+       /* MODAL RIWAYAT (EVALUASI) */
+       .modal-overlay {
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           background-color: rgba(0,0,0,0.4);
+           display: flex;
+           justify-content: center;
+           align-items: flex-end;
+           z-index: 100;
+           opacity: 0;
+           pointer-events: none;
+           transition: opacity 0.3s ease;
+       }
+
+       .modal-overlay.active {
+           opacity: 1;
+           pointer-events: auto;
+       }
+
+       .modal-content {
+           background-color: var(--surface);
+           width: 100%;
+           max-width: 500px;
+           max-height: 80vh;
+           border-top-left-radius: 24px;
+           border-top-right-radius: 24px;
+           padding: 24px;
+           display: flex;
+           flex-direction: column;
+           transform: translateY(100%);
+           transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+       }
+
+       .modal-overlay.active .modal-content {
+           transform: translateY(0);
+       }
+
+       .modal-header {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           margin-bottom: 16px;
+       }
+
+       .modal-header h2 {
+           font-size: 1.4rem;
+           font-weight: 900;
+       }
+
+       .modal-body {
+           flex: 1;
+           overflow-y: auto;
+           padding-right: 4px;
+       }
+
+       .history-list {
+           display: flex;
+           flex-direction: column;
+           gap: 10px;
+       }
+
+       .history-item {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 12px 16px;
+           background-color: var(--bg-color);
+           border-radius: 12px;
+           border: 1px solid var(--btn-border);
+       }
+
+       .word-pair {
+           display: flex;
+           flex-direction: column;
+           align-items: flex-start;
+       }
+
+       .word-baku {
+           font-weight: 800;
+           color: var(--correct-shadow);
+       }
+
+       .word-tidak-baku {
+           font-size: 0.85rem;
+           color: var(--wrong-color);
+           text-decoration: line-through;
+       }
+
+       .error-badge {
+           background-color: var(--wrong-bg);
+           color: var(--wrong-shadow);
+           padding: 4px 10px;
+           border-radius: 20px;
+           font-size: 0.85rem;
+           font-weight: 800;
+       }
+
+       .empty-history {
+           text-align: center;
+           color: var(--text-muted);
+           padding: 30px 0;
+           font-weight: 700;
+       }
+
+       .btn-reset {
+           margin-top: 16px;
+           background-color: var(--wrong-bg);
+           color: var(--wrong-shadow);
+           border: none;
+           padding: 12px;
+           border-radius: 12px;
+           font-family: inherit;
+           font-weight: 800;
+           cursor: pointer;
+           width: 100%;
+       }
+   </style>
+</head>
+<body>
+
+   <header>
+       <div class="header-actions">
+           <button class="btn-icon btn-sound active" id="btn-sound" aria-label="Toggle Suara">
+               <i class="fa-solid fa-volume-up"></i>
+           </button>
+           <button class="btn-icon" id="btn-history" aria-label="Riwayat Evaluasi">
+               <i class="fa-solid fa-clock-rotate-left"></i>
+           </button>
+       </div>
+       <div class="stats">
+           <div class="stat-item correct">
+               <i class="fa-solid fa-check"></i> <span id="correct-count">0</span>
+           </div>
+           <div class="stat-item wrong">
+               <i class="fa-solid fa-xmark"></i> <span id="wrong-count">0</span>
+           </div>
+       </div>
+   </header>
+
+   <main>
+       <h1>Mana yang Baku?</h1>
+       <p class="subtitle">Ketuk kata dengan penulisan yang tepat</p>
+       
+       <div id="feedback" class="feedback-container">
+           <!-- Teks umpan balik dinamis -->
+       </div>
+   </main>
+
+   <div class="action-area">
+       <button class="btn-choice" id="btn-1">Pilihan 1</button>
+       <button class="btn-choice" id="btn-2">Pilihan 2</button>
+   </div>
+
+   <!-- MODAL RIWAYAT KATA SERING SALAH -->
+   <div class="modal-overlay" id="history-modal">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h2>Kata Sering Salah</h2>
+               <button class="btn-icon" id="btn-close-modal">
+                   <i class="fa-solid fa-xmark"></i>
+               </button>
+           </div>
+           <div class="modal-body" id="modal-body">
+               <!-- Daftar riwayat dimuat melalui JS -->
+           </div>
+           <button class="btn-reset" id="btn-reset-history">Hapus Riwayat Evaluasi</button>
+       </div>
+   </div>
+
+   <script>
+       // Bank Data Kata Baku dan Tidak Baku (200+ Pasang)
+       const baku = ['akta', 'esai', 'frasa', 'kendaraan', 'masjid', 'saksama', 'sekadar', 'amendemen', 'aritmetika', 'kalender', 'kategori', 'meterai', 'metode', 'parlemen', 'antre', 'apotek', 'atlet', 'atmosfer', 'desain', 'deskripsi', 'kredit', 'personel', 'teoretis', 'hakikat', 'intelijen', 'monitor', 'nasihat', 'praktik', 'risiko', 'ritsleting', 'eksem', 'ekstrem', 'sistem', 'debit', 'dekret', 'komplet', 'konkret', 'objek', 'objektif', 'subjek', 'subjektif', 'anjlok', 'budek', 'gebuk', 'mandek', 'aktif', 'foto', 'hafal', 'konferensi', 'negatif', 'pasif', 'positif', 'sertifikat', 'tarif', 'transitif', 'paham', 'pikir', 'telepon', 'napas', 'permak', 'aktivis', 'kreativitas', 'konveksi', 'provinsi', 'universitas', 'asas', 'asasi', 'bus', 'guncang', 'gua', 'kumulatif', 'kolumnis', 'lubang', 'legislator', 'mabuk', 'mangkuk', 'surga', 'unta', 'roboh', 'pastor', 'pasteur', 'sirop', 'sopir', 'petai', 'tapai', 'frekuensi', 'konsekuensi', 'kuantitas', 'kuartal', 'kuitansi', 'kuintal', 'jadwal', 'proyek', 'izin', 'rezeki', 'zaman', 'zamrud', 'ijazah', 'hierarki', 'karier', 'cenderawasih', 'jenderal', 'menteri', 'kesatria', 'terampil', 'istri', 'prajurit', 'putra', 'putri', 'samudra', 'prancis', 'kafilah', 'khawatir', 'khotbah', 'makhluk', 'nakhoda', 'takhta', 'ahli', 'karisma', 'teknik', 'teknologi', 'ekspor', 'kompleks', 'taksi', 'batin', 'katolik', 'ortografi', 'patogen', 'teologi', 'analisis', 'diagnosis', 'sintesis', 'komoditas', 'komunitas', 'realitas', 'selebritas', 'mengubah', 'mencintai', 'pelepasan', 'penglihatan', 'penyewaan', 'doa', 'jumat', 'taat', 'andal', 'aneksasi', 'azan', 'embus', 'gladi', 'hadis', 'imbau', 'kanker', 'kongres', 'magrib', 'mi', 'peduli', 'ramadan', 'rapi', 'salat', 'silakan', 'standar', 'sumatra', 'telantar', 'telanjur', 'australia', 'bakso', 'ensiklopedia', 'karena', 'mukjizat', 'respons', 'seberang', 'standardisasi', 'lembap', 'masyhur', 'mazhab', 'mungkir', 'negosiasi', 'nekat', 'persen', 'sekretaris', 'sontek', 'menyontek', 'adapun', 'ataupun', 'bagaimanapun', 'biarpun', 'kalaupun', 'kendatipun', 'maupun', 'meskipun', 'sekalipun', 'sungguhpun', 'walaupun', 'adakalanya', 'bilamana', 'daripada', 'dukacita', 'belasungkawa', 'halalbihalal', 'kacamata', 'kasatmata', 'kosakata', 'olahraga', 'lokakarya', 'saputangan', 'segitiga', 'sukacita', 'sukarela', 'sukaria', 'tata bahasa', 'juru tulis', 'kerja sama', 'tepuk tangan', 'beri tahu', 'lipat ganda', 'tanda tangan', 'tanggung jawab', 'hancur lebur', 'sepak bola', 'acapkali', 'mara bahaya', 'sari pati', 'wali kota', 'inti sari', 'akhir', 'antarinstansi', 'baut', 'menyukseskan', 'mesti', 'motif', 'motivasi', 'dolar', 'film', 'hipotesis', 'ilmuwan', 'insaf', 'jenazah', 'kaidah', 'konduite', 'manajer', 'manajemen', 'memproklamirkan', 'menerapkan', 'menerjemahkan', 'produktivitas', 'serban', 'seriawan', 'stasiun', 'survei', 'sutra', 'syukur', 'telentang', 'mengesampingkan', 'mengkritik', 'memperhatikan', 'formal', 'ambulans', 'baterai', 'blangko', 'cedera', 'cengkih', 'cokelat', 'detail', 'detergen', 'elite', 'hektare', 'indra', 'jeriken', 'junior', 'kaus', 'legalisasi', 'lemari', 'memesona', 'mengapa', 'merek', 'miliar', 'mosaik', 'nafsu', 'negeri', 'nomor', 'omzet', 'perkedel', 'prangko', 'religius', 'ritme', 'saraf', 'sentimeter', 'telur', 'tenteram', 'tepercaya', 'tetapi', 'tradisional', 'transpor', 'triliun', 'utang', 'varietas', 'vila', 'video', 'takhayul', 'tampak', 'teladan', 'adhesi', 'afdal', 'akuatik', 'amfibi', 'amonia', 'astronaut', 'asyik', 'ateis', 'autentik', 'balig', 'balsam', 'berandal', 'berantas', 'berengsek', 'bolpoin', 'brankas', 'bujet', 'boling', 'cecak', 'cendera mata', 'cendekiawan', 'cengkerama', 'dasbor', 'debitur', 'digit', 'durian', 'ekspres', 'faksimile', 'fondasi', 'fotokopi', 'gaib', 'ganjal', 'genius', 'gereget', 'hangus', 'fotosintesis', 'intens', 'impor', 'isap', 'impit', 'intermeso', 'jagat', 'jasad', 'jemaah', 'katapel', 'kebun', 'kedaluwarsa', 'kiai', 'koboi', 'komersial', 'rapor', 'reaumur', 'reumatik', 'rezim', 'roh', 'sahih', 'sambal', 'seprai', 'setrika', 'syahid', 'tobat', 'tripleks', 'trofi', 'umrah', 'urgen', 'urine', 'ustaz', 'yogyakarta', 'zamzam', 'rontgen', 'nahas', 'ikhlas', 'banderol', 'bazar', 'himne', 'filsuf', 'hidraulis', 'makin', 'neto', 'orisinal', 'pampat', 'pelesir', 'sediakala', 'spons', 'tekad', 'selawat', 'rida', 'zalim', 'takwa', 'dividen', 'etanol', 'familier', 'balans', 'kanguru', 'strok', 'berahi', 'berewok', 'diskotek', 'elektrode', 'feri', 'bumper', 'biseps', 'kreditur', 'tolok ukur', 'serdawa'];
+       const tidakBaku = ['akte', 'esay', 'frase', 'kenderaan', 'mesjid', 'seksama', 'sekedar', 'amandemen', 'aritmatika', 'kalendar', 'katagori', 'materai', 'metoda', 'parlamen', 'antri', 'apotik', 'atlit', 'atmosfir', 'disain', 'diskripsi', 'kridit', 'personil', 'teoritis', 'hakekat', 'intelejen', 'monetor', 'nasehat', 'praktek', 'resiko', 'retsleting', 'eksim', 'ekstrim', 'sistim', 'debet', 'dekrit', 'komplit', 'konkrit', 'obyek', 'obyektif', 'subyek', 'subyektif', 'anjlog', 'budeg', 'gebug', 'mandeg', 'aktip', 'photo', 'hapal', 'konperensi', 'negatip', 'pasip', 'positip', 'sertipikat', 'tarip', 'transitip', 'faham', 'fikir', 'telpon', 'nafas', 'vermak', 'aktifis', 'kreatifitas', 'konfeksi', 'propinsi', 'unipersitas', 'azas', 'azasi', 'bis', 'goncang', 'goa', 'komulatif', 'kolomnis', 'lobang', 'legislatur', 'mabok', 'mangkok', 'syurga', 'onta', 'rubuh', 'pastur', 'pastur', 'sirup', 'supir', 'pete', 'tape', 'frekwensi', 'konsekwensi', 'kwantitas', 'kwartal', 'kwitansi', 'kwintal', 'jadual', 'projek', 'ijin', 'rejeki', 'jaman', 'jamrud', 'ijasah', 'hirarki', 'karir', 'cendrawasih', 'jendral', 'mentri', 'ksatria', 'trampil', 'isteri', 'perajurit', 'putera', 'puteri', 'samudera', 'perancis', 'khafilah', 'kuatir', 'kotbah', 'mahluk', 'nahkoda', 'tahta', 'akhli', 'kharisma', 'tekhnik', 'tehnologi', 'eksport', 'komplek', 'taxi', 'bathin', 'katholik', 'orthografi', 'pathogen', 'theologi', 'analisa', 'diagnosa', 'sintesa', 'komoditi', 'komuniti', 'realita', 'selebriti', 'merubah', 'menyintai', 'penglepasan', 'pengelihatan', 'persewaan', "do'a", "jum'at", "ta'at", 'handal', 'anekisasi', 'adzan', 'hembus', 'geladi', 'hadist', 'himbau', 'kangker', 'konggres', 'maghrib', 'mie', 'perduli', 'ramadhan', 'rapih', 'shalat', 'silahkan', 'standard', 'sumatera', 'terlantar', 'terlanjur', 'australi', 'baso', 'ensiklopedi', 'karna', 'mujizat', 'respon', 'sebrang', 'standarisasi', 'lembab', 'mahsyur', 'mahzab', 'pungkir', 'negoisasi', 'nekad', 'prosen', 'sekertaris', 'contek', 'mencontek', 'ada pun', 'atau pun', 'bagaimana pun', Biar pun', 'kalau pun', 'kendati pun', 'mau pun', 'meski pun', 'sekali pun', 'sungguh pun', 'walau pun', 'ada kalanya', 'bila mana', 'dari pada', 'duka cita', 'bela sungkawa', 'halal bihalal', 'kaca mata', 'kasat mata', 'kosa kata', 'olah raga', 'loka karya', 'sapu tangan', 'segi tiga', 'suka cita', 'suka rela', 'suka ria', 'tatabahasa', 'jurutulis', 'kerjasama', 'tepuktangan', 'beritahu', 'lipatganda', 'tandatangan', 'tanggungjawab', 'hancurlebur', 'sepakbola', 'acap kali', 'marabahaya', 'saripati', 'walikota', 'intisari', 'ahir', 'antar instansi', 'baud', 'mensukseskan', 'musti', 'motip', 'motifasi', 'dollar', 'filem', 'hipotesa', 'ilmiawan', 'insyaf', 'jenasah', 'kaedah', 'kondite', 'manager', 'managemen', 'memproklamirkan', 'menterapkan', 'menterjemahkan', 'produktifitas', 'sorban', 'sariawan', 'stasion', 'survey', 'sutera', 'sukur', 'terlentang', 'mengenyampingkan', 'mengeritik', 'memerhatikan', 'formil', 'ambulan', 'batere', 'blanko', 'cidera', 'cengkeh', 'coklat', 'detil', 'deterjen', 'elit', 'hektar', 'indera', 'jerigen', 'yunior', 'kaos', 'legalisir', 'almari', 'mempesona', 'kenapa', 'merk', 'milyar', 'mozaik', 'napsu', 'negri', 'nomer', 'omset', 'pergedel', 'perangko', 'relijius', 'ritma', 'syaraf', 'centimeter', 'telor', 'tentram', 'terpercaya', 'trampil', 'tapi', 'tradisionil', 'transport', 'trilyun', 'hutang', 'varitas', 'villa', 'vidio', 'tahayul', 'nampak', 'tauladan', 'adesi', 'afdol', 'aquatik', 'ampibi', 'amoniak', 'astronot', 'asik', 'atheis', 'otentik', 'baligh', 'balsem', 'brandal', 'brantas', 'brengsek', 'bolpen', 'brangkas', 'budget', 'bowling', 'cicak', 'cenderamata', 'cendikiawan', 'cengkrama', 'dasbord', 'debitor', 'dijit', 'duren', 'ekspress', 'faksimili', 'pondasi', 'foto kopi', 'ghoib', 'ganjel', 'jenius', 'greget', 'angus', 'fotosintesa', 'inten', 'import', 'hisap', 'himpit', 'intermezo', 'jagad', 'jasat', 'jamaah', 'ketapel', 'kebon', 'kadaluwarsa', 'kyai', 'koboy', 'komersil', 'raport', 'reamur', 'rematik', 'resim', 'ruh', 'sohih', 'sambel', 'seprei', 'seterika', 'sahid', 'taubat', 'triplek', 'tropi', 'umroh', 'urjen', 'urin', 'ustadz', 'jogjakarta', 'jamrud', 'zam-zam', 'ronsen', 'naas', 'iklas', 'bandrol', 'bazaar', 'hymne', 'filosof', 'hidraulik', 'semakin', 'netto', 'orisinil', 'mampat', 'plesir', 'sedia kala', 'spon', 'tekat', 'salawat', 'ridho', 'zolim', 'taqwa', 'deviden', 'ethanol', 'familiar', 'balance', 'kangguru', 'stroke', 'birahi', 'brewok', 'diskotik', 'elektroda', 'ferri', 'bemper', 'bisep', 'kreditor', 'tolak ukur', 'sendawa'];
+
+       // Elemen DOM
+       const btn1 = document.getElementById('btn-1');
+       const btn2 = document.getElementById('btn-2');
+       const correctStat = document.getElementById('correct-count');
+       const wrongStat = document.getElementById('wrong-count');
+       const feedbackEl = document.getElementById('feedback');
+       const soundBtn = document.getElementById('btn-sound');
+       const historyBtn = document.getElementById('btn-history');
+       const modal = document.getElementById('history-modal');
+       const closeModalBtn = document.getElementById('btn-close-modal');
+       const resetHistoryBtn = document.getElementById('btn-reset-history');
+       const modalBody = document.getElementById('modal-body');
+
+       // State Aplikasi
+       let lastIndex = -1;
+       let index = -1;
+       let correctCount = 0;
+       let wrongCount = 0;
+       let soundEnabled = true;
+       let isAnimating = false;
+
+       // Audio Objects
+       const correctAudio = new Audio("https://acomarcho.github.io/kataBaku/audio/correct.wav");
+       const wrongAudio = new Audio("https://acomarcho.github.io/kataBaku/audio/wrong.mp3");
+
+       // FUNGSI LOCAL STORAGE (RIWAYAT KESALAHAN)
+       function getErrorHistory() {
+           const data = localStorage.getItem('kataBaku_errorHistory');
+           return data ? JSON.parse(data) : {};
+       }
+
+       function saveErrorHistory(indexKata) {
+           const history = getErrorHistory();
+           const kataKey = baku[indexKata];
+           
+           if (history[kataKey]) {
+               history[kataKey].count += 1;
+           } else {
+               history[kataKey] = {
+                   baku: baku[indexKata],
+                   tidakBaku: tidakBaku[indexKata],
+                   count: 1
+               };
+           }
+           
+           localStorage.setItem('kataBaku_errorHistory', JSON.stringify(history));
+       }
+
+       // AKSI INTERAKSI SUARA
+       soundBtn.addEventListener('click', () => {
+           soundEnabled = !soundEnabled;
+           soundBtn.classList.toggle('active', soundEnabled);
+           const icon = soundBtn.querySelector('i');
+           icon.className = soundEnabled ? 'fa-solid fa-volume-up' : 'fa-solid fa-volume-xmark';
+       });
+
+       function playSound(audio) {
+           if (!soundEnabled) return;
+           audio.currentTime = 0;
+           audio.play().catch(() => {});
+       }
+
+       // GENERATOR KATA (Prioritaskan kata yang pernah salah)
+       function setUp() {
+           const history = getErrorHistory();
+           const errorKeys = Object.keys(history);
+
+           // 30% Peluang memilih kata yang pernah salah untuk repetisi belajar
+           if (errorKeys.length > 0 && Math.random() < 0.3) {
+               const randomKey = errorKeys[Math.floor(Math.random() * errorKeys.length)];
+               index = baku.indexOf(randomKey);
+           } else {
+               while (index === lastIndex || index === -1) {
+                   index = Math.floor(Math.random() * baku.length);
+               }
+           }
+           
+           lastIndex = index;
+           const isBakuOnBtn1 = Math.random() < 0.5;
+           
+           btn1.textContent = isBakuOnBtn1 ? baku[index] : tidakBaku[index];
+           btn2.textContent = isBakuOnBtn1 ? tidakBaku[index] : baku[index];
+
+           btn1.className = 'btn-choice';
+           btn2.className = 'btn-choice';
+           isAnimating = false;
+       }
+
+       // JAWABAN KUIS
+       function handleAnswer(e) {
+           if (isAnimating) return;
+           isAnimating = true;
+
+           const selectedBtn = e.currentTarget;
+           const selectedWord = selectedBtn.textContent;
+           const isCorrect = selectedWord === baku[lastIndex];
+
+           if (isCorrect) {
+               selectedBtn.classList.add('correct-click');
+               correctCount++;
+               correctStat.textContent = correctCount;
+               
+               feedbackEl.textContent = "Luar Biasa!";
+               feedbackEl.className = 'feedback-container show correct';
+               playSound(correctAudio);
+           } else {
+               selectedBtn.classList.add('wrong-click');
+               wrongCount++;
+               wrongStat.textContent = wrongCount;
+
+               // Catat ke localStorage
+               saveErrorHistory(lastIndex);
+
+               feedbackEl.innerHTML = `Kurang tepat!<br>Baku: <b>${baku[lastIndex]}</b>`;
+               feedbackEl.className = 'feedback-container show wrong';
+               playSound(wrongAudio);
+           }
+
+           setTimeout(() => {
+               feedbackEl.classList.remove('show');
+               setTimeout(setUp, 150);
+           }, 1200);
+       }
+
+       // TAMPILKAN MODAL RIWAYAT EVALUASI
+       function renderHistoryModal() {
+           const history = getErrorHistory();
+           const items = Object.values(history).sort((a, b) => b.count - a.count);
+
+           if (items.length === 0) {
+               modalBody.innerHTML = `<div class="empty-history">Belum ada riwayat kesalahan.<br>Ayo mulai menjawab!</div>`;
+               return;
+           }
+
+           let html = '<div class="history-list">';
+           items.forEach(item => {
+               html += `
+                   <div class="history-item">
+                       <div class="word-pair">
+                           <span class="word-baku">${item.baku}</span>
+                           <span class="word-tidak-baku">${item.tidakBaku}</span>
+                       </div>
+                       <span class="error-badge">Salah ${item.count}x</span>
+                   </div>
+               `;
+           });
+           html += '</div>';
+           modalBody.innerHTML = html;
+       }
+
+       historyBtn.addEventListener('click', () => {
+           renderHistoryModal();
+           modal.classList.add('active');
+       });
+
+       closeModalBtn.addEventListener('click', () => {
+           modal.classList.remove('active');
+       });
+
+       modal.addEventListener('click', (e) => {
+           if (e.target === modal) modal.classList.remove('active');
+       });
+
+       resetHistoryBtn.addEventListener('click', () => {
+           if (confirm('Apakah Anda yakin ingin menghapus seluruh riwayat kesalahan?')) {
+               localStorage.removeItem('kataBaku_errorHistory');
+               renderHistoryModal();
+           }
+       });
+
+       btn1.addEventListener('click', handleAnswer);
+       btn2.addEventListener('click', handleAnswer);
+
+       // Jalankan Kuis Pertama Kali
+       setUp();
+   </script>
+</body>
+</html>
