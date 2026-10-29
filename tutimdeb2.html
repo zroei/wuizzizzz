@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tut - Timer Debat Pro Level Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-tactile {
+            transition: all 0.12s ease-out;
+            box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+        }
+        .btn-tactile:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-preset.active {
+            border-color: #38bdf8;
+            background-color: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), 0 4px 0 0 #0369a1;
+        }
+
+        /* Screen Flash Warning */
+        @keyframes flashWarning {
+            0%, 100% { background-color: rgba(234, 179, 8, 0.2); }
+            50% { background-color: rgba(234, 179, 8, 0.6); }
+        }
+        @keyframes flashDanger {
+            0%, 100% { background-color: rgba(239, 68, 68, 0.25); }
+            50% { background-color: rgba(239, 68, 68, 0.7); }
+        }
+
+        .flash-warning { animation: flashWarning 0.8s infinite; }
+        .flash-danger { animation: flashDanger 0.6s infinite; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100" id="main-body">
+
+    <!-- Screen Flash Overlay -->
+    <div id="flash-overlay" class="fixed inset-0 pointer-events-none z-40 transition-opacity duration-300 opacity-0"></div>
+
+    <!-- Header Section -->
+    <header class="w-full max-w-5xl mx-auto px-4 py-3 flex items-center justify-between border-b border-slate-800/80 z-30 transition-all duration-300" id="app-header">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="btn-tactile p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 hover:text-sky-400 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-extrabold text-lg shadow-lg shadow-sky-500/20 text-white">
+                    T
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-300 leading-tight">
+                        Tut <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 ml-1 font-bold">PRO</span>
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Fullscreen & Landscape Control -->
+            <button onclick="toggleLandscape()" class="btn-tactile p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-sky-400 text-xs font-bold flex items-center gap-1.5" title="Kunci Landscape">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" transform="rotate(-90 12 12)"/>
+                </svg>
+                <span class="hidden sm:inline">Landscape</span>
+            </button>
+            <button onclick="toggleFullscreen()" class="btn-tactile p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-sky-400 text-xs font-bold flex items-center gap-1.5" title="Full Screen">
+                <svg id="fullscreen-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="w-full max-w-4xl mx-auto px-4 my-auto flex flex-col items-center justify-center gap-6 py-4 z-10">
+
+        <!-- Preset Selection (Auto Hide in Focus Mode) -->
+        <div id="preset-container" class="w-full max-w-md transition-all duration-300">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-extrabold text-slate-400 tracking-wider uppercase">Pilih Durasi Debat</span>
+                <span id="custom-indicator" class="text-xs text-sky-400 font-semibold hidden">Durasi Kustom Aktif</span>
+            </div>
+            <div class="grid grid-cols-5 gap-2">
+                <button onclick="setPreset(3)" id="preset-3" class="btn-preset btn-tactile bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-extrabold py-3 rounded-2xl text-base transition">3m</button>
+                <button onclick="setPreset(4)" id="preset-4" class="btn-preset btn-tactile bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-extrabold py-3 rounded-2xl text-base transition">4m</button>
+                <button onclick="setPreset(5)" id="preset-5" class="btn-preset btn-tactile bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-extrabold py-3 rounded-2xl text-base transition">5m</button>
+                <button onclick="setPreset(6)" id="preset-6" class="btn-preset btn-tactile bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-extrabold py-3 rounded-2xl text-base transition">6m</button>
+                <button onclick="setPreset(7)" id="preset-7" class="btn-preset btn-tactile bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 font-extrabold py-3 rounded-2xl text-base transition">7m</button>
+            </div>
+        </div>
+
+        <!-- Timer Display Card (Focus Mode Scalable) -->
+        <div id="timer-card" class="w-full bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 sm:p-10 flex flex-col items-center justify-center relative shadow-2xl backdrop-blur transition-all duration-500">
+            
+            <!-- Status Badge & Overtime Indicator -->
+            <div class="flex items-center gap-2 mb-2">
+                <div id="status-badge" class="px-4 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase bg-slate-800 text-slate-400 border border-slate-700">
+                    SIAP
+                </div>
+                <div id="overtime-badge" class="hidden px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase bg-red-600 text-white animate-pulse">
+                    OVERTIME
+                </div>
+            </div>
+
+            <!-- Massive Timer Text -->
+            <div id="time-display" class="font-mono text-7xl sm:text-9xl md:text-[11rem] font-black tracking-tight text-white leading-none my-2 drop-shadow-2xl transition-all duration-300">
+                03:00
+            </div>
+
+            <!-- Overtime Display (Ke Atas) -->
+            <div id="overtime-display" class="hidden font-mono text-2xl sm:text-4xl font-bold text-red-400 mt-1">
+                +00:00
+            </div>
+
+            <!-- Progress Bar -->
+            <div id="progress-container" class="w-full max-w-xl bg-slate-800 h-3 rounded-full overflow-hidden mt-6 border border-slate-700/50">
+                <div id="progress-bar" class="bg-sky-500 h-full w-full transition-all duration-300 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="w-full max-w-md grid grid-cols-3 gap-3">
+            <button id="btn-start" onclick="toggleTimer()" class="col-span-2 btn-tactile bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-extrabold text-xl py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2 border border-emerald-400/30">
+                <svg id="icon-play" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <span id="btn-start-text">Mulai</span>
+            </button>
+
+            <button onclick="resetTimer()" class="btn-tactile bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-slate-200 font-extrabold text-base py-4 sm:py-5 rounded-2xl flex items-center justify-center border border-slate-800">
+                Reset
+            </button>
+        </div>
+
+        <!-- Manual Bell Button (Fast Access during Match) -->
+        <button onclick="playManualBell()" class="btn-tactile bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-800/80 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            Bunyikan Bel Manual (1x)
+        </button>
+    </main>
+
+    <!-- Sidebar / Drawer Backdrop -->
+    <div id="drawer-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <!-- Sidebar Drawer Content -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-slate-900 border-r border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col justify-between overflow-y-auto">
+        
+        <div class="p-5">
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-sky-500 flex items-center justify-center font-black text-white text-sm">T</div>
+                    <span class="font-extrabold text-base text-slate-100">Pengaturan & Dev</span>
+                </div>
+                <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- DEV TOOLS: Sound Tester -->
+            <div class="mt-5">
+                <div class="text-xs font-extrabold text-sky-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    Dev Tools: Tes Suara Bel
+                </div>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button onclick="playTestBell(1)" class="btn-tactile bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl border border-slate-700">1x (Menit)</button>
+                    <button onclick="playTestBell(2)" class="btn-tactile bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl border border-slate-700">2x (20s)</button>
+                    <button onclick="playTestBell(3)" class="btn-tactile bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl border border-slate-700">3x (Habis)</button>
+                </div>
+            </div>
+
+            <!-- Bell Sound Settings -->
+            <div class="mt-5 space-y-4">
+                <div class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Kustomisasi Audio Bel</div>
+                
+                <div>
+                    <label class="text-xs text-slate-300 font-semibold block mb-1">Pilihan Pitch / Tipe Bel</label>
+                    <select id="bell-pitch-select" onchange="changeBellPitch(this.value)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-sky-500">
+                        <option value="high">Crystal High (Standar)</option>
+                        <option value="medium">Classic Table Bell</option>
+                        <option value="deep">Deep Gong / Low Chime</option>
+                    </select>
+                </div>
+
+                <!-- Custom Duration Input -->
+                <div>
+                    <label class="text-xs text-slate-300 font-semibold block mb-1">Set Durasi Kustom (Menit & Detik)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="custom-min" min="0" max="60" placeholder="Menit" class="w-1/2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+                        <input type="number" id="custom-sec" min="0" max="59" placeholder="Detik" class="w-1/2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+                    </div>
+                    <button onclick="applyCustomDuration()" class="w-full mt-2 btn-tactile bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 text-xs rounded-xl border border-sky-400/30">Terapkan Durasi</button>
+                </div>
+
+                <!-- Rules Toggles -->
+                <div class="space-y-2 pt-2 border-t border-slate-800">
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs font-semibold text-slate-300">Bel Setiap Menit</span>
+                        <input type="checkbox" id="toggle-min-bell" checked class="w-4 h-4 accent-sky-500 rounded">
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs font-semibold text-slate-300">Bel 20 Detik Terakhir</span>
+                        <input type="checkbox" id="toggle-20s-bell" checked class="w-4 h-4 accent-sky-500 rounded">
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs font-semibold text-slate-300">Peringatan Visual (Screen Flash)</span>
+                        <input type="checkbox" id="toggle-flash" checked class="w-4 h-4 accent-sky-500 rounded">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Debate Log / History -->
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Log Riwayat Sesi</span>
+                    <button onclick="clearDebateLog()" class="text-[10px] text-red-400 hover:underline">Hapus Log</button>
+                </div>
+                <div id="debate-log-container" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 max-h-36 overflow-y-auto text-[11px] font-mono text-slate-400 space-y-1.5">
+                    <div class="text-slate-600 italic text-center py-2">Belum ada riwayat debat</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Sidebar -->
+        <div class="p-4 border-t border-slate-800 bg-slate-950/50 flex justify-between items-center text-xs text-slate-500">
+            <span>Tut Timer Pro v2.0</span>
+            <button onclick="toggleTheme()" class="hover:text-slate-300 font-semibold flex items-center gap-1">
+                <span id="theme-text">Mode Gelap</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-500 py-3 z-20">
+        Tut Timer Debat Pro &bull; Web Audio API Ready
+    </footer>
+
+    <!-- JavaScript Core Logic -->
+    <script>
+        // Web Audio API Synthesizer
+        let audioCtx = null;
+        let currentPitchFreq = 1567.98; // High G6
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function changeBellPitch(type) {
+            if (type === 'high') currentPitchFreq = 1567.98;
+            else if (type === 'medium') currentPitchFreq = 1046.50; // C6
+            else if (type === 'deep') currentPitchFreq = 523.25; // C5
+            playTestBell(1);
+        }
+
+        function playBellSound(duration = 1.2) {
+            try {
+                initAudioContext();
+                const now = audioCtx.currentTime;
+                
+                const masterGain = audioCtx.createGain();
+                masterGain.connect(audioCtx.destination);
+                
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(currentPitchFreq, now);
+                
+                gain1.gain.setValueAtTime(0.8, now);
+                gain1.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                
+                osc1.connect(gain1);
+                gain1.connect(masterGain);
+                
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(currentPitchFreq * 2, now);
+                
+                gain2.gain.setValueAtTime(0.25, now);
+                gain2.gain.exponentialRampToValueAtTime(0.0001, now + (duration * 0.6));
+                
+                osc2.connect(gain2);
+                gain2.connect(masterGain);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + duration);
+                osc2.stop(now + duration);
+            } catch (e) {
+                console.error("Audio error: ", e);
+            }
+        }
+
+        function playMultiBell(count, interval = 320) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    playBellSound(i === count - 1 ? 1.8 : 1.0);
+                }, i * interval);
+            }
+        }
+
+        function playManualBell() {
+            initAudioContext();
+            playBellSound(1.4);
+        }
+
+        function playTestBell(type) {
+            initAudioContext();
+            if (type === 1) playBellSound(1.2);
+            else if (type === 2) playMultiBell(2);
+            else if (type === 3) playMultiBell(3);
+        }
+
+        // Timer State variables
+        let selectedMinutes = 3;
+        let totalSeconds = 3 * 60;
+        let remainingSeconds = 3 * 60;
+        let overtimeSeconds = 0;
+        let timerInterval = null;
+        let isRunning = false;
+        let startTimeStamp = null;
+
+        let playedBells = new Set();
+        let debateLogs = [];
+
+        // UI Element References
+        const display = document.getElementById('time-display');
+        const overtimeDisplay = document.getElementById('overtime-display');
+        const overtimeBadge = document.getElementById('overtime-badge');
+        const progressBar = document.getElementById('progress-bar');
+        const statusBadge = document.getElementById('status-badge');
+        const timerCard = document.getElementById('timer-card');
+        const btnStart = document.getElementById('btn-start');
+        const btnStartText = document.getElementById('btn-start-text');
+        const iconPlay = document.getElementById('icon-play');
+        const flashOverlay = document.getElementById('flash-overlay');
+
+        function setPreset(mins) {
+            if (isRunning) pauseTimer();
+            
+            selectedMinutes = mins;
+            totalSeconds = mins * 60;
+            remainingSeconds = totalSeconds;
+            overtimeSeconds = 0;
+            
+            document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('active'));
+            const presetBtn = document.getElementById(`preset-${mins}`);
+            if (presetBtn) presetBtn.classList.add('active');
+
+            document.getElementById('custom-indicator').classList.add('hidden');
+            resetTimerState();
+        }
+
+        function applyCustomDuration() {
+            const m = parseInt(document.getElementById('custom-min').value) || 0;
+            const s = parseInt(document.getElementById('custom-sec').value) || 0;
+            const customTotal = (m * 60) + s;
+
+            if (customTotal <= 0) return;
+
+            if (isRunning) pauseTimer();
+            
+            totalSeconds = customTotal;
+            remainingSeconds = customTotal;
+            selectedMinutes = m;
+            overtimeSeconds = 0;
+
+            document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('custom-indicator').classList.remove('hidden');
+
+            resetTimerState();
+            toggleSidebar();
+        }
+
+        function resetTimerState() {
+            playedBells.clear();
+            updateDisplay();
+            setStatus('SIAP', 'bg-slate-800', 'text-slate-400');
+            timerCard.className = "w-full bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 sm:p-10 flex flex-col items-center justify-center relative shadow-2xl backdrop-blur transition-all duration-500";
+            overtimeDisplay.classList.add('hidden');
+            overtimeBadge.classList.add('hidden');
+            triggerFlash(null);
+        }
+
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            display.innerText = formatTime(remainingSeconds);
+            
+            if (remainingSeconds > 0) {
+                const progressPct = (remainingSeconds / totalSeconds) * 100;
+                progressBar.style.width = `${progressPct}%`;
+            } else {
+                progressBar.style.width = `0%`;
+            }
+
+            if (overtimeSeconds > 0) {
+                overtimeDisplay.innerText = `+${formatTime(overtimeSeconds)}`;
+            }
+        }
+
+        function setStatus(text, bgClass, textClass) {
+            statusBadge.innerText = text;
+            statusBadge.className = `px-4 py-1 rounded-full text-xs font-extrabold tracking-widest uppercase border border-slate-700 ${bgClass} ${textClass}`;
+        }
+
+        function toggleTimer() {
+            initAudioContext();
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            isRunning = true;
+            startTimeStamp = new Date();
+
+            btnStart.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+            btnStart.classList.add('bg-amber-600', 'hover:bg-amber-500');
+            btnStartText.innerText = 'Pause';
+            iconPlay.innerHTML = `<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0ptM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5 0a1 1 0 012 0v4a1 1 0 11-2 0V8z" clip-rule="evenodd"/>`;
+
+            setStatus('BERJALAN', 'bg-sky-950/80', 'text-sky-400');
+            
+            // Focus visual effect
+            document.getElementById('preset-container').classList.add('opacity-40', 'scale-95');
+
+            timerInterval = setInterval(() => {
+                if (remainingSeconds > 0) {
+                    remainingSeconds--;
+                    checkBellTriggers();
+                } else {
+                    overtimeSeconds++;
+                    if (overtimeSeconds === 1) {
+                        setStatus('OVERTIME', 'bg-red-950', 'text-red-400');
+                        overtimeBadge.classList.remove('hidden');
+                        overtimeDisplay.classList.remove('hidden');
+                    }
+                }
+                updateDisplay();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+
+            btnStart.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+            btnStart.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+            btnStartText.innerText = 'Lanjut';
+            iconPlay.innerHTML = `<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>`;
+
+            setStatus('PAUSED', 'bg-amber-950/80', 'text-amber-400');
+            document.getElementById('preset-container').classList.remove('opacity-40', 'scale-95');
+        }
+
+        function resetTimer() {
+            if (isRunning || remainingSeconds < totalSeconds) {
+                addLogEntry();
+            }
+            pauseTimer();
+            remainingSeconds = totalSeconds;
+            overtimeSeconds = 0;
+            resetTimerState();
+            btnStartText.innerText = 'Mulai';
+        }
+
+        function checkBellTriggers() {
+            const elapsed = totalSeconds - remainingSeconds;
+            const enableMinBell = document.getElementById('toggle-min-bell').checked;
+            const enable20sBell = document.getElementById('toggle-20s-bell').checked;
+            const enableFlash = document.getElementById('toggle-flash').checked;
+
+            // Minute Bells
+            if (enableMinBell) {
+                for (let m = 1; m <= Math.floor(totalSeconds / 60); m++) {
+                    const triggerSec = m * 60;
+                    const key = `min_${m}`;
+                    if (elapsed === triggerSec && remainingSeconds > 20 && !playedBells.has(key)) {
+                        playBellSound(1.2);
+                        playedBells.add(key);
+                    }
+                }
+            }
+
+            // 20 Seconds Warning Bell (2x)
+            if (enable20sBell && remainingSeconds === 20 && !playedBells.has('warn_20s')) {
+                playMultiBell(2);
+                playedBells.add('warn_20s');
+                if (enableFlash) triggerFlash('warning');
+            }
+
+            // 00:00 Finish Bell (3x)
+            if (remainingSeconds === 0 && !playedBells.has('finish')) {
+                playMultiBell(3);
+                playedBells.add('finish');
+                if (enableFlash) triggerFlash('danger');
+            }
+        }
+
+        function triggerFlash(type) {
+            flashOverlay.className = "fixed inset-0 pointer-events-none z-40 transition-opacity duration-300 opacity-0";
+            if (type === 'warning') {
+                flashOverlay.classList.add('flash-warning', 'opacity-100');
+            } else if (type === 'danger') {
+                flashOverlay.classList.add('flash-danger', 'opacity-100');
+            }
+        }
+
+        // Fullscreen & Orientation Lock API
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function toggleLandscape() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(e => {
+                    alert('Kunci landscape otomatis tidak didukung oleh browser ini. Mohon aktifkan Rotasi Otomatis HP Anda.');
+                });
+            } else {
+                alert('Fitur lock orientation tidak didukung pada perangkat/browser ini.');
+            }
+        }
+
+        // Sidebar Navigation Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('drawer-backdrop');
+            
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        // Log debate management
+        function addLogEntry() {
+            if (!startTimeStamp) return;
+            const now = new Date();
+            const timeStr = startTimeStamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const durationUsed = totalSeconds - remainingSeconds + overtimeSeconds;
+            
+            const logText = `[${timeStr}] Target: ${formatTime(totalSeconds)} | Terpakai: ${formatTime(durationUsed)}`;
+            debateLogs.unshift(logText);
+            renderDebateLog();
+        }
+
+        function renderDebateLog() {
+            const container = document.getElementById('debate-log-container');
+            if (debateLogs.length === 0) {
+                container.innerHTML = `<div class="text-slate-600 italic text-center py-2">Belum ada riwayat debat</div>`;
+                return;
+            }
+            container.innerHTML = debateLogs.map(log => `<div class="border-b border-slate-900 pb-1">${log}</div>`).join('');
+        }
+
+        function clearDebateLog() {
+            debateLogs = [];
+            renderDebateLog();
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeText = document.getElementById('theme-text');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                document.body.classList.remove('bg-slate-950', 'text-slate-100');
+                document.body.classList.add('bg-slate-100', 'text-slate-900');
+                themeText.innerText = 'Mode Terang';
+            } else {
+                html.classList.add('dark');
+                document.body.classList.remove('bg-slate-100', 'text-slate-900');
+                document.body.classList.add('bg-slate-950', 'text-slate-100');
+                themeText.innerText = 'Mode Gelap';
+            }
+        }
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggleTimer();
+            } else if (e.code === 'KeyR') {
+                resetTimer();
+            } else if (e.code === 'KeyB') {
+                playManualBell();
+            }
+        });
+
+        window.onload = function() {
+            setPreset(3);
+        }
+    </script>
+</body>
+</html>
