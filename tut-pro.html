@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tut — Timer Debat Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background-color: #05080f;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Massive Responsive Clock Typography for Portrait & Landscape */
+        .clock-digits {
+            font-size: clamp(4.75rem, 21vw, 15.5rem);
+            line-height: 0.92;
+            letter-spacing: -0.04em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (orientation: landscape) and (max-height: 540px) {
+            .clock-digits {
+                font-size: clamp(5rem, 36vh, 13rem);
+            }
+        }
+
+        /* Tactile Controls */
+        .btn-press {
+            transition: transform 0.1s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn-press:active {
+            transform: scale(0.96);
+        }
+
+        /* Active Preset Pill */
+        .preset-pill.active {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: #ffffff;
+            border-color: #38bdf8;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.35);
+        }
+
+        /* Screen Visual Cue Animations */
+        @keyframes cueMinute {
+            0% { box-shadow: inset 0 0 0 4px rgba(56, 189, 248, 0.85), 0 0 40px rgba(56, 189, 248, 0.25); }
+            100% { box-shadow: inset 0 0 0 0px rgba(56, 189, 248, 0), 0 0 0px rgba(56, 189, 248, 0); }
+        }
+
+        @keyframes cueWarning {
+            0%, 100% { box-shadow: inset 0 0 0 4px rgba(245, 158, 11, 0.25); }
+            50% { box-shadow: inset 0 0 0 8px rgba(245, 158, 11, 0.85), 0 0 50px rgba(245, 158, 11, 0.2); }
+        }
+
+        @keyframes cueDanger {
+            0%, 100% { box-shadow: inset 0 0 0 5px rgba(244, 63, 94, 0.35); }
+            50% { box-shadow: inset 0 0 0 10px rgba(244, 63, 94, 0.95), 0 0 60px rgba(244, 63, 94, 0.3); }
+        }
+
+        .cue-minute {
+            animation: cueMinute 0.9s ease-out forwards;
+        }
+        .cue-warning {
+            animation: cueWarning 1s infinite ease-in-out;
+        }
+        .cue-danger {
+            animation: cueDanger 0.75s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar for Drawer */
+        .drawer-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .drawer-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-scroll::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-sky-500 selection:text-white">
+
+    <!-- Visual Screen Glow Overlay -->
+    <div id="visual-cue-layer" class="fixed inset-0 pointer-events-none z-40 transition-all duration-300"></div>
+
+    <!-- Toast Notification Banner (No alert() used) -->
+    <div id="toast-box" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
+        <div id="toast-text" class="px-4 py-2 rounded-full bg-slate-800/95 border border-slate-700 text-xs font-semibold text-slate-100 shadow-xl backdrop-blur-md">
+            Pesan Notifikasi
+        </div>
+    </div>
+
+    <!-- Top Header -->
+    <header id="top-header" class="w-full max-w-6xl mx-auto px-4 sm:px-6 pt-3 pb-2 flex items-center justify-between z-30 transition-all duration-300">
+        <!-- Left: Menu Button + App Title -->
+        <div class="flex items-center gap-3">
+            <button onclick="toggleDrawer()" aria-label="Buka Menu Pengaturan & Dev" class="btn-press p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-sky-400 flex items-center gap-2 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h10"/>
+                </svg>
+                <span class="hidden sm:inline text-xs font-bold tracking-wide text-slate-300">Menu</span>
+            </button>
+
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 via-blue-600 to-indigo-700 flex items-center justify-center font-extrabold text-white text-lg shadow-lg shadow-sky-500/20">
+                    T
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-lg sm:text-xl tracking-tight text-white leading-none">Tut</span>
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">Pro</span>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-medium hidden xs:inline">Debate Stage Timer</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Speaker Side Pill + Focus Mode + Fullscreen/Landscape -->
+        <div class="flex items-center gap-2">
+            <!-- Speaker Role Cycle Pill -->
+            <button id="role-badge-btn" onclick="cycleSpeakerRole()" title="Klik untuk ganti posisi pembicara" class="btn-press px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-extrabold tracking-wide flex items-center gap-1.5">
+                <span id="role-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span id="role-label">PRO • Pembicara 1</span>
+            </button>
+
+            <!-- Focus Mode Button -->
+            <button id="focus-btn" onclick="toggleFocusMode()" title="Mode Fokus Layar Penuh" class="btn-press p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-sky-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </button>
+
+            <!-- Fullscreen & Landscape Button -->
+            <button onclick="toggleFullscreenLandscape()" title="Layar Penuh & Mode Landscape" class="btn-press px-3 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-sky-400 text-xs font-bold flex items-center gap-1.5">
+                <svg id="fs-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                </svg>
+                <span class="hidden md:inline">Fullscreen</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Stage Container -->
+    <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center gap-4 sm:gap-6 py-2 z-10">
+
+        <!-- 1 to 7 Minutes Quick Preset Selector -->
+        <div id="preset-bar" class="w-full max-w-2xl transition-all duration-300">
+            <div class="grid grid-cols-7 gap-1.5 sm:gap-2.5 p-1.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 backdrop-blur">
+                <button onclick="selectPreset(1)" id="preset-1" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">1m</button>
+                <button onclick="selectPreset(2)" id="preset-2" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">2m</button>
+                <button onclick="selectPreset(3)" id="preset-3" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">3m</button>
+                <button onclick="selectPreset(4)" id="preset-4" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">4m</button>
+                <button onclick="selectPreset(5)" id="preset-5" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">5m</button>
+                <button onclick="selectPreset(6)" id="preset-6" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">6m</button>
+                <button onclick="selectPreset(7)" id="preset-7" class="preset-pill btn-press py-2.5 sm:py-3 rounded-xl border border-transparent text-slate-300 hover:text-white hover:bg-slate-800/80 font-extrabold text-sm sm:text-base">7m</button>
+            </div>
+        </div>
+
+        <!-- Centerpiece Timer Display -->
+        <div id="stage-card" class="w-full flex-1 max-h-[62vh] min-h-[240px] rounded-3xl bg-gradient-to-b from-slate-900/75 to-slate-950/95 border border-slate-800/90 px-4 sm:px-10 py-6 sm:py-8 flex flex-col items-center justify-between relative shadow-2xl transition-all duration-300">
+            
+            <!-- Top Status & POI Indicator Row -->
+            <div class="w-full flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <span id="timer-status-pill" class="px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-widest uppercase bg-slate-800/90 text-slate-300 border border-slate-700/80">
+                    SIAP • 3 MENIT
+                </span>
+
+                <!-- POI / Interupsi Indicator (Toggleable in Menu) -->
+                <span id="poi-status-pill" class="hidden px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wider uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                    PROTECTED TIME (NO POI)
+                </span>
+            </div>
+
+            <!-- Massive Clock Readout -->
+            <div class="my-auto flex flex-col items-center justify-center text-center">
+                <div id="main-clock" class="clock-digits font-mono font-extrabold text-white tracking-tight transition-colors duration-200">
+                    03:00
+                </div>
+                <div id="elapsed-subtext" class="mt-2 text-xs sm:text-sm font-mono font-semibold text-slate-400 tracking-wider">
+                    BERJALAN: 00:00 / 03:00
+                </div>
+            </div>
+
+            <!-- Milestone Progress Bar -->
+            <div class="w-full max-w-3xl mt-4">
+                <div class="relative w-full h-3 sm:h-3.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                    <!-- 20-Second Warning Zone Highlight (Rightmost End) -->
+                    <div id="warning-zone-marker" class="absolute top-0 right-0 bottom-0 bg-amber-500/20 border-l border-amber-500/50 pointer-events-none" style="width: 11.11%;"></div>
+                    
+                    <!-- Dynamic Progress Fill -->
+                    <div id="progress-fill" class="h-full bg-gradient-to-r from-sky-500 to-cyan-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+
+                    <!-- Minute Tick Markers Container -->
+                    <div id="minute-ticks" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+
+                <!-- Legend below bar -->
+                <div class="flex justify-between items-center mt-1.5 text-[10px] sm:text-[11px] font-semibold text-slate-500">
+                    <span>MULAI</span>
+                    <span id="bell-schedule-hint" class="text-slate-400">Bel: Tiap 1m (1x) • Sisa 20d (2x) • Habis (3x)</span>
+                    <span class="text-amber-500/80">20d AKHIR</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Primary Action Controls -->
+        <div class="w-full max-w-2xl grid grid-cols-12 gap-2.5 sm:gap-3 pb-2">
+            <!-- Start / Pause Button -->
+            <button id="btn-start-pause" onclick="toggleTimer()" class="col-span-7 sm:col-span-8 btn-press py-4 sm:py-5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-lg sm:text-xl tracking-wide flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20">
+                <svg id="icon-start-pause" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <span id="label-start-pause">MULAI</span>
+            </button>
+
+            <!-- Reset Button -->
+            <button onclick="resetTimer()" class="col-span-3 sm:col-span-2 btn-press py-4 sm:py-5 px-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold text-sm sm:text-base flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Reset</span>
+            </button>
+
+            <!-- Manual Bell Button -->
+            <button onclick="ringManualBell()" title="Bunyikan Bel Manual (1x)" class="col-span-2 btn-press py-4 sm:py-5 px-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-bold flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+            </button>
+        </div>
+    </main>
+
+    <!-- Slide-Over Drawer Backdrop -->
+    <div id="drawer-backdrop" onclick="toggleDrawer()" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <!-- Side Menu Drawer (Dev Tools, Audio Customization, Debate Rules, Logs) -->
+    <aside id="side-drawer" class="fixed top-0 left-0 bottom-0 w-80 sm:w-96 max-w-[88vw] bg-slate-950 border-r border-slate-800/90 z-50 transform -translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
+        
+        <!-- Drawer Header -->
+        <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-400 flex items-center justify-center font-extrabold text-sm">T</div>
+                <div>
+                    <h2 class="text-sm font-extrabold text-white tracking-tight">Menu Kontrol & Dev</h2>
+                    <p class="text-[11px] text-slate-400">Tut Timer Debat Pro</p>
+                </div>
+            </div>
+            <button onclick="toggleDrawer()" class="btn-press p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Drawer Scrollable Body -->
+        <div class="flex-1 overflow-y-auto drawer-scroll p-5 space-y-6">
+
+            <!-- SECTION 1: DEV MENU - TEST SUARA BEL -->
+            <section class="p-4 rounded-2xl bg-slate-900/90 border border-sky-500/30 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                        Menu Dev • Tes Suara Bel
+                    </span>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/10 text-sky-300">AUDIO ENGINE</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                    Uji kejernihan dan volume bel sebelum pertandingan dimulai:
+                </p>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="testBellSound(1)" class="btn-press w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-left flex items-center justify-between group">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-white">Tes 1x Bel (Menit)</span>
+                        <span class="text-[11px] font-mono font-bold text-sky-400">TING!</span>
+                    </button>
+                    <button onclick="testBellSound(2)" class="btn-press w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-left flex items-center justify-between group">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-white">Tes 2x Bel (20 Detik)</span>
+                        <span class="text-[11px] font-mono font-bold text-amber-400">TING! TING!</span>
+                    </button>
+                    <button onclick="testBellSound(3)" class="btn-press w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-left flex items-center justify-between group">
+                        <span class="text-xs font-bold text-slate-200 group-hover:text-white">Tes 3x Bel (Waktu Habis)</span>
+                        <span class="text-[11px] font-mono font-bold text-rose-400">TING! TING! TING!</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SECTION 2: KUSTOMISASI SUARA BEL -->
+            <section class="space-y-3">
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Kustomisasi Suara Bel</h3>
+                
+                <!-- Frequency / Pitch Selector -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-300">Nada / Frekuensi Bel</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button onclick="setBellFrequency(660)" id="freq-660" class="freq-btn btn-press py-2 px-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-bold text-slate-300">
+                            Dalam<br><span class="text-[10px] font-mono text-slate-500">660 Hz</span>
+                        </button>
+                        <button onclick="setBellFrequency(880)" id="freq-880" class="freq-btn btn-press py-2 px-2 rounded-xl bg-sky-500/20 border border-sky-500 text-[11px] font-bold text-sky-300">
+                            Standar<br><span class="text-[10px] font-mono text-sky-400">880 Hz</span>
+                        </button>
+                        <button onclick="setBellFrequency(1100)" id="freq-1100" class="freq-btn btn-press py-2 px-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-bold text-slate-300">
+                            Tinggi<br><span class="text-[10px] font-mono text-slate-500">1100 Hz</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Volume Slider -->
+                <div class="space-y-1.5 pt-1">
+                    <div class="flex justify-between text-xs">
+                        <span class="font-semibold text-slate-300">Volume Bel</span>
+                        <span id="volume-value-label" class="font-mono font-bold text-sky-400">100%</span>
+                    </div>
+                    <input id="volume-slider" type="range" min="10" max="100" value="100" oninput="updateVolume(this.value)" class="w-full accent-sky-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                </div>
+            </section>
+
+            <!-- SECTION 3: ATURAN & MODE DEBAT PRO -->
+            <section class="space-y-3 pt-2 border-t border-slate-800/80">
+                <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Fitur Debat & Tampilan</h3>
+
+                <!-- POI Protected Time Toggle -->
+                <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 cursor-pointer">
+                    <div>
+                        <div class="text-xs font-bold text-slate-200">Indikator POI / Interupsi</div>
+                        <div class="text-[11px] text-slate-400">Tandai 1m awal & 1m akhir (Protected)</div>
+                    </div>
+                    <input type="checkbox" id="opt-poi" onchange="togglePoiIndicator()" class="w-4 h-4 accent-sky-500 rounded">
+                </label>
+
+                <!-- Overtime Periodic Bell Toggle -->
+                <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 cursor-pointer">
+                    <div>
+                        <div class="text-xs font-bold text-slate-200">Bel Peringatan Overtime</div>
+                        <div class="text-[11px] text-slate-400">Bunyi tiap +15 detik melewati 00:00</div>
+                    </div>
+                    <input type="checkbox" id="opt-overtime-bell" checked class="w-4 h-4 accent-sky-500 rounded">
+                </label>
+
+                <!-- Visual Screen Flash Toggle -->
+                <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 cursor-pointer">
+                    <div>
+                        <div class="text-xs font-bold text-slate-200">Kilatan Visual Layar</div>
+                        <div class="text-[11px] text-slate-400">Sinkron dengan bel untuk ruangan bising</div>
+                    </div>
+                    <input type="checkbox" id="opt-visual-flash" checked class="w-4 h-4 accent-sky-500 rounded">
+                </label>
+
+                <!-- Speaker Role Badge Visibility -->
+                <label class="flex items-center justify-between p-3 rounded-xl bg-slate-900/70 border border-slate-800/80 cursor-pointer">
+                    <div>
+                        <div class="text-xs font-bold text-slate-200">Tampilkan Label Pembicara</div>
+                        <div class="text-[11px] text-slate-400">Badge Pro / Kontra di pojok atas</div>
+                    </div>
+                    <input type="checkbox" id="opt-role-badge" checked onchange="toggleRoleBadgeVisibility()" class="w-4 h-4 accent-sky-500 rounded">
+                </label>
+            </section>
+
+            <!-- SECTION 4: RIWAYAT WAKTU DEBAT (LOG) -->
+            <section class="space-y-2.5 pt-2 border-t border-slate-800/80">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400">Riwayat Sesi Pembicara</h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="copyLogs()" class="text-[11px] font-bold text-sky-400 hover:text-sky-300">Salin</button>
+                        <span class="text-slate-700">•</span>
+                        <button onclick="clearLogs()" class="text-[11px] font-bold text-rose-400 hover:text-rose-300">Hapus</button>
+                    </div>
+                </div>
+                <div id="log-list" class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 max-h-40 overflow-y-auto space-y-2 text-[11px] font-mono text-slate-300">
+                    <div class="text-slate-500 italic text-center py-2">Belum ada catatan sesi.</div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: PINTASAN KEYBOARD -->
+            <section class="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800/70 space-y-2">
+                <h4 class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">Pintasan Keyboard (Laptop)</h4>
+                <div class="grid grid-cols-2 gap-y-1.5 text-[11px] text-slate-400">
+                    <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono">Space</kbd> Mulai / Jeda</div>
+                    <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono">R</kbd> Reset Timer</div>
+                    <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono">F</kbd> Fullscreen</div>
+                    <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 font-mono">1-7</kbd> Pilih Menit</div>
+                </div>
+            </section>
+
+        </div>
+    </aside>
+
+    <script>
+        // ==========================================
+        // 1. WEB AUDIO API METALLIC BELL SYNTHESIZER
+        // ==========================================
+        let audioCtx = null;
+        let bellBaseFreq = 880; // Default Standar 880Hz (A5)
+        let bellVolume = 1.0;
+
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Synthesize crisp metallic desk/debate bell ('Ting!')
+        function triggerSingleTing(decayDuration = 1.35) {
+            try {
+                ensureAudioContext();
+                const now = audioCtx.currentTime;
+
+                const masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(bellVolume, now);
+                masterGain.connect(audioCtx.destination);
+
+                // Inharmonic partials characteristic of a brass/steel desk bell
+                const partials = [
+                    { ratio: 1.0, amp: 0.65, decay: decayDuration },
+                    { ratio: 2.0, amp: 0.35, decay: decayDuration * 0.75 },
+                    { ratio: 2.42, amp: 0.22, decay: decayDuration * 0.5 },
+                    { ratio: 3.85, amp: 0.14, decay: decayDuration * 0.3 },
+                    { ratio: 5.4, amp: 0.08, decay: decayDuration * 0.15 }
+                ];
+
+                partials.forEach(p => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(bellBaseFreq * p.ratio, now);
+
+                    // Sharp metallic attack + exponential ring out
+                    gain.gain.setValueAtTime(0.0001, now);
+                    gain.gain.linearRampToValueAtTime(p.amp, now + 0.008);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + p.decay);
+
+                    osc.connect(gain);
+                    gain.connect(masterGain);
+
+                    osc.start(now);
+                    osc.stop(now + p.decay + 0.05);
+                });
+            } catch (err) {
+                console.error('Web Audio Error:', err);
+            }
+        }
+
+        function triggerBellSequence(count, spacingMs = 310) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const isFinal = (i === count - 1);
+                    triggerSingleTing(isFinal ? 1.8 : 1.05);
+                }, i * spacingMs);
+            }
+        }
+
+        function testBellSound(count) {
+            triggerBellSequence(count);
+            if (count === 1) flashVisualCue('minute');
+            if (count === 2) flashVisualCue('warning-once');
+            if (count === 3) flashVisualCue('danger-once');
+        }
+
+        function ringManualBell() {
+            triggerSingleTing(1.5);
+            flashVisualCue('minute');
+        }
+
+        function setBellFrequency(hz) {
+            bellBaseFreq = hz;
+            document.querySelectorAll('.freq-btn').forEach(btn => {
+                btn.className = 'freq-btn btn-press py-2 px-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-bold text-slate-300';
+            });
+            const activeBtn = document.getElementById(`freq-${hz}`);
+            if (activeBtn) {
+                activeBtn.className = 'freq-btn btn-press py-2 px-2 rounded-xl bg-sky-500/20 border border-sky-500 text-[11px] font-bold text-sky-300';
+            }
+            triggerSingleTing(1.1);
+        }
+
+        function updateVolume(val) {
+            bellVolume = parseInt(val, 10) / 100;
+            document.getElementById('volume-value-label').innerText = `${val}%`;
+        }
+
+        // ==========================================
+        // 2. DEBATE TIMER STATE & LOGIC
+        // ==========================================
+        let presetMinutes = 3;
+        let totalDurationSec = 180;
+        let remainingSec = 180;
+        let overtimeSec = 0;
+        let isRunning = false;
+        let intervalId = null;
+        let firedCues = new Set();
+        let sessionLogs = [];
+        let isFocusMode = false;
+
+        // Speaker Roles Cycle
+        const speakerRoles = [
+            { label: 'PRO • Pembicara 1', color: 'emerald' },
+            { label: 'KONTRA • Pembicara 1', color: 'rose' },
+            { label: 'PRO • Pembicara 2', color: 'emerald' },
+            { label: 'KONTRA • Pembicara 2', color: 'rose' },
+            { label: 'PRO • Pembicara 3', color: 'emerald' },
+            { label: 'KONTRA • Pembicara 3', color: 'rose' },
+            { label: 'KONTRA • Kesimpulan', color: 'amber' },
+            { label: 'PRO • Kesimpulan', color: 'sky' }
+        ];
+        let currentRoleIdx = 0;
+
+        // DOM Elements
+        const mainClockEl = document.getElementById('main-clock');
+        const elapsedSubtextEl = document.getElementById('elapsed-subtext');
+        const statusPillEl = document.getElementById('timer-status-pill');
+        const poiPillEl = document.getElementById('poi-status-pill');
+        const progressFillEl = document.getElementById('progress-fill');
+        const warningZoneEl = document.getElementById('warning-zone-marker');
+        const minuteTicksEl = document.getElementById('minute-ticks');
+        const btnStartPause = document.getElementById('btn-start-pause');
+        const labelStartPause = document.getElementById('label-start-pause');
+        const iconStartPause = document.getElementById('icon-start-pause');
+        const visualCueLayer = document.getElementById('visual-cue-layer');
+
+        function formatMMSS(sec) {
+            const absSec = Math.max(0, Math.floor(sec));
+            const m = Math.floor(absSec / 60);
+            const s = absSec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function selectPreset(mins) {
+            if (isRunning) {
+                stopInterval();
+            }
+            presetMinutes = mins;
+            totalDurationSec = mins * 60;
+            remainingSec = totalDurationSec;
+            overtimeSec = 0;
+            firedCues.clear();
+
+            // Update active pill styling
+            document.querySelectorAll('.preset-pill').forEach(btn => btn.classList.remove('active'));
+            const selectedBtn = document.getElementById(`preset-${mins}`);
+            if (selectedBtn) selectedBtn.classList.add('active');
+
+            buildProgressMarkers();
+            resetVisualStates();
+            renderClock();
+        }
+
+        function buildProgressMarkers() {
+            // Calculate 20-second warning zone width percentage
+            const warnWidthPct = Math.min(100, (20 / totalDurationSec) * 100);
+            warningZoneEl.style.width = `${warnWidthPct}%`;
+
+            // Render 1-minute tick marks along the bar
+            minuteTicksEl.innerHTML = '';
+            for (let m = 1; m < presetMinutes; m++) {
+                const pct = ((m * 60) / totalDurationSec) * 100;
+                const tick = document.createElement('div');
+                tick.className = 'absolute top-0 bottom-0 w-0.5 bg-slate-700/90';
+                tick.style.left = `${pct}%`;
+                minuteTicksEl.appendChild(tick);
+            }
+        }
+
+        function resetVisualStates() {
+            mainClockEl.className = 'clock-digits font-mono font-extrabold text-white tracking-tight transition-colors duration-200';
+            progressFillEl.className = 'h-full bg-gradient-to-r from-sky-500 to-cyan-400 rounded-full transition-all duration-300';
+            statusPillEl.className = 'px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-widest uppercase bg-slate-800/90 text-slate-300 border border-slate-700/80';
+            statusPillEl.innerText = `SIAP • ${presetMinutes} MENIT`;
+            setStartButtonUI('start');
+            clearVisualCue();
+            updatePoiBadge();
+        }
+
+        function setStartButtonUI(mode) {
+            if (mode === 'pause') {
+                btnStartPause.className = 'col-span-7 sm:col-span-8 btn-press py-4 sm:py-5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-lg sm:text-xl tracking-wide flex items-center justify-center gap-2.5 shadow-lg shadow-amber-500/20';
+                labelStartPause.innerText = 'JEDA';
+                iconStartPause.innerHTML = '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>';
+            } else {
+                btnStartPause.className = 'col-span-7 sm:col-span-8 btn-press py-4 sm:py-5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-lg sm:text-xl tracking-wide flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20';
+                labelStartPause.innerText = (remainingSec < totalDurationSec || overtimeSec > 0) ? 'LANJUT' : 'MULAI';
+                iconStartPause.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>';
+            }
+        }
+
+        function toggleTimer() {
+            ensureAudioContext();
+            if (isRunning) {
+                stopInterval();
+                setStartButtonUI('start');
+                statusPillEl.innerText = 'DIJEDA';
+            } else {
+                startInterval();
+            }
+        }
+
+        function startInterval() {
+            isRunning = true;
+            setStartButtonUI('pause');
+
+            if (overtimeSec > 0) {
+                statusPillEl.innerText = 'OVERTIME BERJALAN';
+            } else if (remainingSec <= 20) {
+                statusPillEl.innerText = '20 DETIK TERAKHIR';
+            } else {
+                statusPillEl.innerText = `BERJALAN • ${presetMinutes} MENIT`;
+            }
+
+            intervalId = setInterval(() => {
+                if (remainingSec > 0) {
+                    remainingSec--;
+                    evaluateDebateCues();
+                } else {
+                    overtimeSec++;
+                    evaluateOvertimeCues();
+                }
+                renderClock();
+            }, 1000);
+        }
+
+        function stopInterval() {
+            isRunning = false;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        function resetTimer() {
+            const elapsedTotal = (totalDurationSec - remainingSec) + overtimeSec;
+            if (elapsedTotal > 0) {
+                recordSessionLog(elapsedTotal);
+            }
+            stopInterval();
+            remainingSec = totalDurationSec;
+            overtimeSec = 0;
+            firedCues.clear();
+            resetVisualStates();
+            renderClock();
+        }
+
+        function evaluateDebateCues() {
+            const elapsedSec = totalDurationSec - remainingSec;
+
+            // 1. 1x Bell ('Ting!') at every completed minute mark (except 00:00)
+            if (remainingSec > 0 && elapsedSec > 0 && elapsedSec % 60 === 0) {
+                const minMark = elapsedSec / 60;
+                const cueKey = `min_${minMark}`;
+                if (!firedCues.has(cueKey)) {
+                    firedCues.add(cueKey);
+                    triggerBellSequence(1);
+                    flashVisualCue('minute');
+                }
+            }
+
+            // 2. 2x Bell ('Ting! Ting!') when 20 seconds remain (00:20)
+            if (remainingSec === 20 && !firedCues.has('warn_20')) {
+                firedCues.add('warn_20');
+                triggerBellSequence(2);
+                mainClockEl.classList.remove('text-white');
+                mainClockEl.classList.add('text-amber-400');
+                progressFillEl.className = 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all duration-300';
+                statusPillEl.className = 'px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-widest uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                statusPillEl.innerText = 'PERINGATAN • 20 DETIK TERAKHIR';
+                flashVisualCue('warning-loop');
+            }
+
+            // 3. 3x Bell ('Ting! Ting! Ting!') when time hits 00:00
+            if (remainingSec === 0 && !firedCues.has('end_0')) {
+                firedCues.add('end_0');
+                triggerBellSequence(3);
+                mainClockEl.classList.remove('text-white', 'text-amber-400');
+                mainClockEl.classList.add('text-rose-500');
+                statusPillEl.className = 'px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-widest uppercase bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse';
+                statusPillEl.innerText = 'WAKTU HABIS • OVERTIME';
+                flashVisualCue('danger-loop');
+            }
+        }
+
+        function evaluateOvertimeCues() {
+            const enableOvertimeBell = document.getElementById('opt-overtime-bell').checked;
+            if (enableOvertimeBell && overtimeSec > 0 && overtimeSec % 15 === 0) {
+                triggerBellSequence(2, 260);
+            }
+        }
+
+        function renderClock() {
+            if (overtimeSec > 0) {
+                mainClockEl.innerText = `+${formatMMSS(overtimeSec)}`;
+                elapsedSubtextEl.innerText = `LEWAT WAKTU: +${formatMMSS(overtimeSec)} (TARGET ${formatMMSS(totalDurationSec)})`;
+                progressFillEl.style.width = '0%';
+            } else {
+                mainClockEl.innerText = formatMMSS(remainingSec);
+                const elapsed = totalDurationSec - remainingSec;
+                elapsedSubtextEl.innerText = `BERJALAN: ${formatMMSS(elapsed)} / ${formatMMSS(totalDurationSec)}`;
+                const remainingPct = (remainingSec / totalDurationSec) * 100;
+                progressFillEl.style.width = `${remainingPct}%`;
+            }
+            updatePoiBadge();
+        }
+
+        // ==========================================
+        // 3. POI INDICATOR, VISUAL CUES & ROLES
+        // ==========================================
+        function togglePoiIndicator() {
+            updatePoiBadge();
+        }
+
+        function updatePoiBadge() {
+            const isEnabled = document.getElementById('opt-poi').checked;
+            if (!isEnabled) {
+                poiPillEl.classList.add('hidden');
+                return;
+            }
+            poiPillEl.classList.remove('hidden');
+
+            const elapsed = totalDurationSec - remainingSec;
+            // For presets >= 3 min: first 60s & last 60s are protected; for 1-2m: first 20s & last 20s
+            const margin = presetMinutes >= 3 ? 60 : 20;
+
+            if (overtimeSec > 0 || remainingSec === 0) {
+                poiPillEl.className = 'px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wider uppercase bg-rose-500/15 text-rose-400 border border-rose-500/30';
+                poiPillEl.innerText = 'WAKTU HABIS (NO POI)';
+            } else if (elapsed < margin || remainingSec <= margin) {
+                poiPillEl.className = 'px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wider uppercase bg-amber-500/15 text-amber-400 border border-amber-500/30';
+                poiPillEl.innerText = 'PROTECTED TIME (NO POI)';
+            } else {
+                poiPillEl.className = 'px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wider uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+                poiPillEl.innerText = 'POI / INTERUPSI DIBUKA';
+            }
+        }
+
+        function flashVisualCue(type) {
+            const flashEnabled = document.getElementById('opt-visual-flash').checked;
+            if (!flashEnabled) return;
+
+            visualCueLayer.className = 'fixed inset-0 pointer-events-none z-40 transition-all duration-300';
+            void visualCueLayer.offsetWidth; // Force reflow
+
+            if (type === 'minute') {
+                visualCueLayer.classList.add('cue-minute');
+            } else if (type === 'warning-loop') {
+                visualCueLayer.classList.add('cue-warning');
+            } else if (type === 'danger-loop') {
+                visualCueLayer.classList.add('cue-danger');
+            } else if (type === 'warning-once') {
+                visualCueLayer.classList.add('cue-warning');
+                setTimeout(clearVisualCue, 1400);
+            } else if (type === 'danger-once') {
+                visualCueLayer.classList.add('cue-danger');
+                setTimeout(clearVisualCue, 1600);
+            }
+        }
+
+        function clearVisualCue() {
+            visualCueLayer.className = 'fixed inset-0 pointer-events-none z-40 transition-all duration-300';
+        }
+
+        function cycleSpeakerRole() {
+            currentRoleIdx = (currentRoleIdx + 1) % speakerRoles.length;
+            const role = speakerRoles[currentRoleIdx];
+            const btn = document.getElementById('role-badge-btn');
+            const dot = document.getElementById('role-dot');
+            const label = document.getElementById('role-label');
+
+            label.innerText = role.label;
+
+            const colorMap = {
+                emerald: {
+                    btn: 'btn-press px-3 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-extrabold tracking-wide flex items-center gap-1.5',
+                    dot: 'w-2 h-2 rounded-full bg-emerald-400'
+                },
+                rose: {
+                    btn: 'btn-press px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-extrabold tracking-wide flex items-center gap-1.5',
+                    dot: 'w-2 h-2 rounded-full bg-rose-400'
+                },
+                amber: {
+                    btn: 'btn-press px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-extrabold tracking-wide flex items-center gap-1.5',
+                    dot: 'w-2 h-2 rounded-full bg-amber-400'
+                },
+                sky: {
+                    btn: 'btn-press px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 text-xs font-extrabold tracking-wide flex items-center gap-1.5',
+                    dot: 'w-2 h-2 rounded-full bg-sky-400'
+                }
+            };
+
+            btn.className = colorMap[role.color].btn;
+            dot.className = colorMap[role.color].dot;
+        }
+
+        function toggleRoleBadgeVisibility() {
+            const show = document.getElementById('opt-role-badge').checked;
+            const btn = document.getElementById('role-badge-btn');
+            btn.classList.toggle('hidden', !show);
+        }
+
+        // ==========================================
+        // 4. FULLSCREEN, LANDSCAPE & FOCUS MODE
+        // ==========================================
+        async function toggleFullscreenLandscape() {
+            try {
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                    if (screen.orientation && screen.orientation.lock) {
+                        try {
+                            await screen.orientation.lock('landscape');
+                            showToast('Layar Penuh & Landscape Aktif');
+                        } catch (e) {
+                            showToast('Layar Penuh Aktif (Putar perangkat untuk Landscape)');
+                        }
+                    } else {
+                        showToast('Layar Penuh Aktif');
+                    }
+                } else {
+                    if (screen.orientation && screen.orientation.unlock) {
+                        try { screen.orientation.unlock(); } catch (e) {}
+                    }
+                    await document.exitFullscreen();
+                    showToast('Keluar dari Layar Penuh');
+                }
+            } catch (err) {
+                showToast('Mode Layar Penuh tidak diizinkan oleh browser ini');
+            }
+        }
+
+        function toggleFocusMode() {
+            isFocusMode = !isFocusMode;
+            const presetBar = document.getElementById('preset-bar');
+            const roleBtn = document.getElementById('role-badge-btn');
+            const focusBtn = document.getElementById('focus-btn');
+
+            if (isFocusMode) {
+                presetBar.classList.add('hidden');
+                roleBtn.classList.add('hidden');
+                focusBtn.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-400');
+                showToast('Mode Fokus Aktif');
+            } else {
+                presetBar.classList.remove('hidden');
+                if (document.getElementById('opt-role-badge').checked) {
+                    roleBtn.classList.remove('hidden');
+                }
+                focusBtn.classList.remove('bg-sky-500/20', 'border-sky-500', 'text-sky-400');
+                showToast('Mode Standar');
+            }
+        }
+
+        // ==========================================
+        // 5. DRAWER, SESSION LOGS & KEYBOARD SHORTCUTS
+        // ==========================================
+        function toggleDrawer() {
+            const drawer = document.getElementById('side-drawer');
+            const backdrop = document.getElementById('drawer-backdrop');
+            const isClosed = drawer.classList.contains('-translate-x-full');
+
+            if (isClosed) {
+                drawer.classList.remove('-translate-x-full');
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                drawer.classList.add('-translate-x-full');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function recordSessionLog(totalUsedSec) {
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const roleName = speakerRoles[currentRoleIdx].label;
+            const overtimeNote = overtimeSec > 0 ? ` (+${formatMMSS(overtimeSec)} OT)` : '';
+
+            sessionLogs.unshift({
+                time: timestamp,
+                role: roleName,
+                preset: `${presetMinutes}m`,
+                used: formatMMSS(totalUsedSec),
+                overtime: overtimeNote
+            });
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const logListEl = document.getElementById('log-list');
+            if (sessionLogs.length === 0) {
+                logListEl.innerHTML = '<div class="text-slate-500 italic text-center py-2">Belum ada catatan sesi.</div>';
+                return;
+            }
+            logListEl.innerHTML = sessionLogs.map(item => `
+                <div class="p-2 rounded-lg bg-slate-950 border border-slate-800/80 flex flex-col gap-0.5">
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                        <span class="font-bold text-slate-200">${item.role}</span>
+                        <span>${item.time}</span>
+                    </div>
+                    <div class="text-[11px] text-sky-400">
+                        Durasi: ${item.used} <span class="text-slate-500">/ ${item.preset}</span>
+                        <span class="text-rose-400 font-bold">${item.overtime}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyLogs() {
+            if (sessionLogs.length === 0) {
+                showToast('Belum ada log untuk disalin');
+                return;
+            }
+            const text = sessionLogs.map(l => `[${l.time}] ${l.role} — Durasi: ${l.used} (Target ${l.preset})${l.overtime}`).join('\n');
+            const tempArea = document.createElement('textarea');
+            tempArea.value = text;
+            document.body.appendChild(tempArea);
+            tempArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempArea);
+            showToast('Riwayat debat disalin ke clipboard');
+        }
+
+        function clearLogs() {
+            sessionLogs = [];
+            renderLogs();
+            showToast('Riwayat debat dibersihkan');
+        }
+
+        let toastTimeout = null;
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            const txt = document.getElementById('toast-text');
+            txt.innerText = msg;
+            box.classList.remove('opacity-0', '-translate-y-2');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                box.classList.add('opacity-0', '-translate-y-2');
+            }, 2400);
+        }
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggleTimer();
+            } else if (e.key === 'r' || e.key === 'R') {
+                resetTimer();
+            } else if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreenLandscape();
+            } else if (e.key === 'b' || e.key === 'B') {
+                ringManualBell();
+            } else if (['1', '2', '3', '4', '5', '6', '7'].includes(e.key)) {
+                selectPreset(parseInt(e.key, 10));
+            }
+        });
+
+        // Initialize Default Preset (3 Minutes)
+        window.addEventListener('DOMContentLoaded', () => {
+            selectPreset(3);
+        });
+    </script>
+</body>
+</html>
